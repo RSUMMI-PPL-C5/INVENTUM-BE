@@ -51,7 +51,7 @@ jobs:
       - name: Deploy Prometheus and Grafana
         run: |
           docker run -d --name prometheus -p 9090:9090 prom/prometheus:latest
-          docker run -d --name grafana -p 3000:3000 grafana/grafana:latest
+          docker run -d --name grafana -p 3030:3030 grafana/grafana:latest
 
       - name: Configure Prometheus
         run: |

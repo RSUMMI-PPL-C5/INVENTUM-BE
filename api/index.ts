@@ -13,7 +13,7 @@ if (PROD) {
   whitelist.push(PROD);
 }
 
-console.log("PROD", PROD)
+console.log("PROD", PROD);
 
 const corsOptions: cors.CorsOptions = {
   origin: function (
