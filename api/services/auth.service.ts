@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 export class AuthService {
     private userRepository: any;
     private tokenService: any;
@@ -8,12 +9,32 @@ export class AuthService {
     }
   
     async validateUser(username: string, password: string): Promise<any> {
-      // TODO
-      return null;
+      const user = await this.userRepository.findByUsername(username);
+      
+      if (!user) {
+        return null;
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if(!isPasswordValid){
+        return null;
+      }
+
+      const { password: _, ...result } = user;
+      return result;
     }
     
     async login(loginDto: any): Promise<any> {
-      // TODO
-      return null;
+      const { username, password } = loginDto;
+      const user = await this.validateUser(username, password);
+
+      if (!user) {
+        throw new Error('Invalid username or password');
+      }
+
+      const token = await this.tokenService.generateToken(user);
+      
+      return { ...user, token };
     }
   }
