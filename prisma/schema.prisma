@@ -12,3 +12,142 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         String  @id @unique
+  email      String  @unique
+  username   String  @unique
+  password   String
+  role       String?
+  fullname   String?
+  nokar      String  @default("")
+  divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
+  divisiId   Int?
+  waNumber   String?
+  createdBy  Int
+  createdOn  DateTime?
+  modifiedBy Int?
+  modifiedOn DateTime @default(now())
+  deletedBy  Int?
+  deletedOn  DateTime?
+  requests   Request[]
+  notifications Notifikasi[]
+  admin      Admin?
+}
+
+model ListDivisi {
+  id       Int     @id @default(autoincrement())
+  divisi   String?
+  parent   ListDivisi? @relation("ParentChild", fields: [parentId], references: [id])
+  parentId Int?
+  children ListDivisi[] @relation("ParentChild")
+  users    User[]
+}
+
+model Admin {
+  id         String @id
+  user       User   @relation(fields: [userId], references: [id])
+  userId     String @unique
+  privileges String?
+}
+
+model MedicalEquipment {
+  id            Int    @id @default(autoincrement())
+  inventorisId  String @unique
+  name          String
+  brandName     String?
+  modelName     String?
+  purchaseDate  DateTime?
+  purchasePrice Int?
+  status        String  @default("Active")
+  vendor        String?
+  createdBy     Int
+  createdOn     DateTime?
+  modifiedBy    Int?
+  modifiedOn    DateTime @default(now())
+  deletedBy     Int?
+  deletedOn     DateTime?
+  relocationHistory RelocationHistory[]
+  spareparts   EquipmentSpareparts[]
+}
+
+model RelocationHistory {
+  id                 Int    @id @default(autoincrement())
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+  medicalEquipmentId Int
+  initLocation       String
+  currentLocation    String
+  requestDate        String
+  shiftReason        String?
+  createdBy          Int
+  createdOn          DateTime?
+  modifiedBy         Int?
+  modifiedOn         DateTime @default(now())
+}
+
+model Spareparts {
+  id         String @id
+  partsName  String
+  purchaseDate DateTime?
+  price      Int?
+  toolLocation String?
+  toolDate   String?
+  createdBy  Int
+  createdOn  DateTime?
+  modifiedBy Int?
+  modifiedOn DateTime @default(now())
+  deletedBy  Int?
+  deletedOn  DateTime?
+  partsManagement PartsManagement[]
+  equipment EquipmentSpareparts[]
+}
+
+model PartsManagement {
+  id                  String @id
+  sparepart           Spareparts @relation(fields: [sparepartId], references: [id])
+  sparepartId         String
+  replacementComponent String
+  replacementDate     DateTime
+  availabilityCost    Int?
+  createdBy          Int
+  createdOn          DateTime?
+  modifiedBy         Int?
+  modifiedOn         DateTime @default(now())
+}
+
+model EquipmentSpareparts {
+  id            Int @id @default(autoincrement())
+  equipment     MedicalEquipment @relation(fields: [equipmentId], references: [id])
+  equipmentId   Int
+  sparepart     Spareparts @relation(fields: [sparepartId], references: [id])
+  sparepartId   String
+  createdBy     Int
+  createdOn     DateTime?
+  @@unique([equipmentId, sparepartId])
+}
+
+model Request {
+  id               String @id
+  user             User   @relation(fields: [userId], references: [id])
+  userId           String
+  medicalEquipment String
+  complaint        String?
+  submissionDate   DateTime
+  status           String  @default("Pending")
+  createdBy        Int
+  createdOn        DateTime?
+  modifiedBy       Int?
+  modifiedOn       DateTime @default(now())
+  notifications    Notifikasi[]
+}
+
+model Notifikasi {
+  id          String @id
+  user        User?  @relation(fields: [userId], references: [id])
+  userId      String?
+  request     Request? @relation(fields: [requestId], references: [id])
+  requestId   String?
+  message     String
+  isRead      Boolean @default(false)
+  createdOn   DateTime @default(now())
+}
