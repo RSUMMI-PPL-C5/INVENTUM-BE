@@ -1,8 +1,6 @@
 import { AuthService } from "../../../services/auth.service";
 import { LoginRequestDTO, LoginResponseDTO } from "../../../models/dto/auth.dto";
 import bcrypt from "bcrypt";
-import exp from "constants";
-
 
 describe ('AuthService', () => {
     let authservice: AuthService;
