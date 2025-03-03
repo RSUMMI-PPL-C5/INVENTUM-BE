@@ -134,6 +134,60 @@ describe("User API Tests", () => {
   });
 });
 
+test("PUT /users/:id - should return 400 if fields have invalid name", async () => {
+  const invalidUser = {
+    fullname: "a", // Invalid name
+    role: "invalidrole",
+    password: "newpassword",
+    divisi_id: "invalidDivisiId",
+    wa_number: "1234567890",
+    ModifiedBy: 1,
+  };
+
+  const response = await request(app)
+    .put("/api/users/1")
+    .send(invalidUser)
+    .expect(400);
+
+  expect(response.body).toEqual({ message: "Invalid data" });
+});
+
+test("PUT /users/:id - should return 400 if fields have invalid role data type", async () => {
+  const invalidUser = {
+    fullname: "Harry Updated",
+    role: "invalidrole", // Invalid data type
+    password: "newpassword",
+    divisi_id: "invalidDivisiId", // Invalid data type
+    wa_number: "1234567890",
+    ModifiedBy: 1,
+  };
+
+  const response = await request(app)
+    .put("/api/users/1")
+    .send(invalidUser)
+    .expect(400);
+
+  expect(response.body).toEqual({ message: "Invalid data" });
+});
+
+test("PUT /users/:id - should return 400 if fields have invalid division data types", async () => {
+  const invalidUser = {
+    fullname: "Harry Updated",
+    role: 1,
+    password: "newpassword",
+    divisi_id: "invalidDivisiId", // Invalid data type
+    wa_number: "1234567890",
+    ModifiedBy: 1,
+  };
+
+  const response = await request(app)
+    .put("/api/users/1")
+    .send(invalidUser)
+    .expect(400);
+
+  expect(response.body).toEqual({ message: "Invalid data" });
+});
+
 afterAll(() => {
   app.close();
 });
