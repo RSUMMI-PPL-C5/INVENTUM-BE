@@ -7,22 +7,26 @@
     "test": "jest --coverage --detectOpenHandles",
     "start": "ts-node --transpile-only api/index.ts",
     "dev": "ts-node-dev api/index.ts",
-    "sonar": "sonar-scanner"
+    "sonar": "sonar-scanner",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.17",
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "@types/supertest": "^6.0.2",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "sonar-scanner": "^3.1.0",
     "supertest": "^7.0.0",
