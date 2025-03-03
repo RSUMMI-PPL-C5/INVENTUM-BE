@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import userRoutes from "./routes/user.route";
 
 require("dotenv").config();
 
@@ -32,6 +33,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors(corsOptions));
+
+app.use('/api', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('PPL C-5 DEPLOYED!!!');

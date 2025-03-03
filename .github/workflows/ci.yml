@@ -3,10 +3,10 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - main
+      - '*'
   pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   sonarqube:
@@ -30,9 +30,9 @@ jobs:
             -Dsonar.projectKey=InventoryManagement-BE \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=api \
-            -Dsonar.tests=api/__tests__ \
-            -Dsonar.test.inclusions=api/__tests__/**/*.test.tsx \
+            -Dsonar.sources=__tests__ \
+            -Dsonar.tests=__tests__ \
+            -Dsonar.test.inclusions=__tests__/**/*.test.tsx \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx
 
