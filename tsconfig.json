@@ -108,6 +108,6 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "api/models/interface/user.interface.tsx", "api/models/interface/token.interface.tsx", "api/models/interface/auth.interface.tsx", "api/models/dto/auth.dto.tsx", "api/services/auth.service.tsx", "api/__tests__/unit/services/auth.service.test.tsx"],
   "exclude": ["node_modules"]
 }
