@@ -1,12 +1,12 @@
 export interface LoginRequestDTO{
-    username: String;
-    password: String;
+    username: string;
+    password: string;
 }
 
 export interface LoginResponseDTO{
-    id: String;
-    username: String;
-    email: String;
-    token: String;
-    role: String | null; //still hazy on how this works
+    id: string;
+    username: string;
+    email: string;
+    token: string;
+    role: string | null; //still hazy on how this works
 }

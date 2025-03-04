@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 export class AuthService {
-    private userRepository: any;
-    private tokenService: any;
+    private readonly userRepository: any;
+    private readonly tokenService: any;
   
     constructor(userRepository: any, tokenService: any) {
       this.userRepository = userRepository;

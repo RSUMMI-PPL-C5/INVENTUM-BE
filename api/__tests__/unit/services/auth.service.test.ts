@@ -1,5 +1,5 @@
 import { AuthService } from "../../../services/auth.service";
-import { LoginRequestDTO, LoginResponseDTO } from "../../../models/dto/auth.dto";
+import { LoginRequestDTO } from "../../../models/dto/auth.dto";
 import bcrypt from "bcrypt";
 
 describe ('AuthService', () => {
@@ -74,7 +74,7 @@ describe ('AuthService', () => {
           // Arrange
           const loginDto: LoginRequestDTO = {
             username: 'testuser',
-            password: 'password123'
+            password: 'password123' 
           };
           
           const mockUser = {
