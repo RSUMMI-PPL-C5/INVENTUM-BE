@@ -8,12 +8,4 @@ module.exports = {
       '**/__tests__/**/*.test.ts',
       '**/__tests__/**/*.test.tsx'
     ],
-    roots: ['<rootDir>/api'],
-    collectCoverage: true,
-    collectCoverageFrom: [
-      'api/**/*.ts',
-      'api/**/*.tsx',
-      '!api/**/*.d.ts',
-      '!api/**/__tests__/**'
-    ],
   };

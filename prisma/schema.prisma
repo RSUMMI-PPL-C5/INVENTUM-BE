@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,57 +8,60 @@ datasource db {
 }
 
 model User {
-  id         String  @id @unique
-  email      String  @unique
-  username   String  @unique
+  id         String      @id @unique
+  email      String      @unique
+  username   String      @unique
   password   String
   role       String?
   fullname   String?
-  nokar      String  @default("")
-  divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
+  nokar      String      @default("")
   divisiId   Int?
   waNumber   String?
   createdBy  Int
   createdOn  DateTime?
   modifiedBy Int?
-  modifiedOn DateTime @default(now())
+  modifiedOn DateTime    @default(now())
   deletedBy  Int?
   deletedOn  DateTime?
   requests   Request[]
+  divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
+
+  @@index([divisiId], map: "User_divisiId_fkey")
 }
 
 model ListDivisi {
-  id       Int     @id @default(autoincrement())
+  id       Int          @id @default(autoincrement())
   divisi   String?
-  parent   ListDivisi? @relation("ParentChild", fields: [parentId], references: [id])
   parentId Int?
+  parent   ListDivisi?  @relation("ParentChild", fields: [parentId], references: [id])
   children ListDivisi[] @relation("ParentChild")
   users    User[]
+
+  @@index([parentId], map: "ListDivisi_parentId_fkey")
 }
 
 model MedicalEquipment {
-  id            Int    @id @default(autoincrement())
-  inventorisId  String @unique
-  name          String
-  brandName     String?
-  modelName     String?
-  purchaseDate  DateTime?
-  purchasePrice Int?
-  status        String  @default("Active")
-  vendor        String?
-  createdBy     Int
-  createdOn     DateTime?
-  modifiedBy    Int?
-  modifiedOn    DateTime @default(now())
-  deletedBy     Int?
-  deletedOn     DateTime?
+  id                Int                   @id @default(autoincrement())
+  inventorisId      String                @unique
+  name              String
+  brandName         String?
+  modelName         String?
+  purchaseDate      DateTime?
+  purchasePrice     Int?
+  status            String                @default("Active")
+  vendor            String?
+  createdBy         Int
+  createdOn         DateTime?
+  modifiedBy        Int?
+  modifiedOn        DateTime              @default(now())
+  deletedBy         Int?
+  deletedOn         DateTime?
+  spareparts        EquipmentSpareparts[]
   relocationHistory RelocationHistory[]
-  spareparts   EquipmentSpareparts[]
 }
 
 model RelocationHistory {
-  id                 Int    @id @default(autoincrement())
-  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+  id                 Int              @id @default(autoincrement())
   medicalEquipmentId Int
   initLocation       String
   currentLocation    String
@@ -73,71 +70,82 @@ model RelocationHistory {
   createdBy          Int
   createdOn          DateTime?
   modifiedBy         Int?
-  modifiedOn         DateTime @default(now())
+  modifiedOn         DateTime         @default(now())
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([medicalEquipmentId], map: "RelocationHistory_medicalEquipmentId_fkey")
 }
 
 model Spareparts {
-  id         String @id
-  partsName  String
-  purchaseDate DateTime?
-  price      Int?
-  toolLocation String?
-  toolDate   String?
-  createdBy  Int
-  createdOn  DateTime?
-  modifiedBy Int?
-  modifiedOn DateTime @default(now())
-  deletedBy  Int?
-  deletedOn  DateTime?
+  id              String                @id
+  partsName       String
+  purchaseDate    DateTime?
+  price           Int?
+  toolLocation    String?
+  toolDate        String?
+  createdBy       Int
+  createdOn       DateTime?
+  modifiedBy      Int?
+  modifiedOn      DateTime              @default(now())
+  deletedBy       Int?
+  deletedOn       DateTime?
+  equipment       EquipmentSpareparts[]
   partsManagement PartsManagement[]
-  equipment EquipmentSpareparts[]
 }
 
 model PartsManagement {
-  id                  String @id
-  sparepart           Spareparts @relation(fields: [sparepartId], references: [id])
-  sparepartId         String
+  id                   String     @id
+  sparepartId          String
   replacementComponent String
-  replacementDate     DateTime
-  availabilityCost    Int?
-  createdBy          Int
-  createdOn          DateTime?
-  modifiedBy         Int?
-  modifiedOn         DateTime @default(now())
+  replacementDate      DateTime
+  availabilityCost     Int?
+  createdBy            Int
+  createdOn            DateTime?
+  modifiedBy           Int?
+  modifiedOn           DateTime   @default(now())
+  sparepart            Spareparts @relation(fields: [sparepartId], references: [id])
+
+  @@index([sparepartId], map: "PartsManagement_sparepartId_fkey")
 }
 
 model EquipmentSpareparts {
-  id            Int @id @default(autoincrement())
-  equipment     MedicalEquipment @relation(fields: [equipmentId], references: [id])
-  equipmentId   Int
-  sparepart     Spareparts @relation(fields: [sparepartId], references: [id])
-  sparepartId   String
-  createdBy     Int
-  createdOn     DateTime?
+  id          Int              @id @default(autoincrement())
+  equipmentId Int
+  sparepartId String
+  createdBy   Int
+  createdOn   DateTime?
+  equipment   MedicalEquipment @relation(fields: [equipmentId], references: [id])
+  sparepart   Spareparts       @relation(fields: [sparepartId], references: [id])
+
   @@unique([equipmentId, sparepartId])
+  @@index([sparepartId], map: "EquipmentSpareparts_sparepartId_fkey")
 }
 
 model Request {
-  id               String @id
-  user             User   @relation(fields: [userId], references: [id])
+  id               String       @id
   userId           String
   medicalEquipment String
   complaint        String?
   submissionDate   DateTime
-  status           String  @default("Pending")
+  status           String       @default("Pending")
   createdBy        Int
   createdOn        DateTime?
   modifiedBy       Int?
-  modifiedOn       DateTime @default(now())
+  modifiedOn       DateTime     @default(now())
   notifications    Notifikasi[]
+  user             User         @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Request_userId_fkey")
 }
 
 model Notifikasi {
-  id          String @id
-  userId      String?
-  request     Request? @relation(fields: [requestId], references: [id])
-  requestId   String?
-  message     String
-  isRead      Boolean @default(false)
-  createdOn   DateTime @default(now())
+  id        String   @id
+  userId    String?
+  requestId String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdOn DateTime @default(now())
+  request   Request? @relation(fields: [requestId], references: [id])
+
+  @@index([requestId], map: "Notifikasi_requestId_fkey")
 }
