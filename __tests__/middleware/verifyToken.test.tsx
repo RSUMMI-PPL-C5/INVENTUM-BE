@@ -22,11 +22,12 @@ describe('verifyToken Middleware', () => {
   });
 
   it('should call next() if token is valid', () => {
+    process.env.JWT_SECRET_KEY = 'testSecretKey';
     (jwt.verify as jest.Mock).mockReturnValue({ id: 'userId' });
 
     verifyToken(req as RequestIncludesUser, res as Response, next);
 
-    expect(jwt.verify).toHaveBeenCalledWith('validToken', expect.any(String));
+    expect(jwt.verify).toHaveBeenCalledWith('validToken', 'testSecretKey');
     expect(req.user).toEqual({ id: 'userId' });
     expect(next).toHaveBeenCalled();
   });
@@ -42,6 +43,7 @@ describe('verifyToken Middleware', () => {
   });
 
   it('should return 400 if token is invalid', () => {
+    process.env.JWT_SECRET_KEY = 'testSecretKey';
     (jwt.verify as jest.Mock).mockImplementation(() => {
       throw new Error('Invalid token');
     });
@@ -51,5 +53,13 @@ describe('verifyToken Middleware', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({ message: 'Invalid token.' });
     expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should throw an error if JWT_SECRET_KEY is not set', () => {
+    delete process.env.JWT_SECRET_KEY;
+
+    expect(() => {
+      verifyToken(req as RequestIncludesUser, res as Response, next);
+    }).toThrow('JWT_SECRET_KEY is not set');
   });
 });

@@ -9,8 +9,12 @@ const verifyToken = (req: RequestIncludesUser, res: Response, next: NextFunction
     return res.status(401).send({ message: 'Access Denied. No token provided.' });
   }
 
+  const secretKey = process.env.JWT_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('JWT_SECRET_KEY is not set');
+  }
+
   try {
-    const secretKey = process.env.JWT_SECRET_KEY ?? 'defaultSecretKey';
     const verified = jwt.verify(token, secretKey);
     req.user = verified;
     next();

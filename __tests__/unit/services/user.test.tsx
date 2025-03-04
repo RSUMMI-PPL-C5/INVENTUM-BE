@@ -1,5 +1,5 @@
 import request from "supertest";
-import app from "../api/index";
+import app from "../../../api/index";
 
 describe("User API Tests", () => {
   test("GET /users - should return all users' details", async () => {
