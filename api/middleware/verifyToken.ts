@@ -14,7 +14,7 @@ const verifyToken = (req: RequestIncludesUser, res: Response, next: NextFunction
     const verified = jwt.verify(token, secretKey);
     req.user = verified;
     next();
-  } catch (err) {
+  } catch {
     res.status(400).send({ message: 'Invalid token.' });
   }
 };
