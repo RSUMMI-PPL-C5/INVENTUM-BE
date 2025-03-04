@@ -31,8 +31,6 @@ model User {
   deletedBy  Int?
   deletedOn  DateTime?
   requests   Request[]
-  notifications Notifikasi[]
-  admin      Admin?
 }
 
 model ListDivisi {
@@ -42,13 +40,6 @@ model ListDivisi {
   parentId Int?
   children ListDivisi[] @relation("ParentChild")
   users    User[]
-}
-
-model Admin {
-  id         String @id
-  user       User   @relation(fields: [userId], references: [id])
-  userId     String @unique
-  privileges String?
 }
 
 model MedicalEquipment {
@@ -143,7 +134,6 @@ model Request {
 
 model Notifikasi {
   id          String @id
-  user        User?  @relation(fields: [userId], references: [id])
   userId      String?
   request     Request? @relation(fields: [requestId], references: [id])
   requestId   String?

@@ -1,10 +1,9 @@
 import cors from "cors";
 import express from "express";
-
-require("dotenv").config();
+import userRoutes from "./routes/user.route";
+import 'dotenv/config';
 
 const app = express();
-
 const whitelist: string[] = [];
 
 const PROD = process.env.PROD_CLIENT_URL;
@@ -12,8 +11,6 @@ const PROD = process.env.PROD_CLIENT_URL;
 if (PROD) {
   whitelist.push(PROD);
 }
-
-console.log("PROD", PROD)
 
 const corsOptions: cors.CorsOptions = {
   origin: function (
@@ -30,12 +27,13 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
-  res.send('PPL C-5 DEPLOYED!!!');
+    res.send('PPL C-5 DEPLOYED!!!');
 });
+
+app.use('/user', userRoutes);
 
 const PORT = 8000;
 
