@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage --detectOpenHandles",
-    "start": "ts-node --transpile-only api/index.ts",
-    "dev": "ts-node-dev api/index.ts",
+    "start": "ts-node --transpile-only src/index.ts",
+    "dev": "ts-node-dev src/index.ts",
     "sonar": "sonar-scanner",
     "prepare": "husky"
   },
@@ -26,6 +26,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.1",
     "@types/supertest": "^6.0.2",
     "husky": "^9.1.7",

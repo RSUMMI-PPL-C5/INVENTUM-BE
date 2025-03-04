@@ -1,11 +1,9 @@
 import cors from "cors";
 import express from "express";
-import prisma from "./configs/db.config";
-
-require("dotenv").config();
+import userRoutes from "./routes/user.route";
+import 'dotenv/config';
 
 const app = express();
-
 const whitelist: string[] = [];
 
 const PROD = process.env.PROD_CLIENT_URL;
@@ -29,22 +27,13 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
-  res.send('PPL C-5 DEPLOYED!!!');
+    res.send('PPL C-5 DEPLOYED!!!');
 });
 
-// Prisma querying example
-app.get('/users', async (req, res) => {
-    try {
-      const users = await prisma.user.findMany();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Something went wrong" });
-    }
-  });
+app.use('/user', userRoutes);
 
 const PORT = 8000;
 
