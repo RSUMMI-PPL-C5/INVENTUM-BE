@@ -4,7 +4,7 @@ import { AddUserDTO } from '../dto/user.dto';
 import { validationResult } from 'express-validator';
 
 class UserController {
-  private userService: UserService;
+  private readonly userService: UserService;
   
   constructor() {
     this.userService = new UserService();

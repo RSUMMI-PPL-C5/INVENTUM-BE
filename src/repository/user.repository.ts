@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid'; 
 
 class UserRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
   
   constructor() {
     this.prisma = new PrismaClient();
@@ -36,7 +36,7 @@ class UserRepository {
       password: hashedPassword,
       role: userData.role,
       fullname: userData.fullname,
-      nokar: userData.nokar || "",
+      nokar: userData.nokar ?? "",
       waNumber: userData.waNumber,
       createdBy: userData.createdBy,
       createdOn: new Date(),

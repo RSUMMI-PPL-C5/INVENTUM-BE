@@ -3,7 +3,7 @@ import { AddUserDTO, AddUserResponseDTO } from "../dto/user.dto";
 import UserRepository from "../repository/user.repository";
 
 class UserService implements IUserService {
-  private userRepository: UserRepository;
+  private readonly userRepository: UserRepository;
 
   constructor() {
     this.userRepository = new UserRepository();
