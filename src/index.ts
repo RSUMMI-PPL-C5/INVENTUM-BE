@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
     res.send('PPL C-5 DEPLOYED!!!');
 });
 
-app.use('/user', userRoutes);
+app.use('/user', userRoutes);  
 
 const PORT = 8000;
 
