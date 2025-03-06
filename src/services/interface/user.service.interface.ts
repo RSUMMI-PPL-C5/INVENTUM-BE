@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
+import { AddUserDTO, AddUserResponseDTO } from "../../dto/user.dto";
 
-export interface IUserService{
-    getUsers(): Promise<User[]>;
+export interface IUserService {
+  addUser(userData: AddUserDTO): Promise<AddUserResponseDTO>;
 }
