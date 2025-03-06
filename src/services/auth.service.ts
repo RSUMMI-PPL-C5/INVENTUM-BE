@@ -1,28 +1,18 @@
 import bcrypt from 'bcrypt';
+import UserRepository from '../repository/user.repository';
+import { User } from '@prisma/client';
+
 export class AuthService {
-    private readonly userRepository: any;
+    private readonly userRepository: UserRepository;
     private readonly tokenService: any;
   
-    constructor(userRepository: any, tokenService: any) {
+    constructor(userRepository: UserRepository, tokenService: any) {
       this.userRepository = userRepository;
       this.tokenService = tokenService;
     }
   
     async validateUser(username: string, password: string): Promise<any> {
-      const user = await this.userRepository.findByUsername(username);
-      
-      if (!user) {
-        return null;
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-
-      if(!isPasswordValid){
-        return null;
-      }
-
-      const { password: _, ...result } = user;
-      return result;
+      return null;
     }
     
     async login(loginDto: any): Promise<any> {

@@ -5,7 +5,9 @@ module.exports = {
       '^.+\\.tsx?$': 'ts-jest',
     },
     testMatch: [
-      '**/__tests__/**/*.test.ts',
-      '**/__tests__/**/*.test.tsx'
+      '**/**tests**/**/*.test.ts',
+      '**/**tests**/**/*.test.tsx',
+      '**/*.test.ts',
+      '**/*.test.tsx'
     ],
   };

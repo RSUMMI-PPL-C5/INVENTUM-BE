@@ -1,5 +1,5 @@
-import { AuthService } from "../src/services/auth.service";
-import { LoginRequestDTO } from "../src/dto/auth.dto";
+import { AuthService } from "../../../src/services/auth.service";
+import { LoginRequestDTO } from "../../../src/dto/auth.dto";
 import bcrypt from "bcrypt";
 
 describe ('AuthService', () => {

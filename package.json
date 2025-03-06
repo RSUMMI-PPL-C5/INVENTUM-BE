@@ -8,7 +8,9 @@
     "start": "ts-node --transpile-only src/index.ts",
     "dev": "ts-node-dev src/index.ts",
     "sonar": "sonar-scanner",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:unit": "jest --coverage --detectOpenHandles unit",
+    "test:integration": "jest --coverage --detectOpenHandles integration"
   },
   "keywords": [],
   "author": "",
