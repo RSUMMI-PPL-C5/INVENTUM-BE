@@ -1,8 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { UserDTO } from "../dto/user.dto";
 import { User } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../configs/db.config";
 
 class UserRepository {
   public async getUsers(): Promise<UserDTO[]> {
