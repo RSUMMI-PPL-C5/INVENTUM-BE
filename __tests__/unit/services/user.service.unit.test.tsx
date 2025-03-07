@@ -1,6 +1,6 @@
 import { IUserService } from "../../../src/services/interface/user.service.interface";
 import UserService from "../../../src/services/user.service";
-import { FilterOptions } from "../../../src/services/user.service";
+import { UserFilterOptions } from "../../../src/services/filters/interface/user.filter.interface";
 
 describe("UserService", () => {
   let userService: IUserService;
@@ -55,7 +55,7 @@ describe("UserService", () => {
     it("should apply role filters", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[0]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         role: ["USER", "ASESOR"],
       };
 
@@ -72,7 +72,7 @@ describe("UserService", () => {
     it("should apply division filters", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[1]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         divisiId: [2, 3],
       };
 
@@ -89,7 +89,7 @@ describe("UserService", () => {
     it("should apply createdOn filters with start and end", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[0]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         createdOnStart: new Date("2022-01-01"),
         createdOnEnd: new Date("2022-01-03"),
       };
@@ -108,7 +108,7 @@ describe("UserService", () => {
     it("should apply createdOn filters with start only", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         createdOnStart: new Date("2022-01-01"),
       };
 
@@ -125,7 +125,7 @@ describe("UserService", () => {
     it("should apply createdOn filters with end only", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[0]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         createdOnEnd: new Date("2022-01-03"),
       };
 
@@ -142,7 +142,7 @@ describe("UserService", () => {
     it("should apply modifiedOn filters with start and end", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[1]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         modifiedOnStart: new Date("2023-01-04"),
         modifiedOnEnd: new Date("2023-01-06"),
       };
@@ -161,7 +161,7 @@ describe("UserService", () => {
     it("should apply modifiedOn filters with start only", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers[1]);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         modifiedOnStart: new Date("2023-01-04"),
       };
 
@@ -178,7 +178,7 @@ describe("UserService", () => {
     it("should apply modifiedOn filters with end only", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         modifiedOnEnd: new Date("2022-01-05"),
       };
 
@@ -195,7 +195,7 @@ describe("UserService", () => {
     it("should apply multiple filters", async () => {
       mockUserRepository.getFilteredUsers.mockResolvedValue(mockUsers);
 
-      const filters: FilterOptions = {
+      const filters: UserFilterOptions = {
         role: ["USER", "ASESOR"],
         divisiId: [1, 2],
         createdOnStart: new Date("2022-01-01"),

@@ -1,7 +1,7 @@
 import { User } from "@prisma/client";
-import { FilterOptions } from "../user.service";
+import { UserFilterOptions } from "../filters/interface/user.filter.interface";
 
 export interface IUserService {
   getUsers(): Promise<User[]>;
-  getFilteredUsers(filters: FilterOptions): Promise<User[]>;
+  getFilteredUsers(filters: UserFilterOptions): Promise<User[]>;
 }
