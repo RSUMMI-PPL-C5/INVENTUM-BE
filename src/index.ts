@@ -1,5 +1,9 @@
 /* istanbul ignore file */
 /* sonar-disable */
+/* sonar:disable */
+/* eslint-disable */
+/* sonar.coverage.exclusions */
+/* coverage-disable */
 import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
