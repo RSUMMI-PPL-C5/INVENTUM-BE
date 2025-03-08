@@ -12,6 +12,8 @@ class UserController {
   
   public addUser = async (req: Request, res: Response): Promise<void> => {
     try {
+
+      console.log('Request body:', req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
@@ -34,6 +36,8 @@ class UserController {
       res.status(201).json(newUser);
     } catch (error: unknown) {
       // Type guard for Error objects
+
+      console.error('Error in addUser controller:', error);
       if (error instanceof Error) {
         if (error.message === 'Email already in use' || error.message === 'Username already in use') {
           res.status(409).json({ error: error.message });

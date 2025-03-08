@@ -4,7 +4,11 @@ import userRoutes from "./routes/user.route";
 import 'dotenv/config';
 
 const app = express();
-const whitelist: string[] = [];
+const whitelist: string[] = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001'
+];
 
 const PROD = process.env.PROD_CLIENT_URL;
 
@@ -12,22 +16,17 @@ if (PROD) {
   whitelist.push(PROD);
 }
 
-const corsOptions: cors.CorsOptions = {
-  origin: function (
-    origin: string | undefined,
-    callback: (error: Error | null, allow?: boolean) => void
-  ) {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-};
+// IMPORTANT: Apply CORS middleware BEFORE other middleware
+app.use(cors({
+  origin: whitelist,  // Simplified origin config
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
+// Apply body parsers AFTER CORS
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
     res.send('PPL C-5 DEPLOYED!!!');
@@ -39,6 +38,7 @@ const PORT = 8000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
+  console.log(`CORS enabled for origins: ${whitelist.join(', ')}`);
 });
 
 export default server;
