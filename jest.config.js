@@ -1,8 +1,12 @@
 module.exports = {
-    preset: 'ts-jest',
-    testEnvironment: 'node',
-    transform: {
-      '^.+\\.tsx?$': 'ts-jest',
-    },
-    testMatch: ['**/__tests__/**/*.test.tsx'],
-  };
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  testMatch: ['**/__tests__/**/*.test.tsx'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/src/index.ts'
+  ]
+};
