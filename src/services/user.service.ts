@@ -14,6 +14,17 @@ class UserService implements IUserService {
   public async getUsers(): Promise<UserDTO[]> {
     return await this.userRepository.getUsers();
   }
+
+  public async getUserById(id: string): Promise<UserDTO> {
+
+    const user = await this.userRepository.getUserById(id);
+
+    if (user === null) {
+      throw new Error(`User with id ${id} not found`);
+    }
+
+    return await user;
+  }
 }
 
 export default UserService;
