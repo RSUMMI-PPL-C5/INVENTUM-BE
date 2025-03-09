@@ -1,10 +1,51 @@
 import { Request, Response } from "express";
-import UserService from "../services/user.service";
-import UserRepository from "../repository/user.repository";
+import { validationResult } from "express-validator";
+import { IUserService } from "../services/interface/user.service.interface";
+import { UserFilterOptions } from "../services/filters/interface/user.filter.interface";
 
-const userService = new UserService(new UserRepository());
+class UserController {
+  private userService: IUserService;
 
-export const getUsersController = async (req: Request, res: Response) => {
-  const users = await userService.getUsers();
-  res.status(200).json(users);
+  constructor(userSevice: IUserService) {
+    this.userService = userSevice;
+  }
+
+  public getUsers = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ error: "Invalid input data" });
+      return;
+    }
+
+    let users;
+    if (hasFilters(req.query)) {
+      const filters: UserFilterOptions = {
+        role: req.query.role as any,
+        divisiId: req.query.divisiId as any,
+        createdOnStart: req.query.createdOnStart as any,
+        createdOnEnd: req.query.createdOnEnd as any,
+        modifiedOnStart: req.query.modifiedOnStart as any,
+        modifiedOnEnd: req.query.modifiedOnEnd as any,
+      };
+      users = await this.userService.getFilteredUsers(filters);
+    } else {
+      users = await this.userService.getUsers();
+    }
+
+    res.status(200).json(users);
+  };
+}
+
+const hasFilters = (query: any): boolean => {
+  const filterKeys: (keyof UserFilterOptions)[] = [
+    "role",
+    "divisiId",
+    "createdOnStart",
+    "createdOnEnd",
+    "modifiedOnStart",
+    "modifiedOnEnd",
+  ];
+  return filterKeys.some((key) => query[key] !== undefined);
 };
+
+export default UserController;
