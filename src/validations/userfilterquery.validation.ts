@@ -18,7 +18,7 @@ export const userFilterQueryValidation = [
     .optional()
     .customSanitizer((value) => {
       if (Array.isArray(value)) return value.map(Number);
-      return Number(value) ? [Number(value)] : undefined;
+      return Number(value) ? [Number(value)] : false;
     })
     .isArray()
     .withMessage("divisiId must be a number or an array of numbers")

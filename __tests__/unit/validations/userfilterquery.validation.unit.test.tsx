@@ -68,7 +68,7 @@ describe("User Filter Query Validation", () => {
     expect(result.isEmpty()).toBe(true);
   });
 
-  it("should be treated as undefined if divisiId value is not a number", async () => {
+  it("should fail if divisiId value is not a number", async () => {
     mockRequest.query = { divisiId: "invalid" };
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(false);
@@ -77,7 +77,7 @@ describe("User Filter Query Validation", () => {
     );
   });
 
-  it("should fail if divisiId contains non-numeric values", async () => {
+  it("should fail if divisiId array contains non-numeric values", async () => {
     mockRequest.query = { divisiId: ["1", "invalid"] };
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(false);
