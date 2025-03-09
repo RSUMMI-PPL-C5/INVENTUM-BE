@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import UserRepository from "../repository/user.repository";
-import { User } from "@prisma/client";
 
 export class AuthService {
   private readonly userRepository: UserRepository;
