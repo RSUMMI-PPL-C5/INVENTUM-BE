@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { UserDTO } from '../../../src/dto/user.dto';
 import bcrypt from 'bcrypt';
 import UserService from '../../../src/services/user.service';
 import UserRepository from '../../../src/repository/user.repository';
@@ -19,7 +19,7 @@ describe('UserService', () => {
 
   describe('getUsers', () => {
     it('should return a list of users', async () => {
-      const mockUsers: User[] = [
+      const mockUsers: UserDTO[] = [
         {
           id: '1',
           email: 'user1@example.com',
@@ -66,7 +66,7 @@ describe('UserService', () => {
 
   describe('getUserById', () => {
     it('should return a user by ID', async () => {
-      const mockUser: User = {
+      const mockUser: UserDTO = {
         id: '1',
         email: 'user1@example.com',
         username: 'user1',
@@ -103,7 +103,7 @@ describe('UserService', () => {
 
   describe('updateUser', () => {
     it('should update a user without password', async () => {
-      const mockUser: User = {
+      const mockUser: UserDTO = {
         id: '1',
         email: 'user1@example.com',
         username: 'user1',
@@ -120,11 +120,11 @@ describe('UserService', () => {
         deletedBy: null,
         deletedOn: null,
       };
-      const updatedData: Partial<User> = {
+      const updatedData: Partial<UserDTO> = {
         fullname: 'Updated User One',
         modifiedBy: 1,
       };
-      const updatedUser: User = {
+      const updatedUser: UserDTO = {
         ...mockUser,
         ...updatedData,
         modifiedOn: new Date(),
@@ -144,7 +144,7 @@ describe('UserService', () => {
     });
 
     it('should update a user with password', async () => {
-      const mockUser: User = {
+      const mockUser: UserDTO = {
         id: '1',
         email: 'user1@example.com',
         username: 'user1',
@@ -161,12 +161,12 @@ describe('UserService', () => {
         deletedBy: null,
         deletedOn: null,
       };
-      const updatedData: Partial<User> = {
+      const updatedData: Partial<UserDTO> = {
         fullname: 'Updated User One',
         password: 'newpassword',
         modifiedBy: 1,
       };
-      const updatedUser: User = {
+      const updatedUser: UserDTO = {
         ...mockUser,
         ...updatedData,
         password: 'hashednewpassword',
@@ -199,7 +199,7 @@ describe('UserService', () => {
     });
 
     it('should return null if data is invalid', async () => {
-      const mockUser: User = {
+      const mockUser: UserDTO = {
         id: '1',
         email: 'user1@example.com',
         username: 'user1',
@@ -228,7 +228,7 @@ describe('UserService', () => {
 
   describe('validateUserData', () => {
     it('should return true for valid data', () => {
-      const validData: Partial<User> = {
+      const validData: Partial<UserDTO> = {
         fullname: 'Valid User',
         role: 'USER',
         divisiId: 1,
@@ -241,7 +241,7 @@ describe('UserService', () => {
     });
 
     it('should return false if modifiedBy is undefined', () => {
-      const invalidData: Partial<User> = {
+      const invalidData: Partial<UserDTO> = {
         fullname: 'Valid User',
         role: 'USER',
         divisiId: 1,
@@ -253,7 +253,7 @@ describe('UserService', () => {
     });
 
     it('should return false if fullname is less than 3 characters', () => {
-      const invalidData: Partial<User> = {
+      const invalidData: Partial<UserDTO> = {
         fullname: 'Up',
         role: 'USER',
         divisiId: 1,
@@ -266,7 +266,7 @@ describe('UserService', () => {
     });
 
     it('should return false if role is not a string', () => {
-      const invalidData: Partial<User> = {
+      const invalidData: Partial<UserDTO> = {
         fullname: 'Valid User',
         role: 123 as any,
         divisiId: 1,
@@ -279,7 +279,7 @@ describe('UserService', () => {
     });
 
     it('should return false if divisiId is not a number', () => {
-      const invalidData: Partial<User> = {
+      const invalidData: Partial<UserDTO> = {
         fullname: 'Valid User',
         role: 'USER',
         divisiId: 'one' as any,
@@ -292,7 +292,7 @@ describe('UserService', () => {
     });
 
     it('should return true if role is undefined', () => {
-      const validData: Partial<User> = {
+      const validData: Partial<UserDTO> = {
         fullname: 'Valid User',
         divisiId: 1,
         modifiedBy: 1,
@@ -304,7 +304,7 @@ describe('UserService', () => {
     });
 
     it('should return true if divisiId is undefined', () => {
-      const validData: Partial<User> = {
+      const validData: Partial<UserDTO> = {
         fullname: 'Valid User',
         role: 'USER',
         modifiedBy: 1,
@@ -318,7 +318,7 @@ describe('UserService', () => {
 
   describe('deleteUser', () => {
     it('should delete a user by id', async () => {
-      const mockUser: User = {
+      const mockUser: UserDTO = {
         id: '1',
         email: 'user1@example.com',
         username: 'user1',

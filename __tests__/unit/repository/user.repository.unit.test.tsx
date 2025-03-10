@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { UserDTO } from "../../../src/dto/user.dto";
 import UserRepository from "../../../src/repository/user.repository";
 
 jest.mock("@prisma/client", () => {
@@ -37,7 +37,7 @@ describe("UserRepository", () => {
   });
 
   it("should return a list of users", async () => {
-    const mockUsers: User[] = [
+    const mockUsers: UserDTO[] = [
       {
         id: "1",
         email: "user1@example.com",
@@ -104,7 +104,7 @@ describe("UserRepository", () => {
   });
 
   it("should return a user by ID when ID is valid", async () => {
-    const mockUser: User = {
+    const mockUser: UserDTO = {
       id: "1",
       email: "user1@example.com",
       username: "user1",
@@ -148,7 +148,7 @@ describe("UserRepository", () => {
   });
 
   it("should return a user by username when username is valid", async () => {
-    const mockUser: User = {
+    const mockUser: UserDTO = {
       id: "1",
       email: "user1@example.com",
       username: "testuser",
@@ -192,7 +192,7 @@ describe("UserRepository", () => {
   });
 
   it("should update a user by ID", async () => {
-    const mockUser: User = {
+    const mockUser: UserDTO = {
       id: "1",
       email: "user1@example.com",
       username: "user1",
@@ -210,11 +210,11 @@ describe("UserRepository", () => {
       deletedOn: null,
     };
 
-    const updatedData: Partial<User> = {
+    const updatedData: Partial<UserDTO> = {
       fullname: "Updated User One",
     };
 
-    const updatedUser: User = {
+    const updatedUser: UserDTO = {
       ...mockUser,
       ...updatedData,
     };
@@ -241,7 +241,7 @@ describe("UserRepository", () => {
   });
 
   it("should delete a user by ID", async () => {
-    const mockUser: User = {
+    const mockUser: UserDTO = {
       id: "1",
       email: "user1@example.com",
       username: "user1",
