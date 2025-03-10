@@ -1,18 +1,16 @@
-import { IUserService } from "./interface/user.service.interface";
-import { UserDTO } from "../dto/user.dto";
-
 import UserRepository from "../repository/user.repository";
+import { User } from "@prisma/client";
 
-class UserService implements IUserService {
-
+class UserService {
   private userRepository: UserRepository;
 
   constructor() {
     this.userRepository = new UserRepository();
   }
 
-  public async getUsers(): Promise<UserDTO[]> {
-    return await this.userRepository.getUsers();
+  public async searchUser(name: string): Promise<User[]> {
+    if (!name) throw new Error("Name query is required");
+    return this.userRepository.findUsersByName(name);
   }
 }
 

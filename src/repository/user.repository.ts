@@ -1,20 +1,14 @@
-import { PrismaClient } from "@prisma/client";
-import { UserDTO } from "../dto/user.dto";
+import prisma from "../configs/db.config";
 import { User } from "@prisma/client";
 
 class UserRepository {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
-  public async getUsers(): Promise<UserDTO[]> {
-    return await this.prisma.user.findMany();
-  }
-
-  public async findByUsername(username: string): Promise<User | null> {
-    return await this.prisma.user.findUnique({
-      where: { username },
+  public async findUsersByName(nameQuery: string): Promise<User[]> {
+    return await prisma.user.findMany({
+      where: {
+        fullname: {
+          contains: nameQuery,
+        },
+      },
     });
   }
 }
