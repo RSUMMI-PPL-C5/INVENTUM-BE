@@ -78,4 +78,34 @@ describe("User Controller", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(jsonMock).toHaveBeenCalledWith([]);
   });
+
+  test("should return 500 if service throws an error", async () => {
+    mockUserService.searchUser.mockRejectedValue(
+      new Error("Database connection failed"),
+    );
+
+    req.query = { name: "Error" };
+
+    const controllerWithMock = searchUser(mockUserService);
+    await controllerWithMock(req as Request, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(jsonMock).toHaveBeenCalledWith({
+      message: "Database connection failed",
+    });
+  });
+
+  test("should return 500 with generic message for unknown errors", async () => {
+    mockUserService.searchUser.mockRejectedValue("Unknown Error");
+
+    req.query = { name: "UnknownError" };
+
+    const controllerWithMock = searchUser(mockUserService);
+    await controllerWithMock(req as Request, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(jsonMock).toHaveBeenCalledWith({
+      message: "An unknown error occurred",
+    });
+  });
 });

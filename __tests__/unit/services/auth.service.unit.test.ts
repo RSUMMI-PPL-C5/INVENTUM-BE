@@ -35,4 +35,15 @@ describe("User Service", () => {
     expect(mockFindUsersByName).toHaveBeenCalledWith("Unknown");
     expect(result).toEqual([]);
   });
+
+  test("should throw an error if name is empty", async () => {
+    const userService = new UserService();
+
+    await expect(userService.searchUser("")).rejects.toThrow(
+      "Name query is required",
+    );
+    await expect(userService.searchUser(undefined as any)).rejects.toThrow(
+      "Name query is required",
+    );
+  });
 });
