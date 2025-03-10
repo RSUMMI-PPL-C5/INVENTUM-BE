@@ -1,6 +1,6 @@
 import { IUserService } from "../../../src/services/interface/user.service.interface";
 import UserService from "../../../src/services/user.service";
-import { UserFilterOptions } from "../../../src/services/filters/interface/user.filter.interface";
+import { UserFilterOptions } from "../../../src/filters/interface/user.filter.interface";
 
 describe("UserService", () => {
   let userService: IUserService;

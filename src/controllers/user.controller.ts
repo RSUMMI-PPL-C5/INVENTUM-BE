@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { IUserService } from "../services/interface/user.service.interface";
-import { UserFilterOptions } from "../services/filters/interface/user.filter.interface";
+import { hasFilters } from "../filters/user.filter";
+import { UserFilterOptions } from "../filters/interface/user.filter.interface";
 
 class UserController {
   private readonly userService: IUserService;
@@ -35,17 +36,5 @@ class UserController {
     res.status(200).json(users);
   };
 }
-
-const hasFilters = (query: any): boolean => {
-  const filterKeys: (keyof UserFilterOptions)[] = [
-    "role",
-    "divisiId",
-    "createdOnStart",
-    "createdOnEnd",
-    "modifiedOnStart",
-    "modifiedOnEnd",
-  ];
-  return filterKeys.some((key) => query[key] !== undefined);
-};
 
 export default UserController;

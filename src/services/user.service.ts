@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { IUserService } from "./interface/user.service.interface";
 import { UserDTO } from "../dto/user.dto";
-import { filterHandlers } from "./filters/user.filter";
-import { UserFilterOptions } from "./filters/interface/user.filter.interface";
+import { filterHandlers } from "../filters/user.filter";
+import { UserFilterOptions } from "../filters/interface/user.filter.interface";
 
 import UserRepository from "../repository/user.repository";
 

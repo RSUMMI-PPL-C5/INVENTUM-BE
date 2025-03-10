@@ -1,6 +1,18 @@
 import { UserFilterOptions } from "./interface/user.filter.interface";
 import { Prisma } from "@prisma/client";
 
+export const hasFilters = (query: any): boolean => {
+  const filterKeys: (keyof UserFilterOptions)[] = [
+    "role",
+    "divisiId",
+    "createdOnStart",
+    "createdOnEnd",
+    "modifiedOnStart",
+    "modifiedOnEnd",
+  ];
+  return filterKeys.some((key) => query[key] !== undefined);
+};
+
 type FilterHandler = (
   filters: UserFilterOptions,
   whereClause: Prisma.UserWhereInput,
