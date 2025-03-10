@@ -7,7 +7,7 @@ import { UserFilterOptions } from "./filters/interface/user.filter.interface";
 import UserRepository from "../repository/user.repository";
 
 class UserService implements IUserService {
-  private userRepository: UserRepository;
+  private readonly userRepository: UserRepository;
 
   constructor(userRepository: UserRepository) {
     this.userRepository = userRepository;

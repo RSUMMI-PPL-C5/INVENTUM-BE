@@ -4,7 +4,7 @@ import { IUserService } from "../services/interface/user.service.interface";
 import { UserFilterOptions } from "../services/filters/interface/user.filter.interface";
 
 class UserController {
-  private userService: IUserService;
+  private readonly userService: IUserService;
 
   constructor(userSevice: IUserService) {
     this.userService = userSevice;

@@ -1,6 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { UserDTO } from "../dto/user.dto";
-import { User } from "@prisma/client";
 import prisma from "../configs/db.config";
 
 class UserRepository {
