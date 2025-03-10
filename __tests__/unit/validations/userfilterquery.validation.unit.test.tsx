@@ -103,6 +103,9 @@ describe("User Filter Query Validation", () => {
     mockRequest.query = { createdOnEnd: "2023-01-01" };
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(true);
+    expect(mockRequest.query.createdOnEnd).toStrictEqual(
+      new Date("2023-01-01T23:59:59.999Z"),
+    );
   });
 
   it("should fail with an invalid ISO date for createdOnEnd", async () => {
@@ -131,6 +134,9 @@ describe("User Filter Query Validation", () => {
     mockRequest.query = { modifiedOnEnd: "2023-01-01" };
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(true);
+    expect(mockRequest.query.modifiedOnEnd).toStrictEqual(
+      new Date("2023-01-01T23:59:59.999Z"),
+    );
   });
 
   it("should fail with an invalid ISO date for modifiedOnEnd", async () => {
