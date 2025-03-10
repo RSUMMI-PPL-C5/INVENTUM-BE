@@ -36,14 +36,40 @@ describe("User Service", () => {
     expect(result).toEqual([]);
   });
 
-  test("should throw an error if name is empty", async () => {
+  test("should throw an error if name is empty string", async () => {
     const userService = new UserService();
 
     await expect(userService.searchUser("")).rejects.toThrow(
       "Name query is required",
     );
+    expect(mockFindUsersByName).not.toHaveBeenCalled();
+  });
+
+  test("should throw an error if name is undefined", async () => {
+    const userService = new UserService();
+
     await expect(userService.searchUser(undefined as any)).rejects.toThrow(
       "Name query is required",
     );
+    expect(mockFindUsersByName).not.toHaveBeenCalled();
+  });
+
+  test("should throw an error if name is null", async () => {
+    const userService = new UserService();
+
+    await expect(userService.searchUser(null as any)).rejects.toThrow(
+      "Name query is required",
+    );
+    expect(mockFindUsersByName).not.toHaveBeenCalled();
+  });
+
+  test("should handle repository errors properly", async () => {
+    const errorMessage = "Database connection failed";
+    mockFindUsersByName.mockRejectedValue(new Error(errorMessage));
+
+    const userService = new UserService();
+
+    await expect(userService.searchUser("Azmy")).rejects.toThrow(errorMessage);
+    expect(mockFindUsersByName).toHaveBeenCalledWith("Azmy");
   });
 });

@@ -2,110 +2,91 @@ import { Request, Response } from "express";
 import { searchUser } from "../../../src/controllers/user.controller";
 import UserService from "../../../src/services/user.service";
 
+jest.mock("../../../src/services/user.service");
+
 describe("User Controller", () => {
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let jsonMock: jest.Mock;
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
   let mockUserService: jest.Mocked<UserService>;
 
   beforeEach(() => {
-    jsonMock = jest.fn();
-    req = {};
-    res = {
-      json: jsonMock,
+    mockUserService = new UserService() as jest.Mocked<UserService>;
+    mockRequest = { query: {} };
+    mockResponse = {
       status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
     };
-
-    mockUserService = {
-      searchUser: jest.fn(),
-    } as any;
   });
 
-  test("should return 200 and user data when found", async () => {
-    const mockUsers = [
-      {
-        id: "1",
-        fullname: "Azmy Arya Rizaldi",
-        email: "azmy@gmail.com",
-        username: "azmy",
-        password: "password123",
-        role: null,
-        nokar: "12345",
-        divisiId: null,
-        waNumber: null,
-        createdBy: 1,
-        createdOn: new Date(),
-        updatedBy: 1,
-        updatedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
-        modifiedBy: null,
-        modifiedOn: new Date(),
-      },
-    ];
-    mockUserService.searchUser.mockResolvedValue(mockUsers);
+  describe("searchUser", () => {
+    it("should return users when a valid name is provided", async () => {
+      const mockUsers = [{ id: 1, name: "John Doe" }];
+      mockRequest.query = { name: "John" };
+      mockUserService.searchUser = jest.fn().mockResolvedValue(mockUsers);
 
-    req.query = { name: "Azmy" };
+      const controller = searchUser(mockUserService);
+      await controller(mockRequest as Request, mockResponse as Response);
 
-    const controllerWithMock = searchUser(mockUserService);
-    await controllerWithMock(req as Request, res as Response);
-
-    expect(mockUserService.searchUser).toHaveBeenCalledWith("Azmy");
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(jsonMock).toHaveBeenCalledWith(mockUsers);
-  });
-
-  test("should return 400 if name query is missing", async () => {
-    req.query = {};
-
-    const controllerWithMock = searchUser(mockUserService);
-    await controllerWithMock(req as Request, res as Response);
-
-    expect(mockUserService.searchUser).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(jsonMock).toHaveBeenCalledWith({ message: "Invalid name query" });
-  });
-
-  test("should return empty array if no users found", async () => {
-    mockUserService.searchUser.mockResolvedValue([]);
-
-    req.query = { name: "Unknown" };
-
-    const controllerWithMock = searchUser(mockUserService);
-    await controllerWithMock(req as Request, res as Response);
-
-    expect(mockUserService.searchUser).toHaveBeenCalledWith("Unknown");
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(jsonMock).toHaveBeenCalledWith([]);
-  });
-
-  test("should return 500 if service throws an error", async () => {
-    mockUserService.searchUser.mockRejectedValue(
-      new Error("Database connection failed"),
-    );
-
-    req.query = { name: "Error" };
-
-    const controllerWithMock = searchUser(mockUserService);
-    await controllerWithMock(req as Request, res as Response);
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(jsonMock).toHaveBeenCalledWith({
-      message: "Database connection failed",
+      expect(mockUserService.searchUser).toHaveBeenCalledWith("John");
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
     });
-  });
 
-  test("should return 500 with generic message for unknown errors", async () => {
-    mockUserService.searchUser.mockRejectedValue("Unknown Error");
+    it("should return 400 when name query is missing", async () => {
+      mockRequest.query = {};
 
-    req.query = { name: "UnknownError" };
+      const controller = searchUser(mockUserService);
+      await controller(mockRequest as Request, mockResponse as Response);
 
-    const controllerWithMock = searchUser(mockUserService);
-    await controllerWithMock(req as Request, res as Response);
+      expect(mockUserService.searchUser).not.toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "Invalid name query",
+      });
+    });
 
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(jsonMock).toHaveBeenCalledWith({
-      message: "An unknown error occurred",
+    it("should return 400 when name query is not a string", async () => {
+      mockRequest.query = { name: ["John", "Doe"] as any };
+
+      const controller = searchUser(mockUserService);
+      await controller(mockRequest as Request, mockResponse as Response);
+
+      expect(mockUserService.searchUser).not.toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "Invalid name query",
+      });
+    });
+
+    it("should return 500 when service throws an Error", async () => {
+      mockRequest.query = { name: "John" };
+      const errorMessage = "Database connection failed";
+      mockUserService.searchUser = jest
+        .fn()
+        .mockRejectedValue(new Error(errorMessage));
+
+      const controller = searchUser(mockUserService);
+      await controller(mockRequest as Request, mockResponse as Response);
+
+      expect(mockUserService.searchUser).toHaveBeenCalledWith("John");
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
+    });
+
+    it("should return 500 with generic message when service throws a non-Error", async () => {
+      mockRequest.query = { name: "John" };
+      mockUserService.searchUser = jest
+        .fn()
+        .mockRejectedValue("Some string error");
+
+      const controller = searchUser(mockUserService);
+      await controller(mockRequest as Request, mockResponse as Response);
+
+      expect(mockUserService.searchUser).toHaveBeenCalledWith("John");
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "An unknown error occurred",
+      });
     });
   });
 });
