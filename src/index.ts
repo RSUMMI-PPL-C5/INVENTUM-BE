@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
+import authRoutes from "./routes/auth.route";
 import 'dotenv/config';
 
 const app = express();
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
     res.send('PPL C-5 DEPLOYED!!!');
 });
 
+app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 
 const PORT = 8000;
