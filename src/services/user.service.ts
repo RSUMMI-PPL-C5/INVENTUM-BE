@@ -9,8 +9,11 @@ class UserService {
   }
 
   public async searchUser(name: string): Promise<User[]> {
-    if (!name) throw new Error("Name query is required");
-    return this.userRepository.findUsersByName(name);
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name query is required");
+    }
+
+    return this.userRepository.findUsersByName(name.trim());
   }
 }
 

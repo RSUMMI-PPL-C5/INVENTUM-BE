@@ -72,4 +72,17 @@ describe("User Service", () => {
     await expect(userService.searchUser("Azmy")).rejects.toThrow(errorMessage);
     expect(mockFindUsersByName).toHaveBeenCalledWith("Azmy");
   });
+
+  test("should trim spaces around the search query", async () => {
+    const mockUsers = [
+      { id: "1", fullname: "Azmy Arya Rizaldi", email: "azmy@gmail.com" },
+    ];
+    mockFindUsersByName.mockResolvedValue(mockUsers);
+
+    const userService = new UserService();
+    const result = await userService.searchUser("   Azmy   ");
+
+    expect(mockFindUsersByName).toHaveBeenCalledWith("Azmy");
+    expect(result).toEqual(mockUsers);
+  });
 });
