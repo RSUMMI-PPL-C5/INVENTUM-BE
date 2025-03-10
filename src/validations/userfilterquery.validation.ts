@@ -35,7 +35,13 @@ export const userFilterQueryValidation = [
     .optional()
     .isISO8601()
     .withMessage("createdOnEnd must be a valid ISO date")
-    .customSanitizer((value) => new Date(value)),
+    .customSanitizer((value) => {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        date.setUTCHours(23, 59, 59, 999);
+      }
+      return date;
+    }),
 
   query("modifiedOnStart")
     .optional()
@@ -47,5 +53,11 @@ export const userFilterQueryValidation = [
     .optional()
     .isISO8601()
     .withMessage("modifiedOnEnd must be a valid ISO date")
-    .customSanitizer((value) => new Date(value)),
+    .customSanitizer((value) => {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        date.setUTCHours(23, 59, 59, 999);
+      }
+      return date;
+    }),
 ];
