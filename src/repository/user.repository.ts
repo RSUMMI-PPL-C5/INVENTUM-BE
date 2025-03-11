@@ -8,6 +8,7 @@ class UserRepository {
   constructor() {
     this.prisma = new PrismaClient();
   }
+  
   public async getUsers(): Promise<UserDTO[]> {
     return await this.prisma.user.findMany();
   }
