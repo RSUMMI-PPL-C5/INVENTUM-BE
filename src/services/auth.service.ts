@@ -1,40 +1,46 @@
-import bcrypt from 'bcrypt';
-export class AuthService {
-    private readonly userRepository: any;
-    private readonly tokenService: any;
-  
-    constructor(userRepository: any, tokenService: any) {
-      this.userRepository = userRepository;
-      this.tokenService = tokenService;
-    }
-  
-    async validateUser(username: string, password: string): Promise<any> {
-      const user = await this.userRepository.findByUsername(username);
-      
-      if (!user) {
-        return null;
-      }
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import UserRepository from "../repository/user.repository";
+import { IAuthService } from "./interface/auth.service.interface";
+import AppError from "../utils/appError";
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+class AuthService implements IAuthService {
+  private userRepository: UserRepository;
 
-      if(!isPasswordValid){
-        return null;
-      }
-
-      const { password: _, ...result } = user;
-      return result;
-    }
-    
-    async login(loginDto: any): Promise<any> {
-      const { username, password } = loginDto;
-      const user = await this.validateUser(username, password);
-
-      if (!user) {
-        throw new Error('Invalid username or password');
-      }
-
-      const token = await this.tokenService.generateToken(user);
-      
-      return { ...user, token };
-    }
+  constructor() {
+    this.userRepository = new UserRepository();
   }
+
+  async validateUser(username: string, password: string): Promise<any> {
+    const user = await this.userRepository.findByUsername(username);
+    
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+      throw new AppError("Invalid username or password", 401);
+    }
+
+    const { password: _, ...result } = user;
+    return result;
+  }
+
+  async login(username: string, password: string): Promise<any> {
+    const user = await this.validateUser(username, password);
+
+    const secretKey = process.env.JWT_SECRET_KEY;
+
+    if (!secretKey) {
+      throw new AppError("JWT_SECRET_KEY is not set", 500);
+    }
+
+    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "1h" });
+
+    return { ...user, token };
+  }
+}
+
+export default AuthService;

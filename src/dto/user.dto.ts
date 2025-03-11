@@ -1,3 +1,7 @@
+import { User } from "@prisma/client";
+
+export interface UserDTO extends User {}
+
 export interface AddUserDTO {
     email: string;
     username: string;
@@ -8,10 +12,10 @@ export interface AddUserDTO {
     divisiId?: number | null;
     waNumber?: string | null;
     createdBy: number;
-  }
+}
   
-  export interface AddUserResponseDTO {
+export interface AddUserResponseDTO {
     id: string;
     email: string;
     username: string;
-  }
+}
