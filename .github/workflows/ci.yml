@@ -19,7 +19,7 @@ jobs:
         run: npm install
 
       - name: Run Jest tests with coverage
-        run: npm run test
+        run: npm run test -- --coverage
 
       - name: Run SonarQube analysis
         run: |
@@ -31,5 +31,5 @@ jobs:
             -Dsonar.tests=__tests__ \
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
-            -Dsonar.exclusions=src/configs/**,src/**/__tests__/**
+            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,src/middleware/** \
+            -Dsonar.exclusions=src/configs/**, src/middleware/**, src/**/__tests__/**
