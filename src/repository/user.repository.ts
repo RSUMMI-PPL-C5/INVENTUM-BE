@@ -1,21 +1,40 @@
 import { PrismaClient } from "@prisma/client";
+import prisma from "../configs/db.config";
 import { UserDTO } from "../dto/user.dto";
-import { User } from "@prisma/client";
 
 class UserRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
-  
+
   public async getUsers(): Promise<UserDTO[]> {
     return await this.prisma.user.findMany();
   }
 
-  public async findByUsername(username: string): Promise<User | null> {
+  public async getUserById(id: string): Promise<UserDTO | null> {
+    return await this.prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  public async findByUsername(username: string): Promise<UserDTO | null> {
     return await this.prisma.user.findUnique({
       where: { username },
+    });
+  }
+
+  public async updateUser(id: string, data: Partial<UserDTO>): Promise<UserDTO | null> {
+    return await this.prisma.user.update({
+      where: { id },
+      data,
+    });
+  }
+
+  public async deleteUser(id: string): Promise<UserDTO | null> {
+    return await this.prisma.user.delete({
+      where: { id },
     });
   }
 }

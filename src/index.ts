@@ -5,6 +5,9 @@ import authRoutes from "./routes/auth.route";
 import 'dotenv/config';
 
 const app = express();
+
+app.disable('x-powered-by');
+
 const whitelist: string[] = [];
 
 const PROD = process.env.PROD_CLIENT_URL;
