@@ -21,7 +21,7 @@ describe("User Controller", () => {
   describe("searchUser", () => {
     it("should return users when a valid name is provided", async () => {
       const mockUsers = [{ id: 1, name: "John Doe" }];
-      mockRequest.query = { name: "John" };
+      mockRequest.query = { search: "John" };
       mockUserService.searchUser = jest.fn().mockResolvedValue(mockUsers);
 
       const controller = searchUser(mockUserService);
@@ -32,7 +32,7 @@ describe("User Controller", () => {
       expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
     });
 
-    it("should return 400 when name query is missing", async () => {
+    it("should return 400 when search query is missing", async () => {
       mockRequest.query = {};
 
       const controller = searchUser(mockUserService);
@@ -41,12 +41,12 @@ describe("User Controller", () => {
       expect(mockUserService.searchUser).not.toHaveBeenCalled();
       expect(mockResponse.status).toHaveBeenCalledWith(400);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        message: "Invalid name query",
+        message: "Invalid search query",
       });
     });
 
-    it("should return 400 when name query is not a string", async () => {
-      mockRequest.query = { name: ["John", "Doe"] as any };
+    it("should return 400 when search query is not a string", async () => {
+      mockRequest.query = { search: ["John", "Doe"] as any };
 
       const controller = searchUser(mockUserService);
       await controller(mockRequest as Request, mockResponse as Response);
@@ -54,12 +54,12 @@ describe("User Controller", () => {
       expect(mockUserService.searchUser).not.toHaveBeenCalled();
       expect(mockResponse.status).toHaveBeenCalledWith(400);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        message: "Invalid name query",
+        message: "Invalid search query",
       });
     });
 
     it("should return 500 when service throws an Error", async () => {
-      mockRequest.query = { name: "John" };
+      mockRequest.query = { search: "John" };
       const errorMessage = "Database connection failed";
       mockUserService.searchUser = jest
         .fn()
@@ -74,7 +74,7 @@ describe("User Controller", () => {
     });
 
     it("should return 500 with generic message when service throws a non-Error", async () => {
-      mockRequest.query = { name: "John" };
+      mockRequest.query = { search: "John" };
       mockUserService.searchUser = jest
         .fn()
         .mockRejectedValue("Some string error");

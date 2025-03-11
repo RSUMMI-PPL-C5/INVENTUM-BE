@@ -8,12 +8,12 @@ export const searchUser =
   (userService: UserService = defaultUserService) =>
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name } = req.query;
-      if (!name || typeof name !== "string") {
-        res.status(400).json({ message: "Invalid name query" });
+      const { search } = req.query;
+      if (!search || typeof search !== "string") {
+        res.status(400).json({ message: "Invalid search query" });
         return;
       }
-      const users = await userService.searchUser(name);
+      const users = await userService.searchUser(search);
       res.status(200).json(users);
     } catch (error: unknown) {
       if (error instanceof Error) {
