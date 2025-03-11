@@ -1,3 +1,4 @@
+import { AddUserDTO, AddUserResponseDTO } from '../dto/user.dto';
 import { User } from "@prisma/client";  
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
@@ -18,6 +19,26 @@ class UserRepository {
     return await this.prisma.user.findUnique({
       where: { id },
     });
+  }
+
+  public async getUserByEmail(email: string): Promise<UserDTO | null> {
+    return await this.prisma.user.findUnique({
+        where: { email }
+      });
+  }
+  
+  public async createUser(userData: any): Promise<AddUserResponseDTO> {
+    
+    const newUser = await this.prisma.user.create({
+      data: userData,
+      select: {
+        id: true,
+        email: true,
+        username: true
+      }
+    });
+    
+    return newUser;
   }
 
   public async findUsersByName(nameQuery: string): Promise<User[]> {
