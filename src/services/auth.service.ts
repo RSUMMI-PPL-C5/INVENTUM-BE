@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
 import UserRepository from "../repository/user.repository";
+import { IAuthService } from "./interface/auth.service.interface";
 
-export class AuthService {
+export class AuthService implements IAuthService {
   private readonly userRepository: UserRepository;
   private readonly tokenService: any;
 

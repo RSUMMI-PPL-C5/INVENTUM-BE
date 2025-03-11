@@ -1,8 +1,9 @@
 import { UserDTO } from '../dto/user.dto';
 import bcrypt from 'bcrypt';
 import UserRepository from "../repository/user.repository";
+import { IUserService } from './interface/user.service.interface';
 
-class UserService {
+class UserService implements IUserService {
   private readonly userRepository: UserRepository;
 
   constructor(userRepository: UserRepository) {
