@@ -1,10 +1,20 @@
 import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
-import "dotenv/config";
+import authRoutes from "./routes/auth.route";
+import 'dotenv/config';
 
 const app = express();
-const whitelist = process.env.PROD_CLIENT_URL?.split(",") || [];
+
+app.disable('x-powered-by');
+
+const whitelist: string[] = [];
+
+const PROD = process.env.PROD_CLIENT_URL;
+
+if (PROD) {
+  whitelist.push(PROD);
+}
 
 const corsOptions: cors.CorsOptions = {
   origin: function (origin, callback) {
@@ -26,7 +36,8 @@ app.get("/", (req, res) => {
   res.send("PPL C-5 DEPLOYED!!!");
 });
 
-app.use("/user", userRoutes);
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
