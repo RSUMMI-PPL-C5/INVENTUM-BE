@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";  
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
 import { UserDTO } from "../dto/user.dto";
@@ -17,6 +18,16 @@ class UserRepository {
     return await this.prisma.user.findUnique({
       where: { id },
     });
+  }
+
+  public async findUsersByName(nameQuery: string): Promise<User[]> {
+    return await prisma.user.findMany({
+      where: {
+        fullname: {
+          contains: nameQuery,
+        },
+      },
+    })
   }
 
   public async findByUsername(username: string): Promise<UserDTO | null> {

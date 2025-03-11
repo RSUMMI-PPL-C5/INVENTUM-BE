@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import { UserDTO } from '../dto/user.dto';
 import bcrypt from 'bcrypt';
 import UserRepository from "../repository/user.repository";
@@ -12,6 +13,14 @@ class UserService implements IUserService {
 
   public async getUsers(): Promise<UserDTO[]> {
     return await this.userRepository.getUsers();
+  }
+
+  public async searchUser(name: string): Promise<User[]> {
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name query is required");
+    }
+
+    return this.userRepository.findUsersByName(name.trim());
   }
 
   public async getUserById(id: string): Promise<UserDTO | null> {
