@@ -12,25 +12,25 @@ class UserController {
 		this.userService = new UserService();
 	}
 
-	public searchUser = async (req: Request, res: Response): Promise<void> => {
-		try {
-			const { search } = req.query;
+	// public searchUser = async (req: Request, res: Response): Promise<void> => {
+	// 	try {
+	// 		const { search } = req.query;
 
-			if (!search || typeof search !== "string") {
-				res.status(400).json({ message: "Invalid search query" });
-				return;
-			}
+	// 		if (!search || typeof search !== "string") {
+	// 			res.status(400).json({ message: "Invalid search query" });
+	// 			return;
+	// 		}
 
-			const users = await this.userService.searchUser(search);
+	// 		const users = await this.userService.searchUser(search);
 
-			res.status(200).json(users);
-		} catch (error: unknown) {
-			res.status(500).json({
-				message:
-					(error as Error).message || "An unknown error occurred",
-			});
-		}
-	};
+	// 		res.status(200).json(users);
+	// 	} catch (error: unknown) {
+	// 		res.status(500).json({
+	// 			message:
+	// 				(error as Error).message || "An unknown error occurred",
+	// 		});
+	// 	}
+	// };
 
 	public addUser = async (req: Request, res: Response): Promise<void> => {
 		try {
@@ -80,7 +80,16 @@ class UserController {
           res.status(400).json({ error: "Invalid input data" });
           return;
         }
-    
+
+        const { search } = req.query;
+
+        if (search && typeof search === "string") {
+
+            const users = await this.userService.searchUser(search);
+            res.status(200).json(users);
+            return;
+        }
+
         let users;
         if (hasFilters(req.query)) {
           const filters: UserFilterOptions = {

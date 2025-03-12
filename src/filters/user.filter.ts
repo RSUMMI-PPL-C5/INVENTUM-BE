@@ -23,8 +23,17 @@ function handleRoleFilter(
   filters: UserFilterOptions,
   whereClause: Prisma.UserWhereInput,
 ): void {
+
   if (filters.role) {
-    whereClause.role = { in: filters.role.map(String) };
+
+    if (Array.isArray(filters.role)) {
+        whereClause.role = { in: filters.role.map(String) };
+
+    } else {
+        const filter : string [] = []
+        filter.push(filters.role)
+        whereClause.role = { in: filter.map(String) };
+    }
   }
 }
 
@@ -32,9 +41,18 @@ function handleDivisionFilter(
   filters: UserFilterOptions,
   whereClause: Prisma.UserWhereInput,
 ): void {
-  if (filters.divisiId) {
-    whereClause.divisiId = { in: filters.divisiId };
-  }
+
+    if (filters.divisiId) {
+
+        if (Array.isArray(filters.divisiId)) {
+            whereClause.divisiId = { in: filters.divisiId.map(Number) };
+    
+        } else {
+            const filter : number [] = []
+            filter.push(filters.divisiId)
+            whereClause.divisiId = { in: filter.map(Number) };
+        }
+      }
 }
 
 function handleCreatedOnFilter(

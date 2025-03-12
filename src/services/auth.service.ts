@@ -38,7 +38,7 @@ class AuthService implements IAuthService {
       throw new AppError("JWT_SECRET_KEY is not set", 500);
     }
 
-    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "7d" });
 
     return { ...user, token };
   }
