@@ -1,120 +1,353 @@
 import UserService from '../src/services/user.service';
 import UserRepository from '../src/repository/user.repository';
-import { AddUserDTO } from '../src/dto/user.dto';
+import { AddUserDTO, UserDTO } from '../src/dto/user.dto';
+import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
+import { User } from '@prisma/client';
 
-// Mock the UserRepository
+// Mock dependencies
 jest.mock('../src/repository/user.repository');
+jest.mock('bcrypt');
+jest.mock('uuid');
 
 describe('UserService', () => {
-  let userService: UserService;
   let mockUserRepository: jest.Mocked<UserRepository>;
-
+  let userService: UserService;
+  
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
     
-    // Setup repository mock
     mockUserRepository = new UserRepository() as jest.Mocked<UserRepository>;
-    (UserRepository as jest.Mock).mockImplementation(() => mockUserRepository);
+    userService = new UserService(mockUserRepository);
     
-    // Create service instance
-    userService = new UserService();
+    (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_password');
+    (uuidv4 as jest.Mock).mockReturnValue('mocked-uuid');
   });
 
-  // Test constructor initialization
-  test('should initialize with UserRepository', () => {
-    // Changed to not check exact count since constructor might be called multiple times
-    expect(UserRepository).toHaveBeenCalled();
+  describe('getUsers', () => {
+    it('should return all users from repository', async () => {
+      const mockUsers: UserDTO[] = [
+        {
+          id: '1',
+          username: 'user1',
+          email: 'user1@example.com',
+          password: 'hashed_password',
+          role: 'USER',
+          fullname: 'User One',
+          nokar: '12345',
+          divisiId: null,
+          waNumber: '1234567890',
+          createdBy: 1,  // Changed from 'admin' to number
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          deletedBy: null,
+          deletedOn: null
+        },
+        {
+          id: '2',
+          username: 'user2',
+          email: 'user2@example.com',
+          password: 'hashed_password',
+          role: 'USER',
+          fullname: 'User Two',
+          nokar: '67890',
+          divisiId: null,
+          waNumber: '0987654321',
+          createdBy: 1,  // Changed from 'admin' to number
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          deletedBy: null,
+          deletedOn: null
+        }
+      ];
+      
+      mockUserRepository.getUsers.mockResolvedValue(mockUsers);
+      
+      const result = await userService.getUsers();
+      
+      expect(result).toEqual(mockUsers);
+      expect(mockUserRepository.getUsers).toHaveBeenCalledTimes(1);
+    });
   });
 
-  // Test addUser method - successful case
-  test('should successfully add a user', async () => {
-    // Setup test data
-    const userData: AddUserDTO = {
-      email: 'test@example.com',
-      username: 'testuser',
-      password: 'password123',
-      role: 'user',
-      fullname: 'Test User',
-      nokar: '123456',
-      divisiId: 1,
-      waNumber: '081234567890',
-      createdBy: 1
-    };
+  describe('addUser', () => {
+    it('should throw error when email already exists', async () => {
+      const userData: AddUserDTO = {
+        email: 'existing@example.com',
+        username: 'newuser',
+        password: 'password',
+        role: 'USER',
+        fullname: 'New User',
+        waNumber: '1234567890',
+        createdBy: 1  // Changed from 'admin' to number
+      };
+      
+      const existingUser: UserDTO = {
+        id: 'existing-id',
+        email: 'existing@example.com',
+        username: 'existinguser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'Existing User',
+        nokar: '12345',
+        divisiId: null,
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: new Date(),
+        deletedBy: null,
+        deletedOn: null
+      };
+      
+      mockUserRepository.getUserByEmail.mockResolvedValue(existingUser);
+      
+      await expect(userService.addUser(userData)).rejects.toThrow('Email already in use');
+      expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith('existing@example.com');
+      expect(mockUserRepository.createUser).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when username already exists', async () => {
+      const userData: AddUserDTO = {
+        email: 'new@example.com',
+        username: 'existinguser',
+        password: 'password',
+        role: 'USER',
+        fullname: 'New User',
+        waNumber: '1234567890',
+        createdBy: 1  // Changed from 'admin' to number
+      };
+      
+      const existingUser: UserDTO = {
+        id: 'existing-id',
+        email: 'existing@example.com',
+        username: 'existinguser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'Existing User',
+        nokar: '12345',
+        divisiId: null,
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: new Date(),
+        deletedBy: null,
+        deletedOn: null
+      };
+      
+      mockUserRepository.getUserByEmail.mockResolvedValue(null);
+      mockUserRepository.findByUsername.mockResolvedValue(existingUser);
+      
+      await expect(userService.addUser(userData)).rejects.toThrow('Username already in use');
+      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith('existinguser');
+      expect(mockUserRepository.createUser).not.toHaveBeenCalled();
+    });
+
+    it('should create user without divisiId successfully', async () => {
+      const userData: AddUserDTO = {
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'password',
+        role: 'USER',
+        fullname: 'New User',
+        waNumber: '1234567890',
+        createdBy: 1  // Changed from 'admin' to number
+      };
+      
+      const expectedCreateData = {
+        id: 'mocked-uuid',
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'New User',
+        nokar: "",
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: expect.any(Date),
+        modifiedOn: expect.any(Date)
+      };
+      
+      const createdUser = {
+        id: 'mocked-uuid',
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'New User',
+        nokar: "",
+        divisiId: null,
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: new Date(),
+        deletedBy: null,
+        deletedOn: null
+      };
+      
+      mockUserRepository.getUserByEmail.mockResolvedValue(null);
+      mockUserRepository.findByUsername.mockResolvedValue(null);
+      mockUserRepository.createUser.mockResolvedValue(createdUser);
+      
+      const result = await userService.addUser(userData);
+      
+      expect(result).toEqual(expect.objectContaining({ id: 'mocked-uuid' }));
+      expect(mockUserRepository.createUser).toHaveBeenCalledWith(expect.objectContaining(expectedCreateData));
+    });
+
+    it('should create user with divisiId successfully', async () => {
+      const userData: AddUserDTO = {
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'password',
+        role: 'USER',
+        fullname: 'New User',
+        waNumber: '1234567890',
+        divisiId: 123,  // Changed to a number to match the type
+        createdBy: 1  // Changed from 'admin' to number
+      };
+      
+      const createdUser = {
+        id: 'mocked-uuid',
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'New User',
+        nokar: "",
+        divisiId: 123,  // Changed to a number to match the type
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: new Date(),
+        deletedBy: null,
+        deletedOn: null
+      };
+      
+      mockUserRepository.getUserByEmail.mockResolvedValue(null);
+      mockUserRepository.findByUsername.mockResolvedValue(null);
+      mockUserRepository.createUser.mockResolvedValue(createdUser);
+      
+      const result = await userService.addUser(userData);
+      
+      expect(result).toEqual(expect.objectContaining({ id: 'mocked-uuid' }));
+      expect(mockUserRepository.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          divisi: {
+            connect: {
+              id: 123  // Changed to match the number type
+            }
+          }
+        })
+      );
+    });
     
-    const expectedResponse = { id: 1, ...userData };
-    
-    // Mock repository methods
-    mockUserRepository.checkEmailExists = jest.fn().mockResolvedValue(false);
-    mockUserRepository.checkUsernameExists = jest.fn().mockResolvedValue(false);
-    mockUserRepository.createUser = jest.fn().mockResolvedValue(expectedResponse);
-    
-    // Call the method
-    const result = await userService.addUser(userData);
-    
-    // Assertions
-    expect(mockUserRepository.checkEmailExists).toHaveBeenCalledWith(userData.email);
-    expect(mockUserRepository.checkUsernameExists).toHaveBeenCalledWith(userData.username);
-    expect(mockUserRepository.createUser).toHaveBeenCalledWith(userData);
-    expect(result).toEqual(expectedResponse);
+    it('should create user with nokar when provided', async () => {
+      const userData: AddUserDTO = {
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'password',
+        role: 'USER',
+        fullname: 'New User',
+        waNumber: '1234567890',
+        nokar: '123456',
+        createdBy: 1  // Changed from 'admin' to number
+      };
+      
+      const createdUser = {
+        id: 'mocked-uuid',
+        email: 'new@example.com',
+        username: 'newuser',
+        password: 'hashed_password',
+        role: 'USER',
+        fullname: 'New User',
+        nokar: '123456',
+        divisiId: null,
+        waNumber: '1234567890',
+        createdBy: 1,  // Changed from 'admin' to number
+        createdOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: new Date(),
+        deletedBy: null,
+        deletedOn: null
+      };
+      
+      mockUserRepository.getUserByEmail.mockResolvedValue(null);
+      mockUserRepository.findByUsername.mockResolvedValue(null);
+      mockUserRepository.createUser.mockResolvedValue(createdUser);
+      
+      const result = await userService.addUser(userData);
+      
+      expect(result).toEqual(expect.objectContaining({ id: 'mocked-uuid', nokar: '123456' }));
+      expect(mockUserRepository.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nokar: '123456'
+        })
+      );
+    });
   });
 
-  // Test addUser method - email already exists
-  test('should throw error when email already exists', async () => {
-    // Setup test data
-    const userData: AddUserDTO = {
-      email: 'existing@example.com',
-      username: 'testuser',
-      password: 'password123',
-      role: 'user',
-      fullname: 'Test User',
-      nokar: '123456',
-      divisiId: 1,
-      waNumber: '081234567890',
-      createdBy: 1
-    };
+  describe('findUsersByName', () => {
+    it('should return users matching the name query', async () => {
+      const nameQuery = 'john';
+      const mockUsers: User[] = [
+        { 
+          id: '1', 
+          username: 'johndoe', 
+          fullname: 'John Doe',
+          email: 'john@example.com',
+          password: 'hashed_password',
+          role: 'USER',
+          nokar: '12345',
+          divisiId: null,
+          waNumber: '1234567890',
+          createdBy: 1,  // Changed from 'admin' to number
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          deletedBy: null,
+          deletedOn: null
+        },
+        { 
+          id: '2', 
+          username: 'johnny', 
+          fullname: 'Johnny Smith',
+          email: 'johnny@example.com',
+          password: 'hashed_password',
+          role: 'USER',
+          nokar: '67890',
+          divisiId: null,
+          waNumber: '0987654321',
+          createdBy: 1,  // Changed from 'admin' to number
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          deletedBy: null,
+          deletedOn: null
+        }
+      ];
+      
+      mockUserRepository.findUsersByName.mockResolvedValue(mockUsers);
+      
+      const result = await userService.findUsersByName(nameQuery);
+      
+      expect(result).toEqual(mockUsers);
+      expect(mockUserRepository.findUsersByName).toHaveBeenCalledWith(nameQuery);
+    });
     
-    // Mock repository methods
-    mockUserRepository.checkEmailExists = jest.fn().mockResolvedValue(true);
-    
-    // Call the method and expect error
-    await expect(userService.addUser(userData))
-      .rejects
-      .toThrow('Email already in use');
-    
-    // Assertions
-    expect(mockUserRepository.checkEmailExists).toHaveBeenCalledWith(userData.email);
-    expect(mockUserRepository.checkUsernameExists).not.toHaveBeenCalled();
-    expect(mockUserRepository.createUser).not.toHaveBeenCalled();
-  });
-
-  // Test addUser method - username already exists
-  test('should throw error when username already exists', async () => {
-    // Setup test data
-    const userData: AddUserDTO = {
-      email: 'test@example.com',
-      username: 'existinguser',
-      password: 'password123',
-      role: 'user',
-      fullname: 'Test User',
-      nokar: '123456',
-      divisiId: 1,
-      waNumber: '081234567890',
-      createdBy: 1
-    };
-    
-    // Mock repository methods
-    mockUserRepository.checkEmailExists = jest.fn().mockResolvedValue(false);
-    mockUserRepository.checkUsernameExists = jest.fn().mockResolvedValue(true);
-    
-    // Call the method and expect error
-    await expect(userService.addUser(userData))
-      .rejects
-      .toThrow('Username already in use');
-    
-    // Assertions
-    expect(mockUserRepository.checkEmailExists).toHaveBeenCalledWith(userData.email);
-    expect(mockUserRepository.checkUsernameExists).toHaveBeenCalledWith(userData.username);
-    expect(mockUserRepository.createUser).not.toHaveBeenCalled();
+    it('should return empty array when no users match the name query', async () => {
+      const nameQuery = 'nonexistent';
+      mockUserRepository.findUsersByName.mockResolvedValue([]);
+      
+      const result = await userService.findUsersByName(nameQuery);
+      
+      expect(result).toEqual([]);
+      expect(mockUserRepository.findUsersByName).toHaveBeenCalledWith(nameQuery);
+    });
   });
 });
