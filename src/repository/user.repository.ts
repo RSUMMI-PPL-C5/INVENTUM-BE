@@ -1,8 +1,8 @@
-import { AddUserDTO, AddUserResponseDTO } from '../dto/user.dto';
+import { UserDTO, AddUserResponseDTO } from '../dto/user.dto';
 import { User } from "@prisma/client";  
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
-import { UserDTO } from "../dto/user.dto";
+
 
 class UserRepository {
   private readonly prisma: PrismaClient;

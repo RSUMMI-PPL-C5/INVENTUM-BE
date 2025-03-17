@@ -1,4 +1,4 @@
-import { AddUserDTO, AddUserResponseDTO, UserDTO } from "../../dto/user.dto";
+import { AddUserDTO, AddUserResponseDTO } from "../../dto/user.dto";
 
 
 export interface IUserService{

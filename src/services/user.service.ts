@@ -1,6 +1,6 @@
-import { AddUserDTO, AddUserResponseDTO } from "../dto/user.dto";
+import { AddUserDTO, AddUserResponseDTO , UserDTO} from "../dto/user.dto";
 import { User } from "@prisma/client";
-import { UserDTO } from '../dto/user.dto';
+
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid'; 
 import UserRepository from "../repository/user.repository";
