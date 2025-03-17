@@ -58,59 +58,10 @@ class UserService implements IUserService {
     return await this.userRepository.createUser(createData);
   }
 
-  public async searchUser(name: string): Promise<User[]> {
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      throw new Error("Name query is required");
-    }
+  
 
-    return this.userRepository.findUsersByName(name.trim());
-  }
-
-  public async getUserById(id: string): Promise<UserDTO | null> {
-    return await this.userRepository.getUserById(id);
-  }
-
-  private validateUserData(data: Partial<UserDTO>): boolean {
-    const { fullname, role, divisiId, modifiedBy } = data;
-    if (modifiedBy === undefined) return false;
-    if (!fullname || fullname.length < 3) return false;
-    if (role !== undefined && typeof role !== 'string') return false;
-    if (divisiId !== undefined && typeof divisiId !== 'number') return false;
-    return true;
-  }
-
-  public async updateUser(id: string, data: Partial<UserDTO>): Promise<UserDTO | null> {
-    const user = await this.userRepository.getUserById(id);
-
-    if (!user) {
-      return null;
-    }
-
-    if (!this.validateUserData(data)) {
-      return null;
-    }
-
-    const { fullname, role, password, divisiId, waNumber, modifiedBy, email } = data;
-
-    const updatedData: Partial<UserDTO> = {
-      fullname,
-      role,
-      divisiId,
-      waNumber,
-      modifiedBy,
-      modifiedOn: new Date(),
-      email
-    };
-
-    if (password !== undefined) {
-      updatedData.password = await bcrypt.hash(password, 10);
-    }
-
-    return await this.userRepository.updateUser(id, updatedData);
-  }
-
-  public async deleteUser(id: string): Promise<UserDTO | null> {
-    return await this.userRepository.deleteUser(id);
+  public async findUsersByName(nameQuery: string): Promise<User[]> {
+    return await this.userRepository.findUsersByName(nameQuery);
   }
 }
 
