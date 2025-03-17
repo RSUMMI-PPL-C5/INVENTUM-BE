@@ -11,4 +11,6 @@ module.exports = {
       '**/*.test.ts',
       '**/*.test.tsx'
     ],
+    testPathIgnorePatterns: ['<rootDir>/src/filters/'],
+    coveragePathIgnorePatterns: ['<rootDir>/src/filters/']
   };

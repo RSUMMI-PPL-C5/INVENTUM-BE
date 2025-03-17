@@ -5,7 +5,7 @@ import { IAuthService } from "./interface/auth.service.interface";
 import AppError from "../utils/appError";
 
 class AuthService implements IAuthService {
-  private userRepository: UserRepository;
+  private readonly userRepository: UserRepository;
 
   constructor() {
     this.userRepository = new UserRepository();

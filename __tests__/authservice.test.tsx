@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { AuthService } from '../src/services/auth.service';
+import AuthService  from '../src/services/auth.service';
 
 // src/services/auth.service.test.ts
 
