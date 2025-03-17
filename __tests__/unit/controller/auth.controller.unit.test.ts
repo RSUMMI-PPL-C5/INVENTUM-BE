@@ -1,58 +1,128 @@
-import request from "supertest"
-import bcrypt from "bcrypt"
-import server from "../../../src"
+import AuthController from "../../../src/controllers/auth.controller";
+import AuthService from "../../../src/services/auth.service";
+import { Request, Response, NextFunction } from "express";
+import AppError from "../../../src/utils/appError";
 
-jest.mock("bcrypt")
-jest.mock("jsonwebtoken")
+jest.mock("bcrypt");
+jest.mock("jsonwebtoken");
+jest.mock("../../../src/services/auth.service");
 
-describe("Auth API Endpoints", () => {
+describe("Auth Controller", () => {
+  let authController: AuthController;
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
+  let nextFunction: NextFunction;
 
-  it("should return 200 and a valid token when login is successful", async () => {
-    const bcrypt = require('bcrypt');
-    const jwt = require('jsonwebtoken');
-    
-    bcrypt.compare.mockResolvedValue(true);
-    jwt.sign.mockReturnValue("mocked_token");
+  beforeEach(() => {
+    authController = new AuthController();
+    mockRequest = {
+      body: {},
+      user: undefined
+    };
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    nextFunction = jest.fn();
+  });
 
-    const response = await request(server)
-      .post("/auth")
-      .send({ username: "testuser", password: "password123" })
+  describe("login", () => {
+    it("should return 400 when username or password is missing", async () => {
+      mockRequest.body = { username: "testuser" };
 
-    expect(response.status).toBe(200)
-    expect(response.body).toHaveProperty("token", "mocked_token")
-    expect(response.body).toMatchObject({
-      id: "123",
-      email: "test@example.com",
-      username: "testuser",
-    })
-  })
+      await authController.login(
+        mockRequest as Request,
+        mockResponse as Response,
+        nextFunction
+      );
 
-  it("should return 401 when password is incorrect", async () => {
-    (bcrypt.compare as jest.Mock).mockResolvedValue(false)
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "Username and password are required"
+      });
+    });
 
-    const response = await request(server)
-      .post("/auth")
-      .send({ username: "testuser", password: "wrongpassword" })
+    it("should return 200 and user data when login is successful", async () => {
+      mockRequest.body = { username: "testuser", password: "password123" };
 
-    expect(response.status).toBe(401)
-    expect(response.body).toHaveProperty("message", "Invalid username or password")
-  })
+      const mockUser = {
+        id: "123",
+        username: "testuser",
+        email: "test@example.com",
+        token: "mocked_token"
+      };
 
-  it("should return 404 when username does not exist", async () => {
-    const response = await request(server)
-      .post("/auth")
-      .send({ username: "unknownuser", password: "password123" })
+      (AuthService.prototype.login as jest.Mock).mockResolvedValue(mockUser);
 
-    expect(response.status).toBe(404)
-    expect(response.body).toHaveProperty("message", "User not found")
-  })
+      await authController.login(
+        mockRequest as Request,
+        mockResponse as Response,
+        nextFunction
+      );
 
-  it("should return 400 when username or password is missing", async () => {
-    const response = await request(server).post("/auth").send({ username: "testuser" })
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockUser);
+    });
 
-    expect(response.status).toBe(400)
-    expect(response.body).toHaveProperty("message", "Username and password are required")
-  })
+    it("should handle errors from AuthService", async () => {
+      mockRequest.body = { username: "testuser", password: "password123" };
 
-})
+      const mockError = new AppError("Test error", 401);
+      (AuthService.prototype.login as jest.Mock).mockRejectedValue(mockError);
 
+      await authController.login(
+        mockRequest as Request,
+        mockResponse as Response,
+        nextFunction
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(401);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 401,
+        message: "Test error"
+      });
+    });
+
+    it("should handle internal server errors", async () => {
+      mockRequest.body = { username: "testuser", password: "password123" };
+
+      const mockError = new Error("Internal Server Error");
+      (AuthService.prototype.login as jest.Mock).mockRejectedValue(mockError);
+
+      await authController.login(
+        mockRequest as Request,
+        mockResponse as Response,
+        nextFunction
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 500,
+        message: "Internal Server Error"
+      });
+    });
+  });
+
+  describe("verifyToken", () => {
+    it("should return 200 and valid token message with user data", () => {
+      mockRequest.user = {
+        id: "123",
+        username: "testuser",
+        email: "test@example.com"
+      };
+
+      authController.verifyToken(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: "Token is valid",
+        user: mockRequest.user
+      });
+    });
+  });
+});
