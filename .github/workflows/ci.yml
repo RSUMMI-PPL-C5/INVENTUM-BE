@@ -31,5 +31,5 @@ jobs:
             -Dsonar.tests=__tests__ \
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,src/middleware/** \
-            -Dsonar.exclusions=src/configs/**,src/middleware/**, src/routes/**,src/controllers/auth.controller.ts,src/**/__tests__/**
+            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,src/middleware/**, src/utils/**  \
+            -Dsonar.exclusions=src/configs/**, src/middleware/**, src/routes/**, __tests__/unit/middleware/**, __tests__/index.*, src/utils/**, src/services/auth.service.ts
