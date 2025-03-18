@@ -32,4 +32,4 @@ jobs:
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,src/middleware/**, src/utils/**  \
-            -Dsonar.exclusions=src/configs/**, src/middleware/**, src/routes/**, __tests__/unit/middleware/**, __tests__/index.*, src/utils/**, src/services/auth.service.ts
+            -Dsonar.exclusions=src/configs/**, src/middleware/**, src/routes/**, __tests__/unit/middleware/**, __tests__/index.*, src/utils/**, __tests__/unit/services/auth.service.ts, src/services/auth.service.ts
