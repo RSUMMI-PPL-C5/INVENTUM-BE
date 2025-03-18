@@ -1,12 +1,8 @@
 import { userFilterQueryValidation } from "../../../src/validations/userfilterquery.validation";
 import { validationResult } from "express-validator";
-import { Request, Response } from "express";
+import { Request } from "express";
 
 const runValidation = async (req: Partial<Request>) => {
-  const res: Partial<Response> = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-  };
 
   for (const validator of userFilterQueryValidation) {
     await validator.run(req as Request);
@@ -52,9 +48,9 @@ describe("User Filter Query Validation", () => {
 
   it("should be treated as undefined if role is empty", async () => {
     mockRequest.query = { role: "" };
-    const result = await runValidation(mockRequest);
+    await runValidation(mockRequest);
     expect(mockRequest.query.role).toBeUndefined();
-  });
+});
 
   it("should pass with a valid divisiId as a number", async () => {
     mockRequest.query = { divisiId: "1" };

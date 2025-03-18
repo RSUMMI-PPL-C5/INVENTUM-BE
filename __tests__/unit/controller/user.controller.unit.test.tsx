@@ -84,25 +84,36 @@ describe('UserController', () => {
         modifiedOn: new Date(),
       },
     ];
+  
+    // Mocking the service method to return mock data
     mockUserService.getUsers.mockResolvedValue(mockUsers);
-
+  
+    // Ensuring mockRequest.query is defined
+    mockRequest.query = {}; // Ensure query is not undefined
+  
     await userController.getUsers(mockRequest as Request, mockResponse as Response);
-
+  
     expect(mockUserService.getUsers).toHaveBeenCalled();
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
   });
-
+  
   test('GET /user - should handle errors', async () => {
     const errorMessage = 'Database error';
+  
+    // Mock the getUsers method to reject with an error
     mockUserService.getUsers.mockRejectedValue(new Error(errorMessage));
-
+  
+    mockRequest.query = {}; // Ensure query is not undefined
+  
     await userController.getUsers(mockRequest as Request, mockResponse as Response);
-
+  
     expect(mockUserService.getUsers).toHaveBeenCalled();
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
   });
+
+  
 
   test('GET /user/:id - should return user details', async () => {
     const mockUser = {

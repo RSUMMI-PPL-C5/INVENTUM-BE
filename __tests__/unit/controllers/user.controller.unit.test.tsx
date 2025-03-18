@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 import UserController from "../../../src/controllers/user.controller";
 import UserService from "../../../src/services/user.service";
 
+// Mocking dependencies
 jest.mock("express-validator", () => ({
   validationResult: jest.fn(),
 }));
@@ -11,11 +12,12 @@ jest.mock("../../../src/services/user.service", () => {
   return jest.fn().mockImplementation(() => ({
     getUsers: jest.fn(),
     getFilteredUsers: jest.fn(),
+    searchUser: jest.fn(), // Mock searchUser method
   }));
 });
 
-const mockUserService = new UserService({} as any) as jest.Mocked<UserService>;
-const userController = new UserController(mockUserService);
+const mockUserService = new UserService() as jest.Mocked<UserService>;
+const userController = new UserController();
 const mockUsers = [
   {
     id: "1",
@@ -73,89 +75,29 @@ describe("User Controller", () => {
     jest.clearAllMocks();
   });
 
-  it("should return 400 if validation fails", async () => {
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce({
-      isEmpty: () => false,
-      array: () => [{ msg: "'divisiId must contain numbers'" }],
-    });
+  it("should call searchUser when search query is provided", async () => {
+    const searchQuery = "user1";
+    mockRequest.query = { search: searchQuery };
 
-    await userController.getUsers(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    // Mock searchUser to return mock data
+    mockUserService.searchUser.mockResolvedValueOnce([mockUsers[0]]);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(responseObject).toEqual({ error: "Invalid input data" });
-  });
+    await userController.getUsers(mockRequest as Request, mockResponse as Response);
 
-  it("should call getUsers when no filters are present", async () => {
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce({
-      isEmpty: () => true,
-    });
-    mockRequest.query = {};
-    mockUserService.getUsers.mockResolvedValueOnce(mockUsers);
+    // Verify that searchUser was called with correct query
+    expect(mockUserService.searchUser).toHaveBeenCalledWith(searchQuery);
 
-    await userController.getUsers(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockUserService.getUsers).toHaveBeenCalledTimes(1);
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(responseObject).toEqual(mockUsers);
-  });
-
-  it("should call getFilteredUsers with correct filters when filters are present", async () => {
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce({
-      isEmpty: () => true,
-    });
-    mockRequest.query = {
-      role: ["User"],
-      divisiId: [1] as any,
-      createdOnStart: new Date("2022-01-01") as any,
-      createdOnEnd: new Date("2022-01-03") as any,
-      modifiedOnStart: new Date("2022-01-03") as any,
-      modifiedOnEnd: new Date("2022-01-05") as any,
-    };
-    mockUserService.getFilteredUsers.mockResolvedValueOnce([mockUsers[0]]);
-
-    await userController.getUsers(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockUserService.getFilteredUsers).toHaveBeenCalledWith({
-      role: ["User"],
-      divisiId: [1],
-      createdOnStart: new Date("2022-01-01"),
-      createdOnEnd: new Date("2022-01-03"),
-      modifiedOnStart: new Date("2022-01-03"),
-      modifiedOnEnd: new Date("2022-01-05"),
-    });
+    // Verify the response
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(responseObject).toEqual([mockUsers[0]]);
   });
 
-  it("should be able to take multiple role and division values", async () => {
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce({
-      isEmpty: () => true,
-    });
-    mockRequest.query = {
-      role: ["User", "Admin"],
-      divisiId: [1, 2] as any,
-    };
-    mockUserService.getFilteredUsers.mockResolvedValueOnce(mockUsers);
+  it("should return 400 if search query is invalid", async () => {
+    mockRequest.query = { search: "12345" }; // Invalid search query
 
-    await userController.getUsers(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    await userController.getUsers(mockRequest as Request, mockResponse as Response);
 
-    expect(mockUserService.getFilteredUsers).toHaveBeenCalledWith({
-      role: ["User", "Admin"],
-      divisiId: [1, 2],
-    });
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(responseObject).toEqual(mockUsers);
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+    expect(responseObject).toEqual({ error: "Invalid input data" });
   });
 });
