@@ -1,39 +1,48 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import UserRepository from "../repository/user.repository";
 import { IAuthService } from "./interface/auth.service.interface";
+import AppError from "../utils/appError";
 
-export class AuthService implements IAuthService {
+class AuthService implements IAuthService {
   private readonly userRepository: UserRepository;
-  private readonly tokenService: any;
 
-  constructor(userRepository: UserRepository, tokenService: any) {
-    this.userRepository = userRepository;
-    this.tokenService = tokenService;
+  constructor() {
+    this.userRepository = new UserRepository();
   }
 
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.userRepository.findByUsername(username);
+
     if (!user) {
-      return null;
+      throw new AppError("User not found", 404);
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
-      return null;
+      throw new AppError("Invalid username or password", 401);
     }
+
     const { password: _, ...result } = user;
     return result;
   }
 
-  async login(loginDto: any): Promise<any> {
-    const { username, password } = loginDto;
+  async login(username: string, password: string): Promise<any> {
     const user = await this.validateUser(username, password);
 
-    if (!user) {
-      throw new Error("Invalid username or password");
+    const secretKey = process.env.JWT_SECRET_KEY;
+
+    if (!secretKey) {
+      throw new AppError("JWT_SECRET_KEY is not set", 500);
     }
 
-    const token = await this.tokenService.generateToken(user);
+    const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, {
+      expiresIn: "7d",
+    });
 
     return { ...user, token };
   }
 }
+
+export default AuthService;

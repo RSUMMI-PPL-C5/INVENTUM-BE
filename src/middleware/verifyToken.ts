@@ -1,21 +1,34 @@
-import { Request,Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+declare module "express" {
+  interface Request {
+    user?: JwtPayload | string;
+  }
+}
+
+const verifyToken = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    const token = req.header('Authorization')?.split(' ')[1];
+    const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) {
-        return res.status(401).send({ message: 'Access Denied. No token provided.' });
+      res.status(401).json({ message: "Access Denied. No token provided." });
+      return;
     }
 
     const secretKey = process.env.JWT_SECRET_KEY;
+
     if (!secretKey) {
-        throw new Error('JWT_SECRET_KEY is not set');
+      res.status(500).json({ message: "JWT_SECRET_KEY is not set" });
+      return;
     }
 
+    const decoded = jwt.verify(token, secretKey) as JwtPayload;
+    req.user = decoded;
     next();
-  } catch {
-    res.status(400).send({ message: 'Invalid token.' });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Invalid token." });
   }
 };
 
