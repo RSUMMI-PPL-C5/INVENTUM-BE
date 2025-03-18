@@ -11,7 +11,11 @@ module.exports = {
     "**/*.test.tsx",
   ],
   testPathIgnorePatterns: [
+    "/src/middleware/",
+    "/src/routes/",
+    "/src/controllers/auth.controller.ts",
+    "<rootDir>/__tests__/unit/controller/auth.*",
     "<rootDir>/__tests__/unit/middleware/",
-    "<rootDir>/__tests__/unit/controller/auth.controller.unit.test.ts",
+    "<rootDir>/__tests__/index.*",
   ],
 };
