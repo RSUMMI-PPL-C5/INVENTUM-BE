@@ -1,132 +1,101 @@
-import { AuthService } from "../../../src/services/auth.service";
-import { LoginRequestDTO } from "../../../src/dto/auth.dto";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import AuthService from "../../../src/services/auth.service";
+import UserRepository from "../../../src/repository/user.repository";
 
-describe ('AuthService', () => {
-    let authService: AuthService;
-    let mockUserRepository: any;
-    let mockTokenService: any;
+jest.mock("../../../src/repository/user.repository");
+jest.mock("bcrypt");
+jest.mock("jsonwebtoken");
 
-    beforeEach(() => {
-        mockUserRepository = {
-            findByUsername: jest.fn(),
-        };
-        
-        mockTokenService = {
-            generateToken: jest.fn(),
-        };
+describe("AuthService", () => {
+  let authService: AuthService;
+  let userRepositoryMock: jest.Mocked<UserRepository>;
 
-        authService = new AuthService(mockUserRepository, mockTokenService);
+  beforeEach(() => {
+    userRepositoryMock = new UserRepository() as jest.Mocked<UserRepository>;
+    authService = new AuthService();
+    (authService as any).userRepository = userRepositoryMock;
+  });
+
+  it("should validate user and return user data", async () => {
+    userRepositoryMock.findByUsername.mockResolvedValue({
+      id: "123",
+      username: "testuser",
+      password: "hashedpassword",
+    } as any);
+
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+    const user = await authService.validateUser("testuser", "password123");
+
+    expect(user).toEqual({ id: "123", username: "testuser" });
+    expect(userRepositoryMock.findByUsername).toHaveBeenCalledWith("testuser");
+  });
+
+  it("should throw an error when user is not found", async () => {
+    userRepositoryMock.findByUsername.mockResolvedValue(null);
+
+    await expect(
+      authService.validateUser("nonexistent", "password123"),
+    ).rejects.toThrow("User not found");
+  });
+
+  it("should throw an error when password is incorrect", async () => {
+    userRepositoryMock.findByUsername.mockResolvedValue({
+      id: "123",
+      username: "testuser",
+      password: "hashedpassword",
+    } as any);
+
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+    await expect(
+      authService.validateUser("testuser", "wrongpassword"),
+    ).rejects.toThrow("Invalid username or password");
+  });
+
+  it("should return a token when login is successful", async () => {
+    process.env.JWT_SECRET_KEY = "secret";
+
+    userRepositoryMock.findByUsername.mockResolvedValue({
+      id: "123",
+      username: "testuser",
+      password: "hashedpassword",
+    } as any);
+
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (jwt.sign as jest.Mock).mockReturnValue("mocked_token");
+
+    const result = await authService.login("testuser", "password123");
+
+    expect(result).toEqual({
+      id: "123",
+      username: "testuser",
+      token: "mocked_token",
     });
+  });
 
-    describe('ValidateUser', () => {
-        it('should return user object if user is found/valid (password should be encrypted)', async () => {
-            const mockUser = {
-                id: '1',
-                username: 'testuser',
-                email: 'test@example.com',
-                password: await bcrypt.hash('password', 10),
-                role: 'user',
-            };
+  it("should throw an error when user does not exist during login", async () => {
+    userRepositoryMock.findByUsername.mockResolvedValue(null);
 
-            mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+    await expect(authService.login("wronguser", "password123")).rejects.toThrow(
+      "User not found",
+    );
+  });
 
-            const { password, ...expectedResult } = mockUser;
+  it("should throw an error when JWT_SECRET_KEY is missing", async () => {
+    delete process.env.JWT_SECRET_KEY;
 
-            //action
-            const result = await authService.validateUser('testuser', 'password');
+    userRepositoryMock.findByUsername.mockResolvedValue({
+      id: "123",
+      username: "testuser",
+      password: "hashedpassword",
+    } as any);
 
-            //and assertion
-            expect(mockUserRepository.findByUsername).toHaveBeenCalledWith('testuser');
-            expect(result).toEqual(expectedResult);
-            expect(result.password).toBeUndefined();
-        });
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-        it('should return null if user is not found', async () => {
-            mockUserRepository.findByUsername.mockResolvedValue(null);
-
-            const result = await authService.validateUser('notestuser', 'password');
-
-            expect(mockUserRepository.findByUsername).toHaveBeenCalledWith('notestuser');
-            expect(result).toBeNull();
-        });
-
-        it('should return null if password is incorrect', async () => {
-            const mockUser = {
-                id: '1',
-                username: 'testuser',
-                email: 'test@example.com',
-                password: await bcrypt.hash('password123', 10),
-                role: 'user'
-            };
-
-            mockUserRepository.findByUsername.mockResolvedValue(mockUser);
-
-            const result = await authService.validateUser('testuser', 'password');
-
-            expect(mockUserRepository.findByUsername).toHaveBeenCalledWith('testuser');
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('login', () => {
-        it('should return login response with token if credentials are valid', async () => {
-          // Arrange
-          const loginDto: LoginRequestDTO = {
-            username: 'testuser',
-            password: 'password123' 
-          };
-          
-          const mockUser = {
-            id: '1',
-            username: 'testuser',
-            email: 'test@example.com',
-            role: 'user'
-          };
-          
-          const mockToken = 'jwt-token-here';
-          
-          jest.spyOn(authService, 'validateUser').mockResolvedValue(mockUser);
-          mockTokenService.generateToken.mockReturnValue(mockToken);
-          
-          // Act
-          const result = await authService.login(loginDto);
-          
-          // Assert
-          expect(authService.validateUser).toHaveBeenCalledWith('testuser', 'password123');
-          expect(mockTokenService.generateToken).toHaveBeenCalledWith(mockUser);
-          
-          expect(result).toEqual({
-            id: '1',
-            username: 'testuser',
-            email: 'test@example.com',
-            token: mockToken,
-            role: 'user'
-          });
-        });
-    
-        it('should throw an error if credentials are invalid', async () => {
-          // Arrange
-          const loginDto: LoginRequestDTO = {
-            username: 'testuser',
-            password: 'wrongpassword'
-          };
-          
-          jest.spyOn(authService, 'validateUser').mockResolvedValue(null);
-          
-          // Act & Assert
-          await expect(authService.login(loginDto)).rejects.toThrow('Invalid username or password');
-        });
-      });
-    
-      // Additional test to ensure constructor is covered
-      describe('constructor', () => {
-        it('should set userRepository and tokenService properties', () => {
-          const authServiceAny = authService as any;
-          
-          // Assert
-          expect(authServiceAny.userRepository).toBe(mockUserRepository);
-          expect(authServiceAny.tokenService).toBe(mockTokenService);
-        });
-      });
+    await expect(authService.login("testuser", "password123")).rejects.toThrow(
+      "JWT_SECRET_KEY is not set",
+    );
+  });
 });
