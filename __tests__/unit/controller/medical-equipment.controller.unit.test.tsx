@@ -2,7 +2,7 @@ import request from "supertest";
 import express, { Application } from "express";
 import MedicalEquipmentController from "../../../src/controllers/medical-equipment.controller";
 
-const app = express();
+const app: Application = express();
 app.use(express.json());
 
 const mockService = {
@@ -17,21 +17,23 @@ app.post("/medical-equipment", controller.addMedicalEquipment);
 
 describe("MedicalEquipmentController - Add Medical Equipment", () => {
 
-    // ✅ Positive Test: Berhasil menambahkan alat medis
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     test("should add new medical equipment successfully", async () => {
         const mockRequestData = {
-            name: "MRI Scanner",
-            brand: "Philips",
-            model: "M200",
+            name: "X-Ray Machine",
+            brand: "Siemens",
+            model: "XR-2000",
             department: "Radiology",
-            purchaseDate: "2024-01-01",
-            vendor: "Philips Healthcare",
-            price: 100000,
+            purchaseDate: "2025-03-20T04:28:09.000Z",
+            vendor: "Siemens Healthcare",
+            price: 50000,
             createdBy: "admin123",
         };
 
-        const mockResponseData = { id: "1", ...mockRequestData };
-
+        const mockResponseData = { id: 1, ...mockRequestData };
         mockService.addMedicalEquipment.mockResolvedValue(mockResponseData);
 
         const response = await request(app)
@@ -43,15 +45,14 @@ describe("MedicalEquipmentController - Add Medical Equipment", () => {
         expect(mockService.addMedicalEquipment).toHaveBeenCalledWith(expect.objectContaining(mockRequestData));
     });
 
-    // ❌ Negative Test: Menambahkan alat medis dengan request yang tidak valid (tanpa nama)
     test("should return 400 error for missing required fields", async () => {
         const invalidRequestData = {
-            brand: "Philips",
-            model: "M200",
+            brand: "Siemens",
+            model: "XR-2000",
             department: "Radiology",
-            purchaseDate: "2024-01-01",
-            vendor: "Philips Healthcare",
-            price: 100000,
+            purchaseDate: "2025-03-20T04:28:09.000Z",
+            vendor: "Siemens Healthcare",
+            price: 50000,
             createdBy: "admin123",
         };
 
@@ -63,16 +64,15 @@ describe("MedicalEquipmentController - Add Medical Equipment", () => {
         expect(response.body).toHaveProperty("errors");
     });
 
-    // ⚠️ Corner Case: Harga negatif harus gagal
     test("should return 400 error for negative price", async () => {
         const invalidRequestData = {
-            name: "MRI Scanner",
-            brand: "Philips",
-            model: "M200",
+            name: "X-Ray Machine",
+            brand: "Siemens",
+            model: "XR-2000",
             department: "Radiology",
-            purchaseDate: "2024-01-01",
-            vendor: "Philips Healthcare",
-            price: -5000, // Harga negatif
+            purchaseDate: "2025-03-20T04:28:09.000Z",
+            vendor: "Siemens Healthcare",
+            price: -5000,
             createdBy: "admin123",
         };
 
