@@ -12,26 +12,6 @@ class UserController {
 		this.userService = new UserService();
 	}
 
-	// public searchUser = async (req: Request, res: Response): Promise<void> => {
-	// 	try {
-	// 		const { search } = req.query;
-
-	// 		if (!search || typeof search !== "string") {
-	// 			res.status(400).json({ message: "Invalid search query" });
-	// 			return;
-	// 		}
-
-	// 		const users = await this.userService.searchUser(search);
-
-	// 		res.status(200).json(users);
-	// 	} catch (error: unknown) {
-	// 		res.status(500).json({
-	// 			message:
-	// 				(error as Error).message || "An unknown error occurred",
-	// 		});
-	// 	}
-	// };
-
 	public addUser = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const errors = validationResult(req);
@@ -74,39 +54,42 @@ class UserController {
 		}
 	};
 
-    public getUsers = async (req: Request, res: Response) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          res.status(400).json({ error: "Invalid input data" });
-          return;
-        }
-
-        const { search } = req.query;
-
-        if (search && typeof search === "string") {
-
-            const users = await this.userService.searchUser(search);
-            res.status(200).json(users);
-            return;
-        }
-
-        let users;
-        if (hasFilters(req.query)) {
-          const filters: UserFilterOptions = {
-            role: req.query.role as any,
-            divisiId: req.query.divisiId as any,
-            createdOnStart: req.query.createdOnStart as any,
-            createdOnEnd: req.query.createdOnEnd as any,
-            modifiedOnStart: req.query.modifiedOnStart as any,
-            modifiedOnEnd: req.query.modifiedOnEnd as any,
-          };
-          users = await this.userService.getFilteredUsers(filters);
-        } else {
-          users = await this.userService.getUsers();
-        }
-    
-        res.status(200).json(users);
-      };
+    public getUsers = async (req: Request, res: Response): Promise<void> => {
+		try {
+			const errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				res.status(400).json({ error: "Invalid input data" });
+				return;
+			}
+	
+			const { search } = req.query;
+	
+			if (search && typeof search === "string") {
+				const users = await this.userService.searchUser(search);
+				res.status(200).json(users);
+				return;
+			}
+	
+			let users;
+			if (hasFilters(req.query)) {
+				const filters: UserFilterOptions = {
+					role: req.query.role as any,
+					divisiId: req.query.divisiId as any,
+					createdOnStart: req.query.createdOnStart as any,
+					createdOnEnd: req.query.createdOnEnd as any,
+					modifiedOnStart: req.query.modifiedOnStart as any,
+					modifiedOnEnd: req.query.modifiedOnEnd as any,
+				};
+				users = await this.userService.getFilteredUsers(filters);
+			} else {
+				users = await this.userService.getUsers();
+			}
+	
+			res.status(200).json(users);
+		} catch (error) {
+			res.status(500).json({ message: (error as Error).message });
+		}
+	};
 
 	public getUserById = async (req: Request, res: Response): Promise<void> => {
 		try {

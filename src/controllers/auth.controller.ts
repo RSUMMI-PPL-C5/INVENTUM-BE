@@ -26,19 +26,30 @@ class AuthController {
 			const user = await this.authService.login(username, password);
 			res.status(200).json(user);
 		} catch (error) {
-			const statusCode = (error as AppError).statusCode || 500;
-			const message =
-				(error as AppError).message || "Internal Server Error";
-
-			res.status(statusCode).json({
+			// Check if the error is an instance of AppError
+			if (error instanceof AppError) {
+				// Handle the custom AppError
+				res.status(error.statusCode).json({
 				status: "error",
-				statusCode,
-				message,
-			});
+				statusCode: error.statusCode,
+				message: error.message,
+				});
+			} else {
+				// Handle general errors (fallback)
+				res.status(500).json({
+				status: "error",
+				statusCode: 500,
+				message: "Internal Server Error",
+				});
+			}
 		}
 	};
 
 	public verifyToken = (req: Request, res: Response): void => {
+		if (!req.user) {
+			res.status(401).json({ message: "Token is invalid or missing" });
+			return;
+		}
 		res.status(200).json({ message: "Token is valid", user: req.user });
 	};
 }

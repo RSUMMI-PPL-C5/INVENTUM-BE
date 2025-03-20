@@ -1,39 +1,51 @@
-import { UserDTO } from "../../../src/dto/user.dto";
-import UserRepository from "../../../src/repository/user.repository";
+import UserRepository from "../../../../src/repository/user.repository";
+import { UserDTO } from "../../../../src/dto/user.dto";
 
+// Mock Prisma Client
 jest.mock("@prisma/client", () => {
   const mockFindMany = jest.fn();
   const mockFindUnique = jest.fn();
-  const mockUpdate = jest.fn();
-  const mockDelete = jest.fn();
 
   return {
     PrismaClient: jest.fn().mockImplementation(() => ({
       user: {
         findMany: mockFindMany,
         findUnique: mockFindUnique,
-        update: mockUpdate,
-        delete: mockDelete,
       },
     })),
     __mockPrisma: {
       findMany: mockFindMany,
       findUnique: mockFindUnique,
-      update: mockUpdate,
-      delete: mockDelete,
     },
   };
 });
 
-// Get access to the mocked functions
+// Get access to the mocked Prisma functions
 const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
-describe("UserRepository", () => {
+describe("User Repository - GET", () => {
   let userRepository: UserRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();
     userRepository = new UserRepository();
+  });
+
+  test("should find user by name", async () => {
+    const mockUser = [
+      { id: "1", fullname: "Azmy Arya Rizaldi", email: "azmy@gmail.com" },
+    ];
+    (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUser);
+
+    const result = await userRepository.findUsersByName("Azmy");
+    expect(result).toEqual(mockUser);
+  });
+
+  test("should return an empty array if user is not found by name", async () => {
+    (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await userRepository.findUsersByName("John Doe");
+    expect(result).toEqual([]);
   });
 
   it("should return a list of users", async () => {
@@ -73,11 +85,10 @@ describe("UserRepository", () => {
         deletedOn: null,
       },
     ];
-    mockPrisma.findMany.mockResolvedValue(mockUsers);
+    (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
     const result = await userRepository.getUsers();
 
-    // Assertions
     expect(mockPrisma.findMany).toHaveBeenCalled();
     expect(result).toEqual(mockUsers);
     expect(result.length).toBe(mockUsers.length);
@@ -85,11 +96,10 @@ describe("UserRepository", () => {
   });
 
   it("should return an empty list if no users found", async () => {
-    mockPrisma.findMany.mockResolvedValue([]);
+    (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
 
     const result = await userRepository.getUsers();
 
-    // Assertions
     expect(mockPrisma.findMany).toHaveBeenCalled();
     expect(result).toEqual([]);
     expect(result.length).toBe(0);
@@ -97,7 +107,7 @@ describe("UserRepository", () => {
 
   it("should throw an error if the database query fails", async () => {
     const errorMessage = "Database connection error";
-    mockPrisma.findMany.mockRejectedValue(new Error(errorMessage));
+    (mockPrisma.findMany as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
     await expect(userRepository.getUsers()).rejects.toThrow(errorMessage);
     expect(mockPrisma.findMany).toHaveBeenCalledTimes(1);
@@ -122,7 +132,7 @@ describe("UserRepository", () => {
       deletedOn: null,
     };
 
-    mockPrisma.findUnique.mockResolvedValue(mockUser);
+    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
     const result = await userRepository.getUserById("1");
 
@@ -135,7 +145,7 @@ describe("UserRepository", () => {
   });
 
   it("should return null if no user found by ID", async () => {
-    mockPrisma.findUnique.mockResolvedValue(null);
+    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await userRepository.getUserById("1");
 
@@ -166,7 +176,7 @@ describe("UserRepository", () => {
       deletedOn: null,
     };
 
-    mockPrisma.findUnique.mockResolvedValue(mockUser);
+    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
     const result = await userRepository.findByUsername("testuser");
 
@@ -179,7 +189,7 @@ describe("UserRepository", () => {
   });
 
   it("should return null if no user found by username", async () => {
-    mockPrisma.findUnique.mockResolvedValue(null);
+    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await userRepository.findByUsername("testuser");
 
@@ -190,105 +200,5 @@ describe("UserRepository", () => {
     });
     expect(result).toBeNull();
   });
-
-  it("should update a user by ID", async () => {
-    const mockUser: UserDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedpwd1",
-      role: "USER",
-      fullname: "User One",
-      nokar: "12345",
-      divisiId: 1,
-      waNumber: "123456789",
-      createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-    };
-
-    const updatedData: Partial<UserDTO> = {
-      fullname: "Updated User One",
-    };
-
-    const updatedUser: UserDTO = {
-      ...mockUser,
-      ...updatedData,
-    };
-
-    mockPrisma.update.mockResolvedValue(updatedUser);
-
-    const result = await userRepository.updateUser("1", updatedData);
-
-    expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "1",
-      },
-      data: updatedData,
-    });
-    expect(result).toEqual(updatedUser);
-  });
-
-  it("should throw an error if the update fails", async () => {
-    const errorMessage = "Update failed";
-    mockPrisma.update.mockRejectedValue(new Error(errorMessage));
-
-    await expect(userRepository.updateUser("1", { fullname: "Updated User One" })).rejects.toThrow(errorMessage);
-    expect(mockPrisma.update).toHaveBeenCalledTimes(1);
-  });
-
-  it("should delete a user by ID", async () => {
-    const mockUser: UserDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedpwd1",
-      role: "USER",
-      fullname: "User One",
-      nokar: "12345",
-      divisiId: 1,
-      waNumber: "123456789",
-      createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-    };
-
-    mockPrisma.delete.mockResolvedValue(mockUser);
-
-    const result = await userRepository.deleteUser("1");
-
-    expect(mockPrisma.delete).toHaveBeenCalledWith({
-      where: {
-        id: "1",
-      },
-    });
-    expect(result).toEqual(mockUser);
-  });
-
-  it("should return null if no user found to delete", async () => {
-    mockPrisma.delete.mockResolvedValue(null);
-
-    const result = await userRepository.deleteUser("999");
-
-    expect(mockPrisma.delete).toHaveBeenCalledWith({
-      where: {
-        id: "999",
-      },
-    });
-    expect(result).toBeNull();
-  });
-
-  it("should throw an error if the delete fails", async () => {
-    const errorMessage = "Delete failed";
-    mockPrisma.delete.mockRejectedValue(new Error(errorMessage));
-
-    await expect(userRepository.deleteUser("1")).rejects.toThrow(errorMessage);
-    expect(mockPrisma.delete).toHaveBeenCalledTimes(1);
-  });
-});
+}
+);
