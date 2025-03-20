@@ -1,10 +1,12 @@
 import { DivisiDTO } from "../../../../src/dto/divisi.dto";
+import { IDivisiService } from "../../../../src/services/interface/divisi.service.interface";
 import DivisiRepository from "../../../../src/repository/divisi.repository";
+import DivisiService from "../../../../src/services/divisi.service";
 
 jest.mock("../../../../src/repository/divisi.repository");
 
 describe("DivisiService - ADD", () => {
-  let divisiService: DivisiService;
+  let divisiService: IDivisiService;
   let mockDivisiRepository: jest.Mocked<DivisiRepository>;
 
   beforeEach(() => {
