@@ -1,4 +1,4 @@
-import userRoutes from '../src/routes/user.route';
+import userRoutes from '../../../../src/routes/user.route';
 
 // This test simply imports the route module and verifies it's an object
 describe('User Routes', () => {

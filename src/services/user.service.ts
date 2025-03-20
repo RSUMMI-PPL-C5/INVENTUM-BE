@@ -1,4 +1,4 @@
-import { Prisma, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { IUserService } from "./interface/user.service.interface";
 import { UserDTO, AddUserDTO, AddUserResponseDTO } from "../dto/user.dto";
 import { filterHandlers } from "../filters/user.filter";
@@ -61,7 +61,7 @@ class UserService implements IUserService {
     return await this.userRepository.createUser(createData);
   }
 
-  public async searchUser(name: string): Promise<User[]> {
+  public async searchUser(name: string): Promise<UserDTO[]> {
     if (!name || typeof name !== "string" || name.trim() === "") {
       throw new Error("Name query is required");
     }
