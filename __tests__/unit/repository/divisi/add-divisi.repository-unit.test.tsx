@@ -1,3 +1,6 @@
+import DivisiRepository from '../../../../src/repository/divisi.repository';
+import { DivisiDTO } from '../../../../src/dto/divisi.dto';
+
 jest.mock('@prisma/client', () => {
   const mockCreate = jest.fn();
 
@@ -15,7 +18,7 @@ jest.mock('@prisma/client', () => {
 
 const { __mockPrisma: mockPrisma } = jest.requireMock('@prisma/client');
 
-describe('Create Divisi', () => {
+describe('Add Divisi', () => {
   let divisiRepository: DivisiRepository;
 
   beforeEach(() => {
@@ -23,34 +26,34 @@ describe('Create Divisi', () => {
     divisiRepository = new DivisiRepository();
   });
 
-  it('should create a new list divisi', async () => {
+  it('should add a new list divisi', async () => {
     const mockListDivisi: DivisiDTO = {
       id: 2,
       divisi: 'Divisi 2',
       parentId: 1,
     };
 
-    const createData: Partial<DivisiDTO> = {
+    const addData: Partial<DivisiDTO> = {
       divisi: 'Divisi 2',
       parentId: 1,
     };
 
     mockPrisma.create.mockResolvedValue(mockListDivisi);
 
-    const result = await divisiRepository.createDivisi(createData);
+    const result = await divisiRepository.addDivisi(addData);
 
-    expect(mockPrisma.create).toHaveBeenCalledWith({data : createData});
+    expect(mockPrisma.create).toHaveBeenCalledWith({data : addData});
     expect(result).toEqual(mockListDivisi);
   });
 
-  it('should throw an error if failed to create a new list divisi', async () => {
-    const createData: Partial<DivisiDTO> = {
+  it('should throw an error if failed to add a new list divisi', async () => {
+    const addData: Partial<DivisiDTO> = {
       divisi: 'Divisi 2',
       parentId: 99,
     };
 
-    mockPrisma.create.mockRejectedValue(new Error('Failed to create list divisi'));
+    mockPrisma.create.mockRejectedValue(new Error('Failed to add list divisi'));
 
-    await expect(divisiRepository.createDivisi(createData)).rejects.toThrow('Failed to create list divisi');
+    await expect(divisiRepository.addDivisi(addData)).rejects.toThrow('Failed to add list divisi');
   });
 });
