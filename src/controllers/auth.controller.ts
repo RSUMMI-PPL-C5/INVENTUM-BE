@@ -46,6 +46,10 @@ class AuthController {
 	};
 
 	public verifyToken = (req: Request, res: Response): void => {
+		if (!req.user) {
+			res.status(401).json({ message: "Token is invalid or missing" });
+			return;
+		}
 		res.status(200).json({ message: "Token is valid", user: req.user });
 	};
 }

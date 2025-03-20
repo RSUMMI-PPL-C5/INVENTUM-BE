@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { validationResult, ValidationError } from 'express-validator';
-import UserController from '../src/controllers/user.controller';
-import UserService from '../src/services/user.service';
+import UserController from '../../../../src/controllers/user.controller';
+import UserService from '../../../../src/services/user.service';
 
 // Mock dependencies
-jest.mock('../src/services/user.service');
+jest.mock('../../../../src/services/user.service');
 
 // Fix the validationResult mock with proper typing
 jest.mock('express-validator', () => ({
@@ -14,7 +14,7 @@ jest.mock('express-validator', () => ({
 // Get the mock function with proper typing
 const mockValidationResult = validationResult as jest.MockedFunction<typeof validationResult>;
 
-describe('UserController', () => {
+describe('UserController - ADD', () => {
   let userController: UserController;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
