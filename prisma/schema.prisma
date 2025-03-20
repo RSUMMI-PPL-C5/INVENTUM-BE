@@ -62,7 +62,7 @@ model MedicalEquipment {
 
 model RelocationHistory {
   id                 String      @id @unique
-  medicalEquipmentId Int
+  medicalEquipmentId String
   initLocation       String
   currentLocation    String
   requestDate        String
@@ -110,7 +110,7 @@ model PartsManagement {
 
 model EquipmentSpareparts {
   id          String      @id @unique
-  equipmentId Int
+  equipmentId String
   sparepartId String
   createdBy   Int
   createdOn   DateTime?
