@@ -1,6 +1,6 @@
 // First, set up the mock before importing the repository
 import { PrismaClient } from "@prisma/client";
-import { MedicalEquipmentDTO } from "../../../src/dto/medical-equipment.dto";
+import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
 
 const prisma = {
     medicalEquipment: {
@@ -15,7 +15,7 @@ jest.mock("../../../src/configs/db.config", () => ({
 }));
 
 // Now import the repository after setting up the mock
-import MedicalEquipmentRepository from "../../../src/repository/medical-equipment.repository";
+import MedicalEquipmentRepository from "../../../../src/repository/add-medicalequipment.repository";
 
 describe("MedicalEquipmentRepository - createMedicalEquipment", () => {
     const mockEquipment: Omit<MedicalEquipmentDTO, "id"> = {
