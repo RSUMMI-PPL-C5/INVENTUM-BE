@@ -10,6 +10,16 @@ class DivisiService implements IDivisiService {
   }
   
   public async addDivisi(data: Partial<DivisiDTO>): Promise<DivisiDTO> {
+    if (!data.parentId) {
+      data.parentId = 1;
+    }
+
+    const parentExists = await this.divisiRepository.getDivisiById(data.parentId);
+    
+    if (!parentExists) {
+      throw new Error('Parent divisi not found');
+    }
+
     return await this.divisiRepository.addDivisi(data);
   }
 }
