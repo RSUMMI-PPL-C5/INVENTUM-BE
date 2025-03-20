@@ -41,7 +41,7 @@ model ListDivisi {
 }
 
 model MedicalEquipment {
-  id                Int                   @id @default(autoincrement())
+  id                String            @id @unique
   inventorisId      String                @unique
   name              String
   brandName         String?
@@ -61,7 +61,7 @@ model MedicalEquipment {
 }
 
 model RelocationHistory {
-  id                 Int              @id @default(autoincrement())
+  id                 String      @id @unique
   medicalEquipmentId Int
   initLocation       String
   currentLocation    String
@@ -77,7 +77,7 @@ model RelocationHistory {
 }
 
 model Spareparts {
-  id              String                @id
+  id              String                @id @unique
   partsName       String
   purchaseDate    DateTime?
   price           Int?
@@ -94,7 +94,7 @@ model Spareparts {
 }
 
 model PartsManagement {
-  id                   String     @id
+  id                   String     @id @unique
   sparepartId          String
   replacementComponent String
   replacementDate      DateTime
@@ -109,7 +109,7 @@ model PartsManagement {
 }
 
 model EquipmentSpareparts {
-  id          Int              @id @default(autoincrement())
+  id          String      @id @unique
   equipmentId Int
   sparepartId String
   createdBy   Int
