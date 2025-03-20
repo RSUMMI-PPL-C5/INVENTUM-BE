@@ -1,134 +1,203 @@
-// First, set up the mock before importing the repository
 import { PrismaClient } from "@prisma/client";
-import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
+import { MedicalEquipmentRepository } from "../../../../src/repository/add-medicalequipment.repository";
+import { AddMedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
 
-const prisma = {
-    medicalEquipment: {
-        create: jest.fn(),
-    },
-} as unknown as PrismaClient;
+jest.mock("@prisma/client", () => {
+    const actualPrisma = jest.requireActual("@prisma/client");
+    return {
+        ...actualPrisma,
+        PrismaClient: jest.fn().mockImplementation(() => ({
+            medicalEquipment: {
+                create: jest.fn(),
+            },
+        })),
+    };
+});
 
-// Mock the db.config module with the correct path
-jest.mock("../../../src/configs/db.config", () => ({
-    __esModule: true,
-    default: prisma,
+const prisma = new PrismaClient();
+const mockCreate = prisma.medicalEquipment.create as jest.Mock;
+
+mockCreate.mockImplementation(async (inputData) => ({
+    id: crypto.randomUUID(),
+    ...inputData.data,
+    createdOn: new Date(),
+    modifiedOn: new Date(),
+    deletedBy: null,
+    deletedOn: null,
 }));
 
-// Now import the repository after setting up the mock
-import MedicalEquipmentRepository from "../../../../src/repository/add-medicalequipment.repository";
+const repository = new MedicalEquipmentRepository();
+
 
 describe("MedicalEquipmentRepository - createMedicalEquipment", () => {
-    const mockEquipment: Omit<MedicalEquipmentDTO, "id"> = {
-        inventorisId: "INV-2325",
-        name: "X-Ray Machine",
-        brandName: "Siemens",
-        modelName: "XR-2000",
-        purchaseDate: new Date(),
-        purchasePrice: 1000000,
-        status: "Baik",
-        vendor: "Vendor A",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: null,
-        deletedBy: null,
-        deletedOn: null,
-    };
-
-    const repository = new MedicalEquipmentRepository();
-
-    beforeEach(() => {
+    afterEach(() => {
         jest.clearAllMocks();
     });
 
-    // Positive test case
-    it("should create a medical equipment", async () => {
-        const mockResult = { id: 1, ...mockEquipment };
-        (prisma.medicalEquipment.create as jest.Mock).mockResolvedValue(mockResult);
-
-        const result = await repository.createMedicalEquipment(mockEquipment);
-
-        expect(result).toEqual(mockResult);
-        expect(prisma.medicalEquipment.create).toHaveBeenCalledWith({
-            data: {
-                ...mockEquipment,
-                purchaseDate: expect.any(Date),
-                createdOn: expect.any(Date),
-                modifiedOn: undefined,
-                deletedOn: null,
-            },
-        });
-    });
-
-    // Negative test case
-    it("should fail to create medical equipment with missing required field", async () => {
-        const invalidData = { ...mockEquipment, inventorisId: "" }; // inventorisId kosong
-
-        await expect(repository.createMedicalEquipment(invalidData)).rejects.toThrow(
-            "inventorisId is required"
-        );
-
-        expect(prisma.medicalEquipment.create).not.toHaveBeenCalled();
-    });
-
-    // Corner test case
-    it("should fail to create medical equipment with negative purchase price", async () => {
-        const invalidData = { ...mockEquipment, purchasePrice: -5000 }; // Harga negatif
-
-        await expect(repository.createMedicalEquipment(invalidData)).rejects.toThrow(
-            "Purchase price cannot be negative"
-        );
-
-        expect(prisma.medicalEquipment.create).not.toHaveBeenCalled();
-    });
-
-    // Test zero purchase price instead of null
-    it("should handle zero purchase price correctly", async () => {
-        const dataWithZeroPrice = {
-            ...mockEquipment,
-            purchasePrice: 0
+    // ✅ Positive Test Case - Data valid harus sukses
+    it("should create a new medical equipment successfully", async () => {
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "INV-12345",
+            name: "X-Ray Machine",
+            brandName: "Siemens",
+            modelName: "X2000",
+            purchaseDate: new Date("2024-01-01"),
+            purchasePrice: 50000000,
+            status: "Active",
+            vendor: "MediTech Supplies",
+            createdBy: 1,
         };
 
-        const mockResult = { id: 1, ...dataWithZeroPrice };
-        (prisma.medicalEquipment.create as jest.Mock).mockResolvedValue(mockResult);
-
-        const result = await repository.createMedicalEquipment(dataWithZeroPrice);
-
-        expect(result).toEqual(mockResult);
-        expect(prisma.medicalEquipment.create).toHaveBeenCalledWith({
-            data: {
-                ...dataWithZeroPrice,
-                purchaseDate: expect.any(Date),
-                createdOn: expect.any(Date),
-                modifiedOn: undefined,
-                deletedOn: null,
-            },
-        });
-    });
-
-    // Test handling of dates with minimum value instead of null
-    it("should handle minimum value dates correctly", async () => {
-        const minDate = new Date(0); // 1970-01-01T00:00:00.000Z
-        const dataWithMinDates = {
-            ...mockEquipment,
-            purchaseDate: minDate,
-            modifiedOn: null, // Set explicitly to null
+        const expectedOutput = {
+            id: 1,
+            ...inputData,
+            createdOn: new Date(),
+            modifiedOn: new Date(),
+            deletedBy: null,
             deletedOn: null,
         };
 
-        const mockResult = { id: 1, ...dataWithMinDates };
-        (prisma.medicalEquipment.create as jest.Mock).mockResolvedValue(mockResult);
+        mockCreate.mockResolvedValue(expectedOutput);
 
-        const result = await repository.createMedicalEquipment(dataWithMinDates);
-
-        expect(result).toEqual(mockResult);
-        expect(prisma.medicalEquipment.create).toHaveBeenCalledWith({
+        const result = await repository.createMedicalEquipment(inputData);
+        expect(result).toEqual({
+            id: 1,
+            inventorisId: "INV-12345",
+            name: "X-Ray Machine",
+            brand: "Siemens",
+            model: "X2000",
+        });
+        expect(mockCreate).toHaveBeenCalledWith({
             data: expect.objectContaining({
-                ...dataWithMinDates,
-                purchaseDate: minDate,
-                modifiedOn: undefined,
-                deletedOn: null,
+                ...inputData,
+                createdOn: expect.any(Date),
+                modifiedOn: expect.any(Date),
             }),
         });
+    });
+
+    // ❌ Negative Test Case - Gagal karena inventorisId duplikat
+    it("should fail to create medical equipment due to duplicate inventorisId", async () => {
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "INV-12345",
+            name: "X-Ray Machine",
+            brandName: "Siemens",
+            modelName: "X2000",
+            purchaseDate: new Date("2024-01-01"),
+            purchasePrice: 50000000,
+            status: "Active",
+            vendor: "MediTech Supplies",
+            createdBy: 1,
+        };
+
+        mockCreate.mockRejectedValue(
+            new Error("Unique constraint failed on the fields: (`inventorisId`)")
+        );
+
+        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
+            "Unique constraint failed on the fields: (`inventorisId`)"
+        );
+    });
+
+    // 🚧 Corner Case Test - Tidak mengisi field opsional
+    it("should create medical equipment with only required fields", async () => {
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "INV-67890",
+            name: "MRI Scanner",
+            createdBy: 2,
+        };
+
+        const expectedOutput = {
+            id: 2,
+            inventorisId: "INV-67890",
+            name: "MRI Scanner",
+            brandName: null,
+            modelName: null,
+            purchaseDate: null,
+            purchasePrice: null,
+            status: "Active",
+            vendor: null,
+            createdBy: 2,
+            createdOn: new Date(),
+            modifiedOn: new Date(),
+            deletedBy: null,
+            deletedOn: null,
+        };
+
+        mockCreate.mockResolvedValue(expectedOutput);
+
+        const result = await repository.createMedicalEquipment(inputData);
+        expect(result).toEqual({
+            id: 2,
+            inventorisId: "INV-67890",
+            name: "MRI Scanner",
+            brand: "",
+            model: "",
+        });
+    });
+
+    // 🚧 Corner Case Test - Nilai field dengan batasan data
+    it("should handle maximum string length for name", async () => {
+        const longName = "A".repeat(255);
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "INV-99999",
+            name: longName,
+            createdBy: 3,
+        };
+
+        const expectedOutput = {
+            id: 3,
+            inventorisId: "INV-99999",
+            name: longName,
+            brandName: null,
+            modelName: null,
+            purchaseDate: null,
+            purchasePrice: null,
+            status: "Active",
+            vendor: null,
+            createdBy: 3,
+            createdOn: new Date(),
+            modifiedOn: new Date(),
+            deletedBy: null,
+            deletedOn: null,
+        };
+
+        mockCreate.mockResolvedValue(expectedOutput);
+
+        const result = await repository.createMedicalEquipment(inputData);
+        expect(result).toEqual({
+            id: 3,
+            inventorisId: "INV-99999",
+            name: longName,
+            brand: "",
+            model: "",
+        });
+    });
+
+    // ❌ Negative Test Case - purchasePrice negatif
+    it("should fail when purchasePrice is negative", async () => {
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "INV-54321",
+            name: "Ultrasound Machine",
+            purchasePrice: -1000000,
+            createdBy: 4,
+        };
+
+        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
+            "purchasePrice must be a positive number"
+        );
+    });
+
+    // ❌ Negative Test Case - inventorisId kosong
+    it("should fail when inventorisId is empty", async () => {
+        const inputData: AddMedicalEquipmentDTO = {
+            inventorisId: "",
+            name: "Defibrillator",
+            createdBy: 5,
+        };
+
+        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
+            "inventorisId cannot be empty"
+        );
     });
 });
