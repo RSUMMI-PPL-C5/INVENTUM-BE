@@ -32,5 +32,7 @@ jobs:
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
-            -Dsonar.exclusions=src/configs/**, src/**/__tests__/**
-            -Dsonar.branch.autoconfig.disabled=true
+            -Dsonar.exclusions=src/configs/**, src/**/__tests__/** \
+            -Dsonar.scm.disabled=true \
+            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.branch.target=main
