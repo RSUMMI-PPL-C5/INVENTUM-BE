@@ -26,11 +26,11 @@ jobs:
           npx sonarqube-scanner \
             -Dsonar.projectKey=InventoryManagement-BE \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=src \
             -Dsonar.tests=__tests__ \
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
             -Dsonar.exclusions=src/configs/**, src/**/__tests__/** \
-            -Dsonar.report.export.path=sonar-report.json
+            -Dsonar.scm.provider=git
