@@ -23,7 +23,7 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          npx sonarqube-scanner \
+          npx sonarqube-scanner@4.2.0 \
             -Dsonar.projectKey=InventoryManagement-BE \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
@@ -34,5 +34,4 @@ jobs:
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
             -Dsonar.exclusions=src/configs/**, src/**/__tests__/** \
             -Dsonar.scm.disabled=true \
-            -Dsonar.branch.name=${{ github.ref_name }} \
-            -Dsonar.branch.target=main
+            -Dsonar.branch.autoconfig.disabled=true
