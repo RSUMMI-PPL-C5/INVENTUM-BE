@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
-import DivisiService from '../../../../src/services/divisi.service';
-import DivisiController from '../../../../src/controllers/divisi.controller';
+import DivisionService from '../../../../src/services/division.service';
+import DivisionController from '../../../../src/controllers/division.controller';
 
-jest.mock('../../../../src/services/divisi.service');
+jest.mock('../../../../src/services/division.service');
 
 describe('DivisiController - ADD', () => {
-  let divisiController: DivisiController;
+  let divisionController: DivisionController;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockDivisiService: jest.Mocked<DivisiService>;
+  let mockDivisionService: jest.Mocked<DivisionService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -18,10 +18,10 @@ describe('DivisiController - ADD', () => {
       json: jest.fn()
     };
 
-    mockDivisiService = new DivisiService() as jest.Mocked<DivisiService>;
-    (DivisiService as jest.Mock).mockImplementation(() => mockDivisiService);
+    mockDivisionService = new DivisionService() as jest.Mocked<DivisionService>;
+    (DivisionService as jest.Mock).mockImplementation(() => mockDivisionService);
     
-    divisiController = new DivisiController();
+    divisionController = new DivisionController();
   });
 
   test('POST /divisi - should add divisi', async () => {
@@ -32,13 +32,13 @@ describe('DivisiController - ADD', () => {
       }
     };
 
-    mockDivisiService.addDivisi.mockResolvedValue({
+    mockDivisionService.addDivision.mockResolvedValue({
       id: 1,
       divisi: 'Divisi 1',
       parentId: 1
     });
 
-    await divisiController.addDivisi(mockRequest as Request, mockResponse as Response);
+    await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(201);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -56,7 +56,7 @@ describe('DivisiController - ADD', () => {
       }
     };
 
-    await divisiController.addDivisi(mockRequest as Request, mockResponse as Response);
+    await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent ID must be a number' });
@@ -70,9 +70,9 @@ describe('DivisiController - ADD', () => {
       }
     };
 
-    mockDivisiService.addDivisi.mockRejectedValue(new Error('Parent divisi not found'));
+    mockDivisionService.addDivision.mockRejectedValue(new Error('Parent divisi not found'));
 
-    await divisiController.addDivisi(mockRequest as Request, mockResponse as Response);
+    await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent divisi not found' });
@@ -87,9 +87,9 @@ describe('DivisiController - ADD', () => {
     };
 
     const errorMessage = 'Database error';
-    mockDivisiService.addDivisi.mockRejectedValue(new Error(errorMessage));
+    mockDivisionService.addDivision.mockRejectedValue(new Error(errorMessage));
 
-    await divisiController.addDivisi(mockRequest as Request, mockResponse as Response);
+    await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });

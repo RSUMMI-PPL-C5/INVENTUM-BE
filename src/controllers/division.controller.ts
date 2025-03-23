@@ -1,16 +1,16 @@
 import { Request, Response } from 'express';
-import { IDivisiService } from '../services/interface/divisi.service.interface';
-import DivisiService from '../services/divisi.service';
+import { IDivisionService } from '../services/interface/division.service.interface';
+import DivisionService from '../services/division.service';
 
 
-class DivisiController {
-  private readonly divisiService: IDivisiService;
+class DivisionController {
+  private readonly divisionService: IDivisionService;
   
   constructor() {
-    this.divisiService = new DivisiService();
+    this.divisionService = new DivisionService();
   } 
 
-  public addDivisi = async (req: Request, res: Response): Promise<void> => {
+  public addDivision = async (req: Request, res: Response): Promise<void> => {
     try {
       const parentId = req.body.parentId;
       if (parentId && typeof parentId !== 'number') {
@@ -18,15 +18,15 @@ class DivisiController {
         return;
       }
 
-      const divisiData = {
+      const divisionData = {
         divisi: req.body.divisi,
         parentId: parentId,
       };
 
-      const newDivisi = await this.divisiService.addDivisi(divisiData);
-      res.status(201).json(newDivisi);
+      const newDivision = await this.divisionService.addDivision(divisionData);
+      res.status(201).json(newDivision);
     } catch (error) {
-      console.error('Error in addDivisi controller:', error);
+      console.error('Error in addDivision controller:', error);
       if (error instanceof Error && error.message === 'Parent divisi not found') {
         res.status(404).json({ message: error.message });
       } else {
@@ -36,4 +36,4 @@ class DivisiController {
   }
 }
 
-export default DivisiController;
+export default DivisionController;
