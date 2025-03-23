@@ -73,6 +73,46 @@ describe("DivisionRepository", () => {
       expect(result).toBeNull();
       expect(prisma.listDivisi.findUnique).toHaveBeenCalledTimes(1);
     });
+
+    it("should pass the correct id parameter to findUnique", async () => {
+      // Arrange
+      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue({ id: 42, divisi: "Test Division" });
+      
+      // Act
+      await divisionRepository.getDivisionById(42);
+      
+      // Assert
+      expect(prisma.listDivisi.findUnique).toHaveBeenCalledWith({
+        where: { id: 42 }
+      });
+    });
+
+    it("should handle id parameter of various number types", async () => {
+      // Arrange
+      const mockDivision = { id: 123, divisi: "Test Division" };
+      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue(mockDivision);
+      
+      // Act - testing with a numeric string converted to number
+      const result = await divisionRepository.getDivisionById(123);
+      
+      // Assert
+      expect(result).toEqual(mockDivision);
+      expect(prisma.listDivisi.findUnique).toHaveBeenCalledWith({
+        where: { id: 123 }
+      });
+    });
+
+    it("should correctly handle errors from the database", async () => {
+      // Arrange
+      const dbError = new Error("Database connection failed");
+      (prisma.listDivisi.findUnique as jest.Mock).mockRejectedValue(dbError);
+      
+      // Act & Assert
+      await expect(divisionRepository.getDivisionById(1)).rejects.toThrow("Database connection failed");
+      expect(prisma.listDivisi.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 }
+      });
+    });
   });
 
   describe("getDivisionsHierarchy", () => {

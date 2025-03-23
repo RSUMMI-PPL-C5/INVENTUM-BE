@@ -141,4 +141,75 @@ describe("DivisionController", () => {
       expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
     });
   });
+
+  describe("getDivisionById", () => {
+    it("should return division with 200 status code when found", async () => {
+      // Arrange
+      const mockDivision = { id: 1, divisi: "Engineering", parentId: null };
+      mockDivisionService.getDivisionById = jest.fn().mockResolvedValue(mockDivision);
+      mockRequest.params = { id: "1" };
+      
+      // Act
+      await divisionController.getDivisionById(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+      
+      // Assert
+      expect(mockDivisionService.getDivisionById).toHaveBeenCalledWith(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockDivision);
+    });
+
+    it("should return 400 status code for invalid ID format", async () => {
+      // Arrange
+      mockRequest.params = { id: "invalid" };
+      
+      // Act
+      await divisionController.getDivisionById(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+      
+      // Assert
+      expect(mockDivisionService.getDivisionById).not.toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({ message: "Invalid division ID" });
+    });
+
+    it("should return 404 status code when division is not found", async () => {
+      // Arrange
+      mockDivisionService.getDivisionById = jest.fn().mockResolvedValue(null);
+      mockRequest.params = { id: "999" };
+      
+      // Act
+      await divisionController.getDivisionById(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+      
+      // Assert
+      expect(mockDivisionService.getDivisionById).toHaveBeenCalledWith(999);
+      expect(mockResponse.status).toHaveBeenCalledWith(404);
+      expect(mockResponse.json).toHaveBeenCalledWith({ message: "Division not found" });
+    });
+
+    it("should handle errors and return 500 status code", async () => {
+      // Arrange
+      const errorMessage = "Service error";
+      mockDivisionService.getDivisionById = jest.fn().mockRejectedValue(new Error(errorMessage));
+      mockRequest.params = { id: "1" };
+      
+      // Act
+      await divisionController.getDivisionById(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+      
+      // Assert
+      expect(mockDivisionService.getDivisionById).toHaveBeenCalledWith(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
+    });
+  });
 });

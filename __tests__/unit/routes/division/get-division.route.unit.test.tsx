@@ -16,11 +16,13 @@ jest.mock("express", () => {
   };
 });
 
+// Update mock controller to include getDivisionById
 jest.mock("../../../../src/controllers/division.controller", () => {
   return jest.fn().mockImplementation(() => ({
     getDivisionsTree: jest.fn(),
     getAllDivisions: jest.fn(),
     getDivisionsWithUserCount: jest.fn(),
+    getDivisionById: jest.fn() // Add this method
   }));
 });
 
@@ -41,8 +43,22 @@ describe('Division Routes', () => {
     expect(mockRouter.get).toHaveBeenCalledWith('/', expect.any(Function));
     expect(mockRouter.get).toHaveBeenCalledWith('/all', expect.any(Function));
     expect(mockRouter.get).toHaveBeenCalledWith('/with-user-count', expect.any(Function));
+    expect(mockRouter.get).toHaveBeenCalledWith('/:id', expect.any(Function)); // Add this line
     
-    // Check the total number of routes
-    expect(mockRouter.get).toHaveBeenCalledTimes(3);
+    // Update the expected count from 3 to 4
+    expect(mockRouter.get).toHaveBeenCalledTimes(4);
+  });
+  
+  test('router should register the getDivisionById route', () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    
+    // Check specifically for the parameter route
+    const paramRouteCall = mockRouter.get.mock.calls.find(
+      (call: any[]) => call[0] === '/:id'
+    );
+    
+    expect(paramRouteCall).toBeDefined();
+    expect(paramRouteCall?.[0]).toBe('/:id');
+    expect(paramRouteCall?.[1]).toEqual(expect.any(Function));
   });
 });
