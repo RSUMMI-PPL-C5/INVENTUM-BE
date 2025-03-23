@@ -1,3 +1,5 @@
+import divisiRoutes from '../../../../src/routes/divisi.route';
+
 describe('Divisi Routes', () => {
   it('should export a router with required methods', () => {
     expect(divisiRoutes).toBeDefined();

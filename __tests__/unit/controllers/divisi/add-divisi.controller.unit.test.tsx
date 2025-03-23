@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import DivisiService from '../../../../src/services/divisi.service';
+import DivisiController from '../../../../src/controllers/divisi.controller';
 
 jest.mock('../../../../src/services/divisi.service');
 
