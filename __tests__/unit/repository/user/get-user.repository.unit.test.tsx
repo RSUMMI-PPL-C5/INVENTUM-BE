@@ -107,7 +107,9 @@ describe("User Repository - GET", () => {
 
   it("should throw an error if the database query fails", async () => {
     const errorMessage = "Database connection error";
-    (mockPrisma.findMany as jest.Mock).mockRejectedValue(new Error(errorMessage));
+    (mockPrisma.findMany as jest.Mock).mockRejectedValue(
+      new Error(errorMessage),
+    );
 
     await expect(userRepository.getUsers()).rejects.toThrow(errorMessage);
     expect(mockPrisma.findMany).toHaveBeenCalledTimes(1);
@@ -200,5 +202,4 @@ describe("User Repository - GET", () => {
     });
     expect(result).toBeNull();
   });
-}
-);
+});

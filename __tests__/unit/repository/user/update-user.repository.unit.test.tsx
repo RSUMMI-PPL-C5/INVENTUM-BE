@@ -73,7 +73,9 @@ describe("User Repository - PUT", () => {
     const errorMessage = "Update failed";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.updateUser("1", { fullname: "Updated User One" })).rejects.toThrow(errorMessage);
+    await expect(
+      userRepository.updateUser("1", { fullname: "Updated User One" }),
+    ).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledTimes(1);
   });
 
@@ -81,7 +83,9 @@ describe("User Repository - PUT", () => {
   it("should return null if the user ID does not exist", async () => {
     (mockPrisma.update as jest.Mock).mockResolvedValue(null);
 
-    const result = await userRepository.updateUser("999", { fullname: "Nonexistent User" });
+    const result = await userRepository.updateUser("999", {
+      fullname: "Nonexistent User",
+    });
 
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: {
@@ -97,7 +101,9 @@ describe("User Repository - PUT", () => {
     const errorMessage = "No data provided for update";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.updateUser("1", {})).rejects.toThrow(errorMessage);
+    await expect(userRepository.updateUser("1", {})).rejects.toThrow(
+      errorMessage,
+    );
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: {
         id: "1",
@@ -112,7 +118,7 @@ describe("User Repository - PUT", () => {
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
     await expect(
-      userRepository.updateUser("1", { fullname: 12345 as unknown as string })
+      userRepository.updateUser("1", { fullname: 12345 as unknown as string }),
     ).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: {
