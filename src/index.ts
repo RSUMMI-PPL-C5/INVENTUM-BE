@@ -9,11 +9,11 @@ import express from "express";
 import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
 import divisionRoutes from "./routes/division.routes"; // Add this import
-import 'dotenv/config';
+import "dotenv/config";
 
 const app = express();
 
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 
 const whitelist: string[] = [];
 
@@ -43,14 +43,14 @@ app.get("/", (req, res) => {
   res.send("PPL C-5 DEPLOYED!!!");
 });
 
-app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
-app.use('/divisions', divisionRoutes); // Add this line to register division routes
+app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/divisions", divisionRoutes);
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
-  console.log(`CORS enabled for origins: ${whitelist.join(', ')}`);
+  console.log(`CORS enabled for origins: ${whitelist.join(", ")}`);
 });
 
 export default server;

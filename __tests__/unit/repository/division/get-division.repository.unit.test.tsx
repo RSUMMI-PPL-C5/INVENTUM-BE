@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import DivisionRepository from "../../../../src/repository/division.repository";
 
 // Mock the entire Prisma module
@@ -19,7 +18,7 @@ import prisma from "../../../../src/configs/db.config";
 
 describe("DivisionRepository", () => {
   let divisionRepository: DivisionRepository;
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     divisionRepository = new DivisionRepository();
@@ -32,9 +31,11 @@ describe("DivisionRepository", () => {
         { id: 1, divisi: "Engineering", parentId: null },
         { id: 2, divisi: "Marketing", parentId: null },
       ];
-      
+
       // Correctly mock the Prisma function
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockDivisions);
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockDivisions,
+      );
 
       // Act
       const result = await divisionRepository.getAllDivisions();
@@ -49,7 +50,9 @@ describe("DivisionRepository", () => {
     it("should return a division by id", async () => {
       // Arrange
       const mockDivision = { id: 1, divisi: "Engineering", parentId: null };
-      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue(mockDivision);
+      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue(
+        mockDivision,
+      );
 
       // Act
       const result = await divisionRepository.getDivisionById(1);
@@ -93,7 +96,9 @@ describe("DivisionRepository", () => {
           ],
         },
       ];
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockHierarchy);
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockHierarchy,
+      );
 
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
@@ -119,7 +124,9 @@ describe("DivisionRepository", () => {
           },
         ],
       };
-      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue(mockDivisionWithChildren);
+      (prisma.listDivisi.findUnique as jest.Mock).mockResolvedValue(
+        mockDivisionWithChildren,
+      );
 
       // Act
       const result = await divisionRepository.getDivisionWithChildren(1);
@@ -138,7 +145,9 @@ describe("DivisionRepository", () => {
         { id: 1, divisi: "Engineering", parentId: null },
         { id: 11, divisi: "Software Engineering", parentId: 1 },
       ];
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFilteredDivisions);
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFilteredDivisions,
+      );
 
       // Act
       const result = await divisionRepository.getFilteredDivisions(whereClause);
@@ -166,10 +175,12 @@ describe("DivisionRepository", () => {
           _count: { users: 3 },
         },
       ];
-      
+
       // Mock the result from Prisma
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockPrismaResult);
-      
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockPrismaResult,
+      );
+
       // Expected result after transformation
       const expectedResult = [
         {
@@ -185,10 +196,10 @@ describe("DivisionRepository", () => {
           userCount: 3,
         },
       ];
-      
+
       // Act
       const result = await divisionRepository.getDivisionsWithUserCount();
-      
+
       // Assert
       // Instead of removing the _count property, use a less strict comparison
       // that only checks that the userCount is present with the correct value
@@ -198,7 +209,7 @@ describe("DivisionRepository", () => {
         expect(division.parentId).toEqual(expectedResult[index].parentId);
         expect(division.userCount).toEqual(expectedResult[index].userCount);
       });
-      
+
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
   });
