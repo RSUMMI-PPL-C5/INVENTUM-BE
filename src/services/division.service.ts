@@ -29,8 +29,14 @@ class DivisionService implements IDivisionService {
    * Get divisions with their user counts
    * Demonstrates the Decorator Pattern by adding additional information to divisions
    */
-  public async getDivisionsWithUserCount(): Promise<Array<DivisionDTO & { userCount: number }>> {
+  public async getDivisionsWithUserCount(): Promise<
+    Array<DivisionDTO & { userCount: number }>
+  > {
     return await this.divisionRepository.getDivisionsWithUserCount();
+  }
+
+  public async deleteDivision(id: number): Promise<boolean> {
+    return await this.divisionRepository.deleteDivision(id);
   }
 }
 
