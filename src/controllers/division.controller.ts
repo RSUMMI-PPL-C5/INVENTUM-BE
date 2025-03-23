@@ -43,6 +43,31 @@ class DivisionController {
       res.status(500).json({ message: error.message });
     }
   };
+  
+  /**
+   * Get a specific division by its ID
+   */
+  public getDivisionById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        res.status(400).json({ message: "Invalid division ID" });
+        return;
+      }
+      
+      const division = await this.divisionService.getDivisionById(id);
+      
+      if (!division) {
+        res.status(404).json({ message: "Division not found" });
+        return;
+      }
+      
+      res.status(200).json(division);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 }
 
 export default DivisionController;

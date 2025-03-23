@@ -32,6 +32,10 @@ class DivisionService implements IDivisionService {
   public async getDivisionsWithUserCount(): Promise<Array<DivisionDTO & { userCount: number }>> {
     return await this.divisionRepository.getDivisionsWithUserCount();
   }
+
+  public async getDivisionById(id: number): Promise<DivisionDTO | null> {
+    return await this.divisionRepository.getDivisionById(id);
+  }
 }
 
 // Singleton pattern implementation - ensures single instance throughout the application

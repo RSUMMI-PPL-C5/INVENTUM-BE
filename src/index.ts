@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.use('/divisions', divisionRoutes); // Add this line to register division routes
+app.use('/divisi', divisionRoutes); 
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
