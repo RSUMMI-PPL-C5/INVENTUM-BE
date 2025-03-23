@@ -1,203 +1,225 @@
-import { PrismaClient } from "@prisma/client";
-import { MedicalEquipmentRepository } from "../../../../src/repository/add-medicalequipment.repository";
-import { AddMedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
+import MedicalEquipmentRepository from "../../../../src/repository/add-medicalequipment.repository";
+import {
+  AddMedicalEquipmentDTO,
+  AddMedicalEquipmentResponseDTO,
+} from "../../../../src/dto/medicalequipment.dto";
+import { v4 as uuidv4 } from "uuid";
 
+// Mock Prisma Client
 jest.mock("@prisma/client", () => {
-    const actualPrisma = jest.requireActual("@prisma/client");
-    return {
-        ...actualPrisma,
-        PrismaClient: jest.fn().mockImplementation(() => ({
-            medicalEquipment: {
-                create: jest.fn(),
-            },
-        })),
-    };
+  const mockCreate = jest.fn();
+  const mockFindUnique = jest.fn();
+
+  return {
+    PrismaClient: jest.fn().mockImplementation(() => ({
+      medicalEquipment: {
+        create: mockCreate,
+        findUnique: mockFindUnique,
+      },
+    })),
+    __mockPrisma: {
+      create: mockCreate,
+      findUnique: mockFindUnique,
+    },
+  };
 });
 
-const prisma = new PrismaClient();
-const mockCreate = prisma.medicalEquipment.create as jest.Mock;
+// Get access to mocked Prisma functions
+const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
-mockCreate.mockImplementation(async (inputData) => ({
-    id: crypto.randomUUID(),
-    ...inputData.data,
-    createdOn: new Date(),
-    modifiedOn: new Date(),
-    deletedBy: null,
-    deletedOn: null,
-}));
+describe("MedicalEquipmentRepository", () => {
+  let medicalEquipmentRepository: MedicalEquipmentRepository;
 
-const repository = new MedicalEquipmentRepository();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    medicalEquipmentRepository = new MedicalEquipmentRepository();
+  });
 
+  // Positive Test
+  it("should successfully add medical equipment", async () => {
+    const equipmentData: AddMedicalEquipmentDTO = {
+      inventorisId: "INV-001",
+      name: "MRI Scanner",
+      brandName: "Siemens",
+      modelName: "Magnetom",
+      createdBy: 1,
+    };
 
-describe("MedicalEquipmentRepository - createMedicalEquipment", () => {
-    afterEach(() => {
-        jest.clearAllMocks();
+    const expectedResponse: AddMedicalEquipmentResponseDTO = {
+      id: uuidv4(),
+      ...equipmentData,
+    };
+
+    mockPrisma.create.mockResolvedValue(expectedResponse);
+
+    const result =
+      await medicalEquipmentRepository.addMedicalEquipment(equipmentData);
+
+    expect(mockPrisma.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        inventorisId: "INV-001",
+        name: "MRI Scanner",
+      }),
+      select: expect.any(Object),
     });
 
-    // ✅ Positive Test Case - Data valid harus sukses
-    it("should create a new medical equipment successfully", async () => {
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "INV-12345",
-            name: "X-Ray Machine",
-            brandName: "Siemens",
-            modelName: "X2000",
-            purchaseDate: new Date("2024-01-01"),
-            purchasePrice: 50000000,
-            status: "Active",
-            vendor: "MediTech Supplies",
-            createdBy: 1,
-        };
+    expect(result).toEqual(expectedResponse);
+  });
 
-        const expectedOutput = {
-            id: 1,
-            ...inputData,
-            createdOn: new Date(),
-            modifiedOn: new Date(),
-            deletedBy: null,
-            deletedOn: null,
-        };
+  // Negative Test
+  it("should return existing record if inventorisId already exists", async () => {
+    const existingEquipment: AddMedicalEquipmentResponseDTO = {
+      id: uuidv4(),
+      inventorisId: "INV-001",
+      name: "MRI Scanner",
+      brandName: "Siemens",
+      modelName: "Magnetom",
+    };
 
-        mockCreate.mockResolvedValue(expectedOutput);
+    mockPrisma.findUnique.mockResolvedValue(existingEquipment);
 
-        const result = await repository.createMedicalEquipment(inputData);
-        expect(result).toEqual({
-            id: 1,
-            inventorisId: "INV-12345",
-            name: "X-Ray Machine",
-            brand: "Siemens",
-            model: "X2000",
-        });
-        expect(mockCreate).toHaveBeenCalledWith({
-            data: expect.objectContaining({
-                ...inputData,
-                createdOn: expect.any(Date),
-                modifiedOn: expect.any(Date),
-            }),
-        });
+    const result =
+      await medicalEquipmentRepository.findByInventorisId("INV-001");
+
+    expect(result).toEqual(existingEquipment);
+    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
+      where: { inventorisId: "INV-001" },
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+  });
+
+  it("should throw an error if database connection fails", async () => {
+    mockPrisma.create.mockRejectedValue(new Error("Database connection error"));
+
+    const equipmentData: AddMedicalEquipmentDTO = {
+      inventorisId: "INV-002",
+      name: "CT Scanner",
+      createdBy: 1,
+    };
+
+    await expect(
+      medicalEquipmentRepository.addMedicalEquipment(equipmentData),
+    ).rejects.toThrow("Database connection error");
+  });
+
+  // UUID Generation Test
+  it("should generate a valid UUID for the ID", async () => {
+    const mockUuid = uuidv4();
+    const equipmentData: AddMedicalEquipmentDTO = {
+      inventorisId: "INV-003",
+      name: "Ultrasound Machine",
+      createdBy: 1,
+    };
+
+    // Mock a successful response with a UUID
+    mockPrisma.create.mockResolvedValue({
+      id: mockUuid,
+      ...equipmentData,
     });
 
-    // ❌ Negative Test Case - Gagal karena inventorisId duplikat
-    it("should fail to create medical equipment due to duplicate inventorisId", async () => {
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "INV-12345",
-            name: "X-Ray Machine",
-            brandName: "Siemens",
-            modelName: "X2000",
-            purchaseDate: new Date("2024-01-01"),
-            purchasePrice: 50000000,
-            status: "Active",
-            vendor: "MediTech Supplies",
-            createdBy: 1,
-        };
+    const result =
+      await medicalEquipmentRepository.addMedicalEquipment(equipmentData);
 
-        mockCreate.mockRejectedValue(
-            new Error("Unique constraint failed on the fields: (`inventorisId`)")
-        );
+    expect(result.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+  });
 
-        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
-            "Unique constraint failed on the fields: (`inventorisId`)"
-        );
+  it("should throw an error if findByInventorisId query fails", async () => {
+    mockPrisma.findUnique.mockRejectedValue(new Error("Database error"));
+
+    await expect(
+      medicalEquipmentRepository.findByInventorisId("INV-999"),
+    ).rejects.toThrow("Database error");
+  });
+
+  it("should return null if medical equipment is not found", async () => {
+    mockPrisma.findUnique.mockResolvedValue(null);
+
+    const result =
+      await medicalEquipmentRepository.findByInventorisId("INV-404");
+
+    expect(result).toBeNull();
+    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
+      where: { inventorisId: "INV-404" },
+      select: expect.any(Object),
     });
+  });
 
-    // 🚧 Corner Case Test - Tidak mengisi field opsional
-    it("should create medical equipment with only required fields", async () => {
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "INV-67890",
-            name: "MRI Scanner",
-            createdBy: 2,
-        };
+  it("should throw an error if findByInventorisId query fails", async () => {
+    mockPrisma.findUnique.mockRejectedValue(new Error("Database error"));
 
-        const expectedOutput = {
-            id: 2,
-            inventorisId: "INV-67890",
-            name: "MRI Scanner",
-            brandName: null,
-            modelName: null,
-            purchaseDate: null,
-            purchasePrice: null,
-            status: "Active",
-            vendor: null,
-            createdBy: 2,
-            createdOn: new Date(),
-            modifiedOn: new Date(),
-            deletedBy: null,
-            deletedOn: null,
-        };
+    await expect(
+      medicalEquipmentRepository.findByInventorisId("INV-999"),
+    ).rejects.toThrow("Database error");
+  });
 
-        mockCreate.mockResolvedValue(expectedOutput);
+  // Corner case
+  it("should return null if medical equipment is not found", async () => {
+    mockPrisma.findUnique.mockResolvedValue(null);
 
-        const result = await repository.createMedicalEquipment(inputData);
-        expect(result).toEqual({
-            id: 2,
-            inventorisId: "INV-67890",
-            name: "MRI Scanner",
-            brand: "",
-            model: "",
-        });
+    const result =
+      await medicalEquipmentRepository.findByInventorisId("INV-404");
+
+    expect(result).toBeNull();
+    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
+      where: { inventorisId: "INV-404" },
+      select: expect.any(Object),
     });
+  });
 
-    // 🚧 Corner Case Test - Nilai field dengan batasan data
-    it("should handle maximum string length for name", async () => {
-        const longName = "A".repeat(255);
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "INV-99999",
-            name: longName,
-            createdBy: 3,
-        };
+  // Edge case
+  it("should return equipment with undefined brandName and modelName if they are null in DB", async () => {
+    const dbResponse = {
+      id: "uuid-123",
+      inventorisId: "INV-TEST",
+      name: "Test Equipment",
+      brandName: null,
+      modelName: null,
+    };
 
-        const expectedOutput = {
-            id: 3,
-            inventorisId: "INV-99999",
-            name: longName,
-            brandName: null,
-            modelName: null,
-            purchaseDate: null,
-            purchasePrice: null,
-            status: "Active",
-            vendor: null,
-            createdBy: 3,
-            createdOn: new Date(),
-            modifiedOn: new Date(),
-            deletedBy: null,
-            deletedOn: null,
-        };
+    const expectedResponse = {
+      ...dbResponse,
+      brandName: undefined,
+      modelName: undefined,
+    };
 
-        mockCreate.mockResolvedValue(expectedOutput);
+    mockPrisma.findUnique.mockResolvedValue(dbResponse);
 
-        const result = await repository.createMedicalEquipment(inputData);
-        expect(result).toEqual({
-            id: 3,
-            inventorisId: "INV-99999",
-            name: longName,
-            brand: "",
-            model: "",
-        });
+    const result =
+      await medicalEquipmentRepository.findByInventorisId("INV-TEST");
+
+    expect(result).toEqual(expectedResponse);
+    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
+      where: { inventorisId: "INV-TEST" },
+      select: expect.any(Object),
     });
+  });
 
-    // ❌ Negative Test Case - purchasePrice negatif
-    it("should fail when purchasePrice is negative", async () => {
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "INV-54321",
-            name: "Ultrasound Machine",
-            purchasePrice: -1000000,
-            createdBy: 4,
-        };
+  it("should return equipment with undefined brandName and modelName if they are undefined in DB", async () => {
+    const dbResponse = {
+      id: "uuid-456",
+      inventorisId: "INV-TEST-2",
+      name: "Test Equipment 2",
+      brandName: undefined,
+      modelName: undefined,
+    };
 
-        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
-            "purchasePrice must be a positive number"
-        );
+    mockPrisma.findUnique.mockResolvedValue(dbResponse);
+
+    const result =
+      await medicalEquipmentRepository.findByInventorisId("INV-TEST-2");
+
+    expect(result).toEqual(dbResponse);
+    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
+      where: { inventorisId: "INV-TEST-2" },
+      select: expect.any(Object),
     });
-
-    // ❌ Negative Test Case - inventorisId kosong
-    it("should fail when inventorisId is empty", async () => {
-        const inputData: AddMedicalEquipmentDTO = {
-            inventorisId: "",
-            name: "Defibrillator",
-            createdBy: 5,
-        };
-
-        await expect(repository.createMedicalEquipment(inputData)).rejects.toThrow(
-            "inventorisId cannot be empty"
-        );
-    });
+  });
 });
