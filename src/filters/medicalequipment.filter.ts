@@ -1,9 +1,3 @@
-/* istanbul ignore file */
-/* sonar-disable */
-/* sonar:disable */
-/* eslint-disable */
-/* sonar.coverage.exclusions */
-/* coverage-disable */
 import { MedicalEquipmentFilterOptions } from "./interface/medicalequipment.filter.interface";
 import { Prisma } from "@prisma/client";
 

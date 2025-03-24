@@ -82,6 +82,25 @@ describe("MedicalEquipmentFilter", () => {
         filterHandlers[0](filters, whereClause);
         expect(whereClause.status).toBeUndefined();
       });
+
+      it("should handle null status value", () => {
+        const filters: MedicalEquipmentFilterOptions = {
+          status: null as any,
+        };
+
+        filterHandlers[0](filters, whereClause);
+        expect(whereClause.status).toBeUndefined();
+      });
+      
+      // Add this test to cover the specific branch that might be in lines 33-35
+      it("should handle non-array status value", () => {
+        const filters = {
+          status: "ACTIVE" as any  // Passing a string directly instead of array
+        };
+
+        filterHandlers[0](filters, whereClause);
+        expect(whereClause.status).toEqual({ in: ["ACTIVE"] });
+      });
     });
 
     // --------------------------------------------------
