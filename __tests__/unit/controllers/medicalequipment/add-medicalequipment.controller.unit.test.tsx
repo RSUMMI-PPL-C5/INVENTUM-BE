@@ -5,7 +5,7 @@ import { AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequip
 import { validationResult, ValidationError } from "express-validator";
 import { v4 as uuidv4 } from "uuid";
 
-jest.mock("../../../../src/services/add-medicalequipment.service");
+jest.mock("../../../../src/services/medicalequipment.service");
 
 jest.mock("express-validator", () => ({
   validationResult: jest.fn(() => ({

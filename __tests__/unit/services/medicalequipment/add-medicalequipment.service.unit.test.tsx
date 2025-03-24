@@ -6,7 +6,7 @@ import {
 } from "../../../../src/dto/medicalequipment.dto";
 import { v4 as uuidv4 } from "uuid";
 
-jest.mock("../../../../src/repository/add-medicalequipment.repository");
+jest.mock("../../../../src/repository/medicalequipment.repository");
 
 describe("MedicalEquipmentService", () => {
   let medicalEquipmentService: MedicalEquipmentService;
