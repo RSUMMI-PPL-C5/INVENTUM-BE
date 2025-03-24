@@ -1,17 +1,12 @@
 import { Request, Response } from "express";
 import MedicalEquipmentController from "../../../../src/controllers/add-medicalequipment.controller";
 import MedicalEquipmentService from "../../../../src/services/add-medicalequipment.service";
-import {
-  AddMedicalEquipmentDTO,
-  AddMedicalEquipmentResponseDTO,
-} from "../../../../src/dto/medicalequipment.dto";
+import { AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequipment.dto";
 import { validationResult, ValidationError } from "express-validator";
 import { v4 as uuidv4 } from "uuid";
 
-// ✅ Mock `MedicalEquipmentService`
 jest.mock("../../../../src/services/add-medicalequipment.service");
 
-// ✅ Mock `validationResult`
 jest.mock("express-validator", () => ({
   validationResult: jest.fn(() => ({
     isEmpty: jest.fn(() => true),
@@ -42,7 +37,7 @@ describe("MedicalEquipmentController", () => {
     jest.clearAllMocks();
   });
 
-  /** ✅ Positive Test: Berhasil menambahkan alat medis */
+  // Positive Test
   it("should successfully add medical equipment", async () => {
     req.body = {
       inventorisId: "INV-001",
@@ -74,7 +69,7 @@ describe("MedicalEquipmentController", () => {
     expect(res.json).toHaveBeenCalledWith(expectedResponse);
   });
 
-  /** ❌ Negative Test: Gagal karena inventorisId sudah ada */
+  // Negative Test
   it("should return 409 if inventorisId already exists", async () => {
     req.body = {
       inventorisId: "INV-001",
@@ -97,7 +92,6 @@ describe("MedicalEquipmentController", () => {
     });
   });
 
-  /** 🔥 Unhandled Error Test */
   it("should return 500 if an unexpected error occurs", async () => {
     req.body = {
       inventorisId: "INV-ERR",
@@ -118,7 +112,6 @@ describe("MedicalEquipmentController", () => {
     expect(res.json).toHaveBeenCalledWith({ error: "Database error" });
   });
 
-  /** ❌ Negative Test: Gagal karena validasi gagal */
   it("should return 400 if validation fails", async () => {
     // Create validation errors mock result
     const validationErrorsResult = {
@@ -156,7 +149,6 @@ describe("MedicalEquipmentController", () => {
     });
   });
 
-  /** ✅ Test: Handle purchase date conversion */
   it("should properly convert purchase date to Date object", async () => {
     const testDate = "2023-10-15"; // ISO date string
     req.body = {
@@ -189,7 +181,6 @@ describe("MedicalEquipmentController", () => {
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
-  /** ❌ Test: Handle non-Error type in catch block */
   it("should return 500 with generic message for non-Error type exceptions", async () => {
     req.body = {
       inventorisId: "INV-UNKNOWN",
@@ -211,7 +202,6 @@ describe("MedicalEquipmentController", () => {
     });
   });
 
-  /** ✅ Test: Handle purchase price conversion */
   it("should properly convert purchase price to Number", async () => {
     req.body = {
       inventorisId: "INV-PRICE",
