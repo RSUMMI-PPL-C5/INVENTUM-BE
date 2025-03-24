@@ -114,7 +114,6 @@ describe("medicalEquipmentFilterQueryValidation", () => {
   // Corner Cases
   describe("Corner Cases", () => {
     it("should handle array passed directly to status sanitizer", async () => {
-      // This specifically tests line 8 in the validation file (Array.isArray branch)
       const statusArray = ["Active", "Maintenance"];
       const req = { query: { status: statusArray } };
       
@@ -124,7 +123,6 @@ describe("medicalEquipmentFilterQueryValidation", () => {
         )
       );
       
-      // Verify the array was returned as-is without modification
       expect(req.query.status).toBe(statusArray);
       
       const errors = validationResult(req);
@@ -160,14 +158,12 @@ describe("medicalEquipmentFilterQueryValidation", () => {
       for (const field of invalidDateFields) {
         const req = { query: { [field]: "invalid-date" } };
         
-        // Force past validation to test the NaN check in sanitizer
         const validation = medicalEquipmentFilterQueryValidation.find(v => 
           (v as any).builder.fields.includes(field)
         );
         
         if (validation) {
           await validation(req, {} as any, () => {});
-          // The invalid date should not be modified by setUTCHours since isNaN check should fail
           expect((req.query[field] as any) instanceof Date).toBe(true);
           expect(isNaN((req.query[field] as unknown as Date).getTime())).toBe(true);
         }
@@ -188,7 +184,6 @@ describe("medicalEquipmentFilterQueryValidation", () => {
       const errors = await runValidations(query);
       expect(errors.isEmpty()).toBe(true);
       
-      // Verify end dates are set to end of day
       expect(query.createdOnEnd).toEqual(new Date("2023-12-31T23:59:59.999Z"));
       expect(query.modifiedOnEnd).toEqual(new Date("2023-11-30T23:59:59.999Z"));
       expect(query.purchaseDateEnd).toEqual(new Date("2023-10-31T23:59:59.999Z"));
