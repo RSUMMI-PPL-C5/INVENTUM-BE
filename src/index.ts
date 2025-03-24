@@ -8,11 +8,12 @@ import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
-import 'dotenv/config';
+import medicalequipmentRoutes from "./routes/medicalequipment.route";
+import "dotenv/config";
 
 const app = express();
 
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 
 const whitelist: string[] = [];
 
@@ -42,13 +43,14 @@ app.get("/", (req, res) => {
   res.send("PPL C-5 DEPLOYED!!!");
 });
 
-app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
+app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/medical-equipment", medicalequipmentRoutes);
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
-  console.log(`CORS enabled for origins: ${whitelist.join(', ')}`);
+  console.log(`CORS enabled for origins: ${whitelist.join(", ")}`);
 });
 
 export default server;
