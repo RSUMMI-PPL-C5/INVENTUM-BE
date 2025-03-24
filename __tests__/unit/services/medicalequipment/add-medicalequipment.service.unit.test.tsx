@@ -1,5 +1,5 @@
-import MedicalEquipmentService from "../../../../src/services/add-medicalequipment.service";
-import MedicalEquipmentRepository from "../../../../src/repository/add-medicalequipment.repository";
+import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
+import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,

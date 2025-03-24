@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import MedicalEquipmentController from "../../../../src/controllers/add-medicalequipment.controller";
-import MedicalEquipmentService from "../../../../src/services/add-medicalequipment.service";
+import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
+import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 import { AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequipment.dto";
 import { validationResult, ValidationError } from "express-validator";
 import { v4 as uuidv4 } from "uuid";

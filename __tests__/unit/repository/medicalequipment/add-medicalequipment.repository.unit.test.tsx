@@ -1,4 +1,4 @@
-import MedicalEquipmentRepository from "../../../../src/repository/add-medicalequipment.repository";
+import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
