@@ -23,15 +23,14 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          npx sonarqube-scanner@4.2.0 \
+          npx sonarqube-scanner \
             -Dsonar.projectKey=InventoryManagement-BE \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=src \
             -Dsonar.tests=__tests__ \
+            -Dsonar.verbose=true \
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
             -Dsonar.exclusions=src/configs/**, src/**/__tests__/** \
-            -Dsonar.scm.disabled=true \
-            -Dsonar.branch.autoconfig.disabled=true
