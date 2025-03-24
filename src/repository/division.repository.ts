@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, ListDivisi } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { DivisionDTO, DivisionWithChildrenDTO } from "../dto/division.dto";
 
 import prisma from "../configs/db.config";
