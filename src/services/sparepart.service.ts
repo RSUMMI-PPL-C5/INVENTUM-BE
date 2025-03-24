@@ -26,6 +26,35 @@ class SparepartService implements ISparepartService {
     return await this.sparepartRepository.createSparepart(createData);
   }
 
+  private validateSparepartData(data: Partial<SparepartsDTO>): boolean {
+    if (!data.modifiedBy) return false;
+    if (data.partsName && data.partsName.trim().length === 0) return false;
+    if (data.price && data.price < 0) return false;
+    return true;
+  }
+
+  public async updateSparepart(
+    id: string,
+    data: Partial<SparepartsDTO>,
+  ): Promise<SparepartsDTO | null> {
+    const sparepart = await this.sparepartRepository.getSparepartById(id);
+    if (!sparepart || !this.validateSparepartData(data)) {
+      return null;
+    }
+
+    const updatedData: Partial<SparepartsDTO> = {
+      partsName: data.partsName,
+      purchaseDate: data.purchaseDate,
+      price: data.price,
+      toolLocation: data.toolLocation,
+      toolDate: data.toolDate,
+      modifiedBy: data.modifiedBy,
+      modifiedOn: new Date(),
+    };
+
+    return await this.sparepartRepository.updateSparepart(id, updatedData);
+  }
+
   public async deleteSparepart(id: string): Promise<SparepartsDTO | null> {
     const sparepart = await this.sparepartRepository.getSparepartById(id);
     if (!sparepart) {

@@ -27,6 +27,27 @@ class SparepartController {
     }
   };
 
+  public updateSparepart = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const sparepart = await this.sparepartService.updateSparepart(
+        req.params.id,
+        req.body,
+      );
+      if (!sparepart) {
+        res
+          .status(404)
+          .json({ message: "Sparepart not found or invalid data" });
+        return;
+      }
+      res.status(200).json(sparepart);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  };
+
   public deleteSparepart = async (
     req: Request,
     res: Response,

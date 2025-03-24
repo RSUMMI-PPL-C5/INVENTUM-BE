@@ -7,6 +7,7 @@ const router = Router();
 const sparepartController = new SparepartController();
 
 router.post("/", addSparepartValidation, sparepartController.addSparepart);
+router.put("/:id", sparepartController.updateSparepart);
 router.delete("/:id", sparepartController.deleteSparepart);
 
 export default router;
