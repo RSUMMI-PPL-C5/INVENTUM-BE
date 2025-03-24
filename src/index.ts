@@ -8,6 +8,7 @@ import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
+import divisionRoutes from "./routes/division.route";
 import 'dotenv/config';
 
 const app = express();
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
+app.use('/divisi', divisionRoutes)
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
