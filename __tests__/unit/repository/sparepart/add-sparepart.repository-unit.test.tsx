@@ -10,6 +10,7 @@ jest.mock("../../../../src/configs/db.config", () => {
     default: {
       spareparts: {
         create: jest.fn(),
+        findUnique: jest.fn(), // Added mock for findUnique
       },
     },
   };
@@ -106,6 +107,59 @@ describe("SparepartRepository - CREATE", () => {
         data: minimalSparepartData,
       });
       expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  // Added tests for getSparepartById
+  describe("getSparepartById", () => {
+    it("should get a sparepart by id", async () => {
+      const mockSparepart: SparepartsDTO = {
+        id: "1",
+        partsName: "Test Part",
+        purchaseDate: new Date("2023-01-01"),
+        price: 100,
+        toolLocation: "Warehouse A",
+        toolDate: "2023-01-05", // toolDate as string
+        createdBy: 1,
+        createdOn: new Date("2023-01-01"),
+        modifiedOn: new Date("2023-01-01"),
+      };
+
+      (mockPrisma.spareparts.findUnique as jest.Mock).mockResolvedValue(
+        mockSparepart,
+      );
+
+      const result = await sparepartRepository.getSparepartById("1");
+
+      expect(mockPrisma.spareparts.findUnique).toHaveBeenCalledWith({
+        where: { id: "1" },
+      });
+      expect(result).toEqual(mockSparepart);
+    });
+
+    it("should return null if sparepart not found", async () => {
+      (mockPrisma.spareparts.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await sparepartRepository.getSparepartById("999");
+
+      expect(mockPrisma.spareparts.findUnique).toHaveBeenCalledWith({
+        where: { id: "999" },
+      });
+      expect(result).toBeNull();
+    });
+
+    it("should handle errors when getting a sparepart", async () => {
+      const errorMessage = "Database error";
+      (mockPrisma.spareparts.findUnique as jest.Mock).mockRejectedValue(
+        new Error(errorMessage),
+      );
+
+      await expect(sparepartRepository.getSparepartById("1")).rejects.toThrow(
+        errorMessage,
+      );
+      expect(mockPrisma.spareparts.findUnique).toHaveBeenCalledWith({
+        where: { id: "1" },
+      });
     });
   });
 });
