@@ -1,5 +1,5 @@
-import { PrismaClient, Prisma, Spareparts } from "@prisma/client";
-import { SparepartDTO, FilterSparepartDTO } from "../dto/sparepart.dto";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { SparepartDTO } from "../dto/sparepart.dto";
 import prisma from "../configs/db.config";
 
 class SparepartRepository {
@@ -32,7 +32,7 @@ class SparepartRepository {
     return await this.prisma.spareparts.findMany({
       where: {
         ...whereClause,
-        deletedOn: null, // Only get non-deleted spareparts
+        deletedOn: null,
       },
     });
   }
