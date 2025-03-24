@@ -6,5 +6,6 @@ export interface IDivisionService {
   getDivisionsWithUserCount(): Promise<
     Array<DivisionDTO & { userCount: number }>
   >;
+  getDivisionById(id: number): Promise<DivisionDTO | null>;
   deleteDivision(id: number): Promise<boolean>;
 }

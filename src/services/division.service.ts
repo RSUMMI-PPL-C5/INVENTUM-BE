@@ -38,6 +38,10 @@ class DivisionService implements IDivisionService {
   public async deleteDivision(id: number): Promise<boolean> {
     return await this.divisionRepository.deleteDivision(id);
   }
+
+  public async getDivisionById(id: number): Promise<DivisionDTO | null> {
+    return await this.divisionRepository.getDivisionById(id);
+  }
 }
 
 // Singleton pattern implementation - ensures single instance throughout the application

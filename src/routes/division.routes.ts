@@ -13,6 +13,7 @@ router.get(
   verifyToken,
   divisionController.getDivisionsWithUserCount,
 );
+router.get("/:id", verifyToken, divisionController.getDivisionById);
 router.delete("/:id", verifyToken, divisionController.deleteDivision);
 
 export default router;

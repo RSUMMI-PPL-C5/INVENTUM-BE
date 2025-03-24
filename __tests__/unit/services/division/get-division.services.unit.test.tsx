@@ -115,6 +115,57 @@ describe("DivisionService", () => {
       expect(mockRepository.getDivisionsWithUserCount).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("getDivisionById", () => {
+    it("should return division from repository when found", async () => {
+      // Arrange
+      const mockDivision = {
+        id: 5,
+        divisi: "Human Resources",
+        parentId: null,
+      };
+      mockRepository.getDivisionById = jest
+        .fn()
+        .mockResolvedValue(mockDivision);
+      const service = new DivisionService(mockRepository);
+
+      // Act
+      const result = await service.getDivisionById(5);
+
+      // Assert
+      expect(result).toEqual(mockDivision);
+      expect(mockRepository.getDivisionById).toHaveBeenCalledWith(5);
+      expect(mockRepository.getDivisionById).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return null when division is not found", async () => {
+      // Arrange
+      mockRepository.getDivisionById = jest.fn().mockResolvedValue(null);
+      const service = new DivisionService(mockRepository);
+
+      // Act
+      const result = await service.getDivisionById(999);
+
+      // Assert
+      expect(result).toBeNull();
+      expect(mockRepository.getDivisionById).toHaveBeenCalledWith(999);
+      expect(mockRepository.getDivisionById).toHaveBeenCalledTimes(1);
+    });
+
+    it("should pass error from repository to caller", async () => {
+      // Arrange
+      const error = new Error("Database error");
+      mockRepository.getDivisionById = jest.fn().mockRejectedValue(error);
+      const service = new DivisionService(mockRepository);
+
+      // Act & Assert
+      await expect(service.getDivisionById(1)).rejects.toThrow(
+        "Database error",
+      );
+      expect(mockRepository.getDivisionById).toHaveBeenCalledWith(1);
+      expect(mockRepository.getDivisionById).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe("DivisionServiceSingleton", () => {

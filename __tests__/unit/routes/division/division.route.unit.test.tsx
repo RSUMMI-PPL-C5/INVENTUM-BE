@@ -21,6 +21,7 @@ jest.mock("../../../../src/controllers/division.controller", () => {
     getDivisionsTree: jest.fn(),
     getAllDivisions: jest.fn(),
     getDivisionsWithUserCount: jest.fn(),
+    getDivisionById: jest.fn(),
     deleteDivision: jest.fn(),
   }));
 });
@@ -37,10 +38,11 @@ describe("Division Routes - GET", () => {
   test("router should have routes registered", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
 
+    // Check all GET routes
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/",
-      expect.any(Function),
-      expect.any(Function),
+      expect.any(Function), // Middleware
+      expect.any(Function), // Controller method
     );
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/all",
@@ -52,8 +54,13 @@ describe("Division Routes - GET", () => {
       expect.any(Function),
       expect.any(Function),
     );
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/:id",
+      expect.any(Function),
+      expect.any(Function),
+    );
 
-    expect(mockRouter.get).toHaveBeenCalledTimes(3);
+    expect(mockRouter.get).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -63,8 +70,8 @@ describe("Division Routes - DELETE", () => {
 
     expect(mockRouter.delete).toHaveBeenCalledWith(
       "/:id",
-      expect.any(Function),
-      expect.any(Function),
+      expect.any(Function), // Middleware
+      expect.any(Function), // Controller method
     );
   });
 });
