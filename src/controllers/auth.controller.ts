@@ -9,6 +9,7 @@ class AuthController {
 		this.authService = new AuthService();
 	}
 
+	
 	public login = async (
 		req: Request,
 		res: Response,
