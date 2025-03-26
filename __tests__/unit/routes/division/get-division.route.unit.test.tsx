@@ -16,6 +16,11 @@ jest.mock("express", () => {
   };
 });
 
+// Mock the verifyToken middleware
+jest.mock("../../../../src/middleware/verifyToken", () => {
+  return jest.fn();
+});
+
 // Update mock controller to include getDivisionById
 jest.mock("../../../../src/controllers/division.controller", () => {
   return jest.fn().mockImplementation(() => ({
@@ -39,11 +44,11 @@ describe('Division Routes', () => {
     // The routes are registered in the module itself when imported
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     
-    // Check that all the expected routes are registered
-    expect(mockRouter.get).toHaveBeenCalledWith('/', expect.any(Function));
-    expect(mockRouter.get).toHaveBeenCalledWith('/all', expect.any(Function));
-    expect(mockRouter.get).toHaveBeenCalledWith('/with-user-count', expect.any(Function));
-    expect(mockRouter.get).toHaveBeenCalledWith('/:id', expect.any(Function)); // Add this line
+    // Check that all the expected routes are registered with middleware
+    expect(mockRouter.get).toHaveBeenCalledWith('/', expect.any(Function), expect.any(Function));
+    expect(mockRouter.get).toHaveBeenCalledWith('/all', expect.any(Function), expect.any(Function));
+    expect(mockRouter.get).toHaveBeenCalledWith('/with-user-count', expect.any(Function), expect.any(Function));
+    expect(mockRouter.get).toHaveBeenCalledWith('/:id', expect.any(Function), expect.any(Function));
     
     // Update the expected count from 3 to 4
     expect(mockRouter.get).toHaveBeenCalledTimes(4);
@@ -59,6 +64,8 @@ describe('Division Routes', () => {
     
     expect(paramRouteCall).toBeDefined();
     expect(paramRouteCall?.[0]).toBe('/:id');
+    // First function is middleware, second is controller handler
     expect(paramRouteCall?.[1]).toEqual(expect.any(Function));
+    expect(paramRouteCall?.[2]).toEqual(expect.any(Function));
   });
 });
