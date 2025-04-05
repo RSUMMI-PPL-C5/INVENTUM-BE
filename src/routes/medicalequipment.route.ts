@@ -5,7 +5,11 @@ import { medicalEquipmentFilterQueryValidation } from "../validations/medicalequ
 const router = Router();
 const medicalequipmentController = new MedicalequipmentController();
 
-router.get("/", medicalEquipmentFilterQueryValidation, medicalequipmentController.getMedicalEquipment);
+router.get(
+  "/",
+  medicalEquipmentFilterQueryValidation,
+  medicalequipmentController.getMedicalEquipment,
+);
 router.get("/:id", medicalequipmentController.getMedicalEquipmentById);
 
 export default router;

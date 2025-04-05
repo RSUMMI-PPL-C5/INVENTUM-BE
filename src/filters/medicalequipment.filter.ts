@@ -11,8 +11,8 @@ export const hasFilters = (query: any): boolean => {
     "purchaseDateStart",
     "purchaseDateEnd",
   ];
-  return filterKeys.some((key) => 
-    query[key] !== undefined && query[key] !== null
+  return filterKeys.some(
+    (key) => query[key] !== undefined && query[key] !== null,
   );
 };
 
@@ -43,8 +43,12 @@ function handlePurchaseDateFilter(
 ): void {
   if (filters.purchaseDateStart || filters.purchaseDateEnd) {
     whereClause.purchaseDate = {
-      ...(filters.purchaseDateStart && { gte: new Date(filters.purchaseDateStart) }),
-      ...(filters.purchaseDateEnd && { lte: new Date(filters.purchaseDateEnd) }),
+      ...(filters.purchaseDateStart && {
+        gte: new Date(filters.purchaseDateStart),
+      }),
+      ...(filters.purchaseDateEnd && {
+        lte: new Date(filters.purchaseDateEnd),
+      }),
     };
   }
 }
@@ -67,7 +71,9 @@ function handleModifiedOnFilter(
 ): void {
   if (filters.modifiedOnStart || filters.modifiedOnEnd) {
     whereClause.modifiedOn = {
-      ...(filters.modifiedOnStart && { gte: new Date(filters.modifiedOnStart) }),
+      ...(filters.modifiedOnStart && {
+        gte: new Date(filters.modifiedOnStart),
+      }),
       ...(filters.modifiedOnEnd && { lte: new Date(filters.modifiedOnEnd) }),
     };
   }

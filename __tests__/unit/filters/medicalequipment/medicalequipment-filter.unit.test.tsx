@@ -1,7 +1,10 @@
 // medicalequipment.filter.spec.ts
 import { MedicalEquipmentFilterOptions } from "../../../../src/filters/interface/medicalequipment.filter.interface";
 import { Prisma } from "@prisma/client";
-import { hasFilters, filterHandlers } from "../../../../src/filters/medicalequipment.filter";
+import {
+  hasFilters,
+  filterHandlers,
+} from "../../../../src/filters/medicalequipment.filter";
 
 describe("MedicalEquipmentFilter", () => {
   // ==================================================
@@ -91,11 +94,11 @@ describe("MedicalEquipmentFilter", () => {
         filterHandlers[0](filters, whereClause);
         expect(whereClause.status).toBeUndefined();
       });
-      
+
       // Add this test to cover the specific branch that might be in lines 33-35
       it("should handle non-array status value", () => {
         const filters = {
-          status: "ACTIVE" as any  // Passing a string directly instead of array
+          status: "ACTIVE" as any, // Passing a string directly instead of array
         };
 
         filterHandlers[0](filters, whereClause);
@@ -163,7 +166,7 @@ describe("MedicalEquipmentFilter", () => {
         whereClause = {};
         filterHandlers[2](
           { createdOnStart: mockDateStart, createdOnEnd: mockDateEnd },
-          whereClause
+          whereClause,
         );
         expect(whereClause.createdOn).toEqual({
           gte: mockDateStart,
@@ -196,7 +199,9 @@ describe("MedicalEquipmentFilter", () => {
         } as unknown as MedicalEquipmentFilterOptions;
 
         filterHandlers[3](filters, whereClause);
-        expect((whereClause.modifiedOn as Prisma.DateTimeFilter).gte).toBeInstanceOf(Date);
+        expect(
+          (whereClause.modifiedOn as Prisma.DateTimeFilter).gte,
+        ).toBeInstanceOf(Date);
       });
     });
 

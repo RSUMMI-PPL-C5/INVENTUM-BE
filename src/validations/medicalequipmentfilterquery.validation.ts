@@ -7,12 +7,15 @@ import { query, ValidationChain } from "express-validator";
  * @returns ValidationChain for the date field
  */
 
-const createDateValidation = (fieldName: string, isEndDate: boolean): ValidationChain => {
+const createDateValidation = (
+  fieldName: string,
+  isEndDate: boolean,
+): ValidationChain => {
   const chain = query(fieldName)
     .optional()
     .isISO8601()
     .withMessage(`${fieldName} must be a valid ISO date`);
-  
+
   if (isEndDate) {
     return chain.customSanitizer((value) => {
       const date = new Date(value);
@@ -36,7 +39,9 @@ export const medicalEquipmentFilterQueryValidation = [
     .isArray()
     .withMessage("status must be a string or an array of strings")
     .custom((value) =>
-      value.every((status: any) => ["Active", "Maintenance", "Inactive"].includes(status)),
+      value.every((status: any) =>
+        ["Active", "Maintenance", "Inactive"].includes(status),
+      ),
     )
     .withMessage("status must contain Active, Maintenance, Inactive"),
 

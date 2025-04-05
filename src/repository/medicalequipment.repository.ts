@@ -15,24 +15,28 @@ class MedicalEquipmentRepository {
   }
 
   public async getFilteredMedicalEquipment(
-    whereClause: Prisma.MedicalEquipmentWhereInput
+    whereClause: Prisma.MedicalEquipmentWhereInput,
   ): Promise<MedicalEquipmentDTO[]> {
     return await prisma.medicalEquipment.findMany({ where: whereClause });
   }
 
-  public async getMedicalEquipmentById(id: string): Promise<MedicalEquipmentDTO | null> {
+  public async getMedicalEquipmentById(
+    id: string,
+  ): Promise<MedicalEquipmentDTO | null> {
     return await this.prisma.medicalEquipment.findUnique({
       where: { id },
     });
   }
 
-  public async getMedicalEquipmentByName(nameQuery: string): Promise<MedicalEquipment[]> {
+  public async getMedicalEquipmentByName(
+    nameQuery: string,
+  ): Promise<MedicalEquipment[]> {
     return await this.prisma.medicalEquipment.findMany({
       where: {
-				name: {
-					contains: nameQuery,
-				},
-			},
+        name: {
+          contains: nameQuery,
+        },
+      },
     });
   }
 }

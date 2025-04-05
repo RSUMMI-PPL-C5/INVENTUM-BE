@@ -11,7 +11,10 @@ class MedicalequipmentController {
     this.medicalequipmentService = new MedicalequipmentService();
   }
 
-  public getMedicalEquipment = async (req: Request, res: Response): Promise<void> => {
+  public getMedicalEquipment = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -20,14 +23,15 @@ class MedicalequipmentController {
       }
 
       const { search } = req.query;
-	
+
       // Untuk search
-			if (typeof search === "string") {
-				const users = await this.medicalequipmentService.searchMedicalEquipment(search);
-				res.status(200).json(users);
-				return;
-			}
-      
+      if (typeof search === "string") {
+        const users =
+          await this.medicalequipmentService.searchMedicalEquipment(search);
+        res.status(200).json(users);
+        return;
+      }
+
       // Untuk filter
       let medicalEquipment;
       if (hasFilters(req.query)) {
@@ -40,9 +44,13 @@ class MedicalequipmentController {
           purchaseDateStart: req.query.purchaseDateStart as any,
           purchaseDateEnd: req.query.purchaseDateEnd as any,
         };
-        medicalEquipment = await this.medicalequipmentService.getFilteredMedicalEquipment(filters);
+        medicalEquipment =
+          await this.medicalequipmentService.getFilteredMedicalEquipment(
+            filters,
+          );
       } else {
-        medicalEquipment = await this.medicalequipmentService.getMedicalEquipment();
+        medicalEquipment =
+          await this.medicalequipmentService.getMedicalEquipment();
       }
 
       res.status(200).json(medicalEquipment);
@@ -51,9 +59,15 @@ class MedicalequipmentController {
     }
   };
 
-  public getMedicalEquipmentById = async (req: Request, res: Response): Promise<void> => {
-    try{
-      const medicalEquipment = await this.medicalequipmentService.getMedicalEquipmentById(req.params.id);
+  public getMedicalEquipmentById = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const medicalEquipment =
+        await this.medicalequipmentService.getMedicalEquipmentById(
+          req.params.id,
+        );
       if (!medicalEquipment) {
         res.status(404).json({ message: "Medical Equipment not found" });
         return;
@@ -62,7 +76,7 @@ class MedicalequipmentController {
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
     }
-  }
+  };
 }
 
 export default MedicalequipmentController;

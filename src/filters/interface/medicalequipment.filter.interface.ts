@@ -3,7 +3,7 @@ export interface MedicalEquipmentFilterOptions {
   createdOnStart?: Date;
   createdOnEnd?: Date;
   modifiedOnStart?: Date;
-  modifiedOnEnd?: Date; 
+  modifiedOnEnd?: Date;
   purchaseDateStart?: Date;
   purchaseDateEnd?: Date;
 }

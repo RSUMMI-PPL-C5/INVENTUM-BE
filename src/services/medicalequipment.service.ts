@@ -16,21 +16,31 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     return await this.medicalEquipmentRepository.getMedicalEquipment();
   }
 
-  public async getMedicalEquipmentById(id: string): Promise<MedicalEquipmentDTO | null> {
+  public async getMedicalEquipmentById(
+    id: string,
+  ): Promise<MedicalEquipmentDTO | null> {
     return await this.medicalEquipmentRepository.getMedicalEquipmentById(id);
   }
 
-  public async getFilteredMedicalEquipment(filters: MedicalEquipmentFilterOptions): Promise<MedicalEquipmentDTO[]> {
+  public async getFilteredMedicalEquipment(
+    filters: MedicalEquipmentFilterOptions,
+  ): Promise<MedicalEquipmentDTO[]> {
     const whereClause: Prisma.MedicalEquipmentWhereInput = {};
     filterHandlers.forEach((handler) => handler(filters, whereClause));
-    return await this.medicalEquipmentRepository.getFilteredMedicalEquipment(whereClause);
+    return await this.medicalEquipmentRepository.getFilteredMedicalEquipment(
+      whereClause,
+    );
   }
 
-  public async searchMedicalEquipment(name: string): Promise<MedicalEquipmentDTO[]> {
+  public async searchMedicalEquipment(
+    name: string,
+  ): Promise<MedicalEquipmentDTO[]> {
     if (!name || typeof name !== "string" || name.trim() === "") {
       throw new Error("Name query is required");
     }
-    return this.medicalEquipmentRepository.getMedicalEquipmentByName(name.trim());
+    return this.medicalEquipmentRepository.getMedicalEquipmentByName(
+      name.trim(),
+    );
   }
 }
 
