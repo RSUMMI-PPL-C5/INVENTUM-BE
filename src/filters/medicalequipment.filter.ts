@@ -37,6 +37,17 @@ function handleStatusFilter(
   }
 }
 
+/**
+ * Applies purchase date range filters to the provided query criteria.
+ *
+ * If either a start or end purchase date is specified in the filters object, this
+ * function updates the whereClause by converting the provided timestamp(s) to Date
+ * objects and setting them as the lower (gte) and/or upper (lte) boundaries for the
+ * purchaseDate filter.
+ *
+ * @param filters - The object containing potential purchase date filter values.
+ * @param whereClause - The query criteria to be updated with purchase date filters.
+ */
 function handlePurchaseDateFilter(
   filters: MedicalEquipmentFilterOptions,
   whereClause: Prisma.MedicalEquipmentWhereInput,
@@ -65,6 +76,16 @@ function handleCreatedOnFilter(
   }
 }
 
+/**
+ * Applies filtering logic to set the modifiedOn date range on a Prisma where clause.
+ *
+ * If either a start (modifiedOnStart) or end (modifiedOnEnd) date is specified in the filters,
+ * this function converts the provided filter value(s) to Date objects and assigns them as
+ * gte (start) and/or lte (end) boundaries on the modifiedOn field of the whereClause.
+ *
+ * @param filters - Filter options that may include modifiedOnStart and/or modifiedOnEnd dates.
+ * @param whereClause - The Prisma where clause object that is updated with the modifiedOn filter.
+ */
 function handleModifiedOnFilter(
   filters: MedicalEquipmentFilterOptions,
   whereClause: Prisma.MedicalEquipmentWhereInput,
