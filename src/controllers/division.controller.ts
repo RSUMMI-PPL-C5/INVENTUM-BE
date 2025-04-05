@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import DivisionService from "../services/division.service";
+import AppError from "../utils/appError";
 
 class DivisionController {
   private readonly divisionService: DivisionService;
@@ -87,6 +88,12 @@ class DivisionController {
   ): Promise<void> => {
     try {
       const divisionId = parseInt(req.params.id, 10);
+
+      if (isNaN(divisionId)) {
+        res.status(400).json({ message: "Invalid division ID" });
+        return;
+      }
+
       const isDeleted = await this.divisionService.deleteDivision(divisionId);
 
       if (isDeleted) {
@@ -95,7 +102,13 @@ class DivisionController {
         res.status(404).json({ message: "Division not found" });
       }
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      if (error instanceof AppError) {
+        // Handle AppError with its statusCode and message
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        // Handle unexpected errors
+        res.status(500).json({ message: "An unexpected error occurred." });
+      }
     }
   };
 }

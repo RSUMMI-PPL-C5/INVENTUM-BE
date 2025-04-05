@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DivisionDTO, DivisionWithChildrenDTO } from "../dto/division.dto";
+import AppError from "../utils/appError";
 
 import prisma from "../configs/db.config";
 
@@ -96,13 +97,29 @@ class DivisionRepository {
 
   public async deleteDivision(id: number): Promise<boolean> {
     try {
-      await this.prisma.listDivisi.delete({
-        where: { id },
+      await this.prisma.user.updateMany({
+        where: {
+          divisiId: id,
+        },
+        data: {
+          divisiId: null,
+        },
       });
+
+      await this.prisma.listDivisi.deleteMany({
+        where: {
+          OR: [{ id }, { parentId: id }],
+        },
+      });
+
       return true;
     } catch (error) {
-      console.error(`Failed to delete division with ID ${id}:`, error);
-      return false;
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      throw new AppError(
+        `Failed to delete division with ID ${id}: ${errorMessage}`,
+        500,
+      );
     }
   }
 }
