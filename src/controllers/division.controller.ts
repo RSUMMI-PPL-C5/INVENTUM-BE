@@ -82,6 +82,64 @@ class DivisionController {
     }
   };
 
+  public updateDivision = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        res.status(400).json({ message: "Invalid division ID" });
+        return;
+      }
+
+      const { divisi, parentId } = req.body;
+
+      // Validate input
+      if (divisi === undefined && parentId === undefined) {
+        res.status(400).json({ message: "No update data provided" });
+        return;
+      }
+
+      // Convert parentId to number if it's a string, or null if it's null
+      let parsedParentId: number | null | undefined = undefined;
+      if (parentId !== undefined) {
+        parsedParentId = parentId === null ? null : parseInt(parentId);
+
+        // Validate parentId is a number if provided and not null
+        if (
+          parentId !== null &&
+          parsedParentId !== null &&
+          isNaN(parsedParentId)
+        ) {
+          res.status(400).json({ message: "Invalid parent ID" });
+          return;
+        }
+      }
+
+      const updateData = {
+        divisi,
+        parentId: parsedParentId,
+      };
+      const updatedDivision = await this.divisionService.updateDivision(
+        id,
+        updateData,
+      );
+
+      res.status(200).json({
+        message: "Division updated successfully",
+        division: updatedDivision,
+      });
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "An unexpected error occurred" });
+      }
+    }
+  };
+
   public deleteDivision = async (
     req: Request,
     res: Response,
