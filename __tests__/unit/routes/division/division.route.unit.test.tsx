@@ -22,6 +22,7 @@ jest.mock("../../../../src/controllers/division.controller", () => {
     getAllDivisions: jest.fn(),
     getDivisionsWithUserCount: jest.fn(),
     getDivisionById: jest.fn(),
+    updateDivision: jest.fn(),
     deleteDivision: jest.fn(),
   }));
 });
@@ -61,6 +62,18 @@ describe("Division Routes - GET", () => {
     );
 
     expect(mockRouter.get).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe("Division Routes - PUT", () => {
+  it("should register PUT /:id route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+
+    expect(mockRouter.put).toHaveBeenCalledWith(
+      "/:id",
+      expect.any(Function), // verifyToken middleware
+      expect.any(Function), // divisionController.updateDivision
+    );
   });
 });
 
