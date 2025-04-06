@@ -7,5 +7,9 @@ export interface IDivisionService {
     Array<DivisionDTO & { userCount: number }>
   >;
   getDivisionById(id: number): Promise<DivisionDTO | null>;
+  updateDivision(
+    id: number,
+    updateData: { divisi?: string; parentId?: number | null },
+  ): Promise<DivisionDTO>;
   deleteDivision(id: number): Promise<boolean>;
 }
