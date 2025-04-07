@@ -12,6 +12,22 @@ class DivisionService implements IDivisionService {
     this.divisionRepository = divisionRepository || new DivisionRepository();
   }
 
+  public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
+    if (!data.parentId) {
+      data.parentId = 1;
+    }
+
+    const parentExists = await this.divisionRepository.getDivisionById(
+      data.parentId,
+    );
+
+    if (!parentExists) {
+      throw new Error("Parent divisi not found");
+    }
+
+    return await this.divisionRepository.addDivision(data);
+  }
+
   /**
    * Get all divisions as a flat list
    */

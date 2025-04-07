@@ -1,7 +1,6 @@
 import { Router } from "express";
 import divisionRoutes from "../../../../src/routes/division.routes";
 
-// Need to mock these before importing the route file
 jest.mock("express", () => {
   const mockRouter = {
     get: jest.fn().mockReturnThis(),
@@ -18,6 +17,7 @@ jest.mock("express", () => {
 
 jest.mock("../../../../src/controllers/division.controller", () => {
   return jest.fn().mockImplementation(() => ({
+    addDivision: jest.fn(),
     getDivisionsTree: jest.fn(),
     getAllDivisions: jest.fn(),
     getDivisionsWithUserCount: jest.fn(),
@@ -25,6 +25,22 @@ jest.mock("../../../../src/controllers/division.controller", () => {
     updateDivision: jest.fn(),
     deleteDivision: jest.fn(),
   }));
+});
+
+describe("Division Routes - ADD", () => {
+  test("router should be defined", () => {
+    expect(divisionRoutes).toBeDefined();
+  });
+
+  it("should register POST / route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/",
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
 });
 
 describe("Division Routes - GET", () => {

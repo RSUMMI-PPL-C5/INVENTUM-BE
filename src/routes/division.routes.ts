@@ -6,6 +6,7 @@ const router = Router();
 const divisionController = new DivisionController();
 
 // Public routes for displaying divisions
+router.post("/", verifyToken, divisionController.addDivision);
 router.get("/", verifyToken, divisionController.getDivisionsTree);
 router.get("/all", verifyToken, divisionController.getAllDivisions);
 router.get(

@@ -190,6 +190,10 @@ class DivisionRepository {
       );
     }
   }
+
+  public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
+    return await this.prisma.listDivisi.create({ data });
+  }
 }
 
 export default DivisionRepository;

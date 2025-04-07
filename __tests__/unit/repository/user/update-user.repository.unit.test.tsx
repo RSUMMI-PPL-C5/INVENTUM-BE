@@ -127,4 +127,20 @@ describe("User Repository - PUT", () => {
       data: { fullname: 12345 },
     });
   });
+
+  // Corner Case: Database connection error
+  it("should throw an error if there is a database connection error", async () => {
+    const errorMessage = "Database connection error";
+    (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
+
+    await expect(
+      userRepository.updateUser("1", { fullname: "Updated User One" }),
+    ).rejects.toThrow(errorMessage);
+    expect(mockPrisma.update).toHaveBeenCalledWith({
+      where: {
+        id: "1",
+      },
+      data: { fullname: "Updated User One" },
+    });
+  });
 });
