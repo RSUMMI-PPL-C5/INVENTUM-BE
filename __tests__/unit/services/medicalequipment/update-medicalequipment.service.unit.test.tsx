@@ -2,8 +2,7 @@ import MedicalEquipmentService from "../../../../src/services/medicalequipment.s
 import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
 import { UpdateMedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
 
-// Mock the repository
-jest.mock("../repository/medicalequipment.repository");
+jest.mock("../../../../src/repository/medicalequipment.repository");
 
 describe("MedicalEquipmentService - updateMedicalEquipment", () => {
   let service: MedicalEquipmentService;

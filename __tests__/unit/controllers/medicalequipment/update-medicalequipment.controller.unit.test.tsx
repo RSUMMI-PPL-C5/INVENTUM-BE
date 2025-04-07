@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 
-// Mock the MedicalEquipmentService
-jest.mock("../services/medicalequipment.service");
+jest.mock("../../../../src/services/medicalequipment.service");
 
 describe("MedicalEquipmentController - updateMedicalEquipment", () => {
   let controller: MedicalEquipmentController;
