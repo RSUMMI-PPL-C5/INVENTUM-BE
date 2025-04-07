@@ -35,7 +35,7 @@ jobs:
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
             -Dsonar.exclusions=src/configs/**, src/**/__tests__/**
 
-      - name: Check SonarCloud Quality Gate
+      - name: Check SonarQube Quality Gate
         run: |
             curl -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=InventoryManagement-BE" \
