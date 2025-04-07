@@ -2,6 +2,7 @@ import { IMedicalEquipmentService } from "./interface/medicalequipment.service.i
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
+  UpdateMedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
 import { v4 as uuidv4 } from "uuid";
 import MedicalEquipmentRepository from "../repository/medicalequipment.repository";
@@ -66,6 +67,39 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
 
     return await this.medicalEquipmentRepository.findByInventorisId(
       inventorisId,
+    );
+  }
+
+  public async updateMedicalEquipment(
+    id: string,
+    equipmentData: UpdateMedicalEquipmentDTO,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    // Validasi ID
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new Error("Equipment ID is required and must be a valid string");
+    }
+
+    // Validasi modifiedBy
+    if (typeof equipmentData.modifiedBy !== "number") {
+      throw new Error("modifiedBy is required and must be a number");
+    }
+
+    // Cek apakah equipment tersebut ada
+    const equipment = await this.medicalEquipmentRepository.findById(id);
+    if (!equipment) {
+      throw new Error("Medical equipment not found");
+    }
+
+    // Siapkan data untuk update
+    const updateData = {
+      ...equipmentData,
+      modifiedOn: new Date(),
+    };
+
+    // Proses update
+    return await this.medicalEquipmentRepository.updateMedicalEquipment(
+      id,
+      updateData,
     );
   }
 }

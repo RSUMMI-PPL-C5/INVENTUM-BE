@@ -21,3 +21,10 @@ export interface AddMedicalEquipmentResponseDTO {
   brandName?: string;
   modelName?: string;
 }
+
+export interface UpdateMedicalEquipmentDTO {
+  name?: string;
+  brandName?: string;
+  modelName?: string;
+  modifiedBy: number;
+}

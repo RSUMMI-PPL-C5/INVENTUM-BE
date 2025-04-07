@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import MedicalEquipmentService from "../services/medicalequipment.service";
 import { AddMedicalEquipmentDTO } from "../dto/medicalequipment.dto";
 import { validationResult } from "express-validator";
+import { UpdateMedicalEquipmentDTO } from "../dto/medicalequipment.dto";
 
 class MedicalEquipmentController {
   private readonly medicalEquipmentService: MedicalEquipmentService;
@@ -57,6 +58,36 @@ class MedicalEquipmentController {
               ? error.message
               : "An unknown error occurred",
         });
+    }
+  };
+
+  public updateMedicalEquipment = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const equipmentData: UpdateMedicalEquipmentDTO = req.body;
+
+      const updatedEquipment =
+        await this.medicalEquipmentService.updateMedicalEquipment(
+          id,
+          equipmentData,
+        );
+
+      if (!updatedEquipment) {
+        return res.status(404).json({
+          status: "error",
+          message: "Medical equipment not found or update failed",
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: updatedEquipment,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        status: "error",
+        message: error.message,
+      });
     }
   };
 }

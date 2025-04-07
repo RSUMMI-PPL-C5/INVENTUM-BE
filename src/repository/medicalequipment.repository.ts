@@ -52,6 +52,52 @@ class MedicalEquipmentRepository {
       modelName: equipment.modelName ?? undefined,
     };
   }
+
+  public async findById(
+    id: string,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const equipment = await this.prisma.medicalEquipment.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    if (!equipment) return null;
+
+    return {
+      ...equipment,
+      brandName: equipment.brandName ?? undefined,
+      modelName: equipment.modelName ?? undefined,
+    };
+  }
+
+  public async updateMedicalEquipment(
+    id: string,
+    data: Partial<AddMedicalEquipmentResponseDTO>,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const updatedEquipment = await this.prisma.medicalEquipment.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    return {
+      ...updatedEquipment,
+      brandName: updatedEquipment.brandName ?? undefined,
+      modelName: updatedEquipment.modelName ?? undefined,
+    };
+  }
 }
 
 export default MedicalEquipmentRepository;

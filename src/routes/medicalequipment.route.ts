@@ -11,4 +11,10 @@ router.post(
   ),
 );
 
+router.put("/:id", (req, res, next) => {
+  medicalEquipmentController
+    .updateMedicalEquipment(req, res)
+    .catch((err) => next(err));
+});
+
 export default router;
