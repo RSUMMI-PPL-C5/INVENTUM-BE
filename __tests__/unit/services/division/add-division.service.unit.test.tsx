@@ -52,7 +52,7 @@ describe("DivisionService - ADD", () => {
     };
 
     const mockParentDivision: DivisionDTO = {
-      id: 1,
+      id: 59,
       divisi: 'Divisi 1',
       parentId: null,
     };
@@ -66,8 +66,8 @@ describe("DivisionService - ADD", () => {
 
     const result = await divisionService.addDivision(addData);
 
-    expect(mockDivisionRepository.getDivisionById).toHaveBeenCalledWith(1);
-    expect(mockDivisionRepository.addDivision).toHaveBeenCalledWith({ ...addData, parentId: 1 });
+    expect(mockDivisionRepository.getDivisionById).toHaveBeenCalledWith(59);
+    expect(mockDivisionRepository.addDivision).toHaveBeenCalledWith({ ...addData, parentId: 59 });
     expect(result).toEqual(mockNewDivision);
   });
 
