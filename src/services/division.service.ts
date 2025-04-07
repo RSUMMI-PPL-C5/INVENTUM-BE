@@ -38,19 +38,4 @@ class DivisionService implements IDivisionService {
   }
 }
 
-// Singleton pattern implementation - ensures single instance throughout the application
-class DivisionServiceSingleton {
-  private static instance: DivisionService;
-
-  private constructor() {}
-
-  public static getInstance(): DivisionService {
-    if (!DivisionServiceSingleton.instance) {
-      DivisionServiceSingleton.instance = new DivisionService();
-    }
-    return DivisionServiceSingleton.instance;
-  }
-}
-
 export default DivisionService;
-export { DivisionServiceSingleton };
