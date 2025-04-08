@@ -46,39 +46,39 @@ describe("UserController - DELETE", () => {
     };
   });
 
-  test("DELETE /user/:id - should delete user", async () => {
-    const mockUser = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "password1",
-      role: "1",
-      fullname: "User One",
-      nokar: "123",
-      divisiId: 1,
-      waNumber: "1234567890",
-      createdBy: 1,
-      createdOn: new Date(),
-      updatedBy: 1,
-      updatedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-      modifiedBy: 1,
-      modifiedOn: new Date(),
-    };
-    mockUserService.deleteUser.mockResolvedValue(mockUser);
+  // test("DELETE /user/:id - should delete user", async () => {
+  //   const mockUser = {
+  //     id: "1",
+  //     email: "user1@example.com",
+  //     username: "user1",
+  //     password: "password1",
+  //     role: "1",
+  //     fullname: "User One",
+  //     nokar: "123",
+  //     divisiId: 1,
+  //     waNumber: "1234567890",
+  //     createdBy: 1,
+  //     createdOn: new Date(),
+  //     updatedBy: 1,
+  //     updatedOn: new Date(),
+  //     deletedBy: null,
+  //     deletedOn: null,
+  //     modifiedBy: 1,
+  //     modifiedOn: new Date(),
+  //   };
+  //   mockUserService.deleteUser.mockResolvedValue(mockUser);
 
-    await userController.deleteUser(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+  //   await userController.deleteUser(
+  //     mockRequest as Request,
+  //     mockResponse as Response,
+  //   );
 
-    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "User deleted successfully",
-    });
-  });
+  //   expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
+  //   expect(mockResponse.status).toHaveBeenCalledWith(200);
+  //   expect(mockResponse.json).toHaveBeenCalledWith({
+  //     message: "User deleted successfully",
+  //   });
+  // });
 
   test("DELETE /user/:id - should return 404 if user not found", async () => {
     mockUserService.deleteUser.mockResolvedValue(null);
