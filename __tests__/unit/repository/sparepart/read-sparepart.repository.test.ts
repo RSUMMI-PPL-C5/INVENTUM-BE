@@ -10,7 +10,7 @@ jest.mock("../../../../src/configs/db.config", () => ({
   },
 }));
 
-describe("SparepartRepository", () => {
+describe("SparepartRepository - READ", () => {
   let sparepartRepository: SparepartRepository;
 
   beforeEach(() => {

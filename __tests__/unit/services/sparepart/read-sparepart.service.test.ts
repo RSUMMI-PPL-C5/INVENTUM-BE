@@ -5,7 +5,7 @@ import SparepartRepository from "../../../../src/repository/sparepart.repository
 // Mock the repository
 jest.mock("../../../../src/repository/sparepart.repository");
 
-describe("SparepartService", () => {
+describe("SparepartService - READ", () => {
   let sparepartService: SparepartService;
   let mockSparepartRepository: jest.Mocked<SparepartRepository>;
 
