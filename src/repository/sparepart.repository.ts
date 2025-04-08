@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { SparepartDTO } from "../dto/sparepart.dto";
+import { SparepartDTO, SparepartsDTO } from "../dto/sparepart.dto";
 import prisma from "../configs/db.config";
 
 class SparepartRepository {
@@ -12,17 +12,14 @@ class SparepartRepository {
   public async getSpareparts(): Promise<SparepartDTO[]> {
     return await this.prisma.spareparts.findMany({
       where: {
-        deletedOn: null, // Only get non-deleted spareparts
+        deletedOn: null,
       },
     });
   }
 
-  public async getSparepartById(id: string): Promise<SparepartDTO | null> {
+  public async getSparepartById(id: string): Promise<SparepartsDTO | null> {
     return await this.prisma.spareparts.findUnique({
-      where: {
-        id,
-        deletedOn: null, // Only get non-deleted spareparts
-      },
+      where: { id },
     });
   }
 
@@ -34,6 +31,30 @@ class SparepartRepository {
         ...whereClause,
         deletedOn: null,
       },
+    });
+  }
+
+  public async createSparepart(data: any): Promise<SparepartsDTO> {
+    return await this.prisma.spareparts.create({
+      data,
+    });
+  }
+
+  public async updateSparepart(
+    id: string,
+    data: Partial<SparepartsDTO>,
+  ): Promise<SparepartsDTO | null> {
+    return await this.prisma.spareparts.update({
+      where: { id },
+      data,
+    });
+  }
+
+  public async deleteSparepart(id: string): Promise<SparepartsDTO | null> {
+    // Soft delete by updating `deletedOn` field instead of removing the record
+    return await this.prisma.spareparts.update({
+      where: { id },
+      data: { deletedOn: new Date() },
     });
   }
 }
