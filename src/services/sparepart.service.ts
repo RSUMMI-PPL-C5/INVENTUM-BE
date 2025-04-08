@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import {
+  SparepartDTO,
+  SparepartsDTO,
+  FilterSparepartDTO,
+} from "../dto/sparepart.dto";
 import { ISparepartService } from "./interface/sparepart.service.interface";
-import { SparepartDTO, FilterSparepartDTO } from "../dto/sparepart.dto";
 import SparepartRepository from "../repository/sparepart.repository";
 
 class SparepartService implements ISparepartService {
@@ -23,11 +28,8 @@ class SparepartService implements ISparepartService {
   ): Promise<SparepartDTO[]> {
     const whereClause: Prisma.SparepartsWhereInput = {};
 
-    // Apply filters if they exist
     if (filters.partsName) {
-      whereClause.partsName = {
-        contains: filters.partsName,
-      };
+      whereClause.partsName = { contains: filters.partsName };
     }
 
     if (filters.purchaseDateStart || filters.purchaseDateEnd) {
@@ -55,6 +57,65 @@ class SparepartService implements ISparepartService {
     }
 
     return await this.sparepartRepository.getFilteredSpareparts(whereClause);
+  }
+
+  public async addSparepart(data: SparepartsDTO): Promise<SparepartsDTO> {
+    const createData: SparepartsDTO = {
+      id: uuidv4(),
+      partsName: data.partsName,
+      purchaseDate: data.purchaseDate,
+      price: data.price,
+      toolLocation: data.toolLocation,
+      toolDate: data.toolDate,
+      createdBy: data.createdBy,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+    };
+
+    return await this.sparepartRepository.createSparepart(createData);
+  }
+
+  public async updateSparepart(
+    id: string,
+    data: Partial<SparepartsDTO>,
+  ): Promise<SparepartsDTO | null> {
+    const sparepart = await this.sparepartRepository.getSparepartById(id);
+    if (!sparepart || !this.validateSparepartData(data)) {
+      return null;
+    }
+
+    const updatedData: Partial<SparepartsDTO> = {
+      partsName: data.partsName,
+      purchaseDate: data.purchaseDate,
+      price: data.price,
+      toolLocation: data.toolLocation,
+      toolDate: data.toolDate,
+      modifiedBy: data.modifiedBy,
+      modifiedOn: new Date(),
+    };
+
+    return await this.sparepartRepository.updateSparepart(id, updatedData);
+  }
+
+  public async deleteSparepart(id: string): Promise<SparepartsDTO | null> {
+    const sparepart = await this.sparepartRepository.getSparepartById(id);
+    if (!sparepart) {
+      return null;
+    }
+
+    const deletedData: Partial<SparepartsDTO> = {
+      deletedOn: new Date(),
+    };
+
+    // Note: If you implement soft delete, call updateSparepart instead
+    return await this.sparepartRepository.deleteSparepart(id);
+  }
+
+  private validateSparepartData(data: Partial<SparepartsDTO>): boolean {
+    if (!data.modifiedBy) return false;
+    if (data.partsName && data.partsName.trim().length === 0) return false;
+    if (data.price && data.price < 0) return false;
+    return true;
   }
 }
 

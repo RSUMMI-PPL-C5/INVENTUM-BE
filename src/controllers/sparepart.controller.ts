@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import SparepartService from "../services/sparepart.service";
-import { FilterSparepartDTO } from "../dto/sparepart.dto";
+import { SparepartsDTO, FilterSparepartDTO } from "../dto/sparepart.dto";
 import { validationResult } from "express-validator";
 
 class SparepartController {
@@ -18,10 +18,7 @@ class SparepartController {
         return;
       }
 
-      // Make sure query is defined before destructuring
       const query = req.query || {};
-
-      // Check if there are any filter parameters
       const partsName = query.partsName as string | undefined;
       const purchaseDateStart = query.purchaseDateStart as string | undefined;
       const purchaseDateEnd = query.purchaseDateEnd as string | undefined;
@@ -33,11 +30,10 @@ class SparepartController {
         partsName ||
         purchaseDateStart ||
         purchaseDateEnd ||
-        priceMin ||
-        priceMax ||
+        priceMin !== undefined ||
+        priceMax !== undefined ||
         toolLocation
       ) {
-        // Create filter object
         const filters: FilterSparepartDTO = {
           partsName,
           purchaseDateStart,
@@ -47,13 +43,11 @@ class SparepartController {
           toolLocation,
         };
 
-        const filteredSpareparts =
-          await this.sparepartService.getFilteredSpareparts(filters);
+        const filteredSpareparts = await this.sparepartService.getFilteredSpareparts(filters);
         res.status(200).json(filteredSpareparts);
         return;
       }
 
-      // If no filters, get all spareparts
       const spareparts = await this.sparepartService.getSpareparts();
       res.status(200).json(spareparts);
     } catch (error) {
@@ -61,19 +55,56 @@ class SparepartController {
     }
   };
 
-  public getSparepartById = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
+  public getSparepartById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const sparepart = await this.sparepartService.getSparepartById(
-        req.params.id,
-      );
+      const sparepart = await this.sparepartService.getSparepartById(req.params.id);
       if (!sparepart) {
         res.status(404).json({ message: "Sparepart not found" });
         return;
       }
       res.status(200).json(sparepart);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  };
+
+  public addSparepart = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      const sparepartData: SparepartsDTO = req.body;
+      const newSparepart = await this.sparepartService.addSparepart(sparepartData);
+      res.status(201).json(newSparepart);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  };
+
+  public updateSparepart = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const sparepart = await this.sparepartService.updateSparepart(req.params.id, req.body);
+      if (!sparepart) {
+        res.status(404).json({ message: "Sparepart not found or invalid data" });
+        return;
+      }
+      res.status(200).json(sparepart);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  };
+
+  public deleteSparepart = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const deleted = await this.sparepartService.deleteSparepart(req.params.id);
+      if (!deleted) {
+        res.status(404).json({ message: "Sparepart not found" });
+        return;
+      }
+      res.status(200).json({ message: "Sparepart deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
     }
