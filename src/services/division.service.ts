@@ -15,15 +15,15 @@ class DivisionService implements IDivisionService {
    * Add a new division
    */
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
-    if (!data.parentId) {
-      data.parentId = 59; // default parentId (Chief Operation Officer)
+    if (data.parentId === null || data.parentId === undefined) {
+      data.parentId = null;
+    } else {
+      const parentExists = await this.divisionRepository.getDivisionById(data.parentId);
+      if (!parentExists) {
+        throw new Error("Parent divisi not found");
+      }
     }
-
-    const parentExists = await this.divisionRepository.getDivisionById(data.parentId);
-    if (!parentExists) {
-      throw new Error("Parent divisi not found");
-    }
-
+  
     return await this.divisionRepository.addDivision(data);
   }
 
