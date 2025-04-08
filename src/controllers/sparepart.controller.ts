@@ -87,6 +87,7 @@ class SparepartController {
   public updateSparepart = async (req: Request, res: Response): Promise<void> => {
     try {
       const sparepart = await this.sparepartService.updateSparepart(req.params.id, req.body);
+
       if (!sparepart) {
         res.status(404).json({ message: "Sparepart not found or invalid data" });
         return;

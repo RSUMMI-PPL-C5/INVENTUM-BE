@@ -133,6 +133,20 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       updateData,
     );
   }
+
+  public async deleteMedicalEquipment(id: string): Promise<MedicalEquipmentDTO | null> {
+      const sparepart = await this.medicalEquipmentRepository.findById(id);
+      if (!sparepart) {
+        return null;
+      }
+  
+      const deletedData: Partial<MedicalEquipmentDTO> = {
+        deletedOn: new Date(),
+      };
+  
+      // Note: If you implement soft delete, call updateSparepart instead
+      return await this.medicalEquipmentRepository.deleteMedicalEquipment(id);
+    }
 }
 
 export default MedicalEquipmentService;

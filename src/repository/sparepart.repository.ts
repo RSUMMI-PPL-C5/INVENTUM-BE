@@ -17,7 +17,7 @@ class SparepartRepository {
     });
   }
 
-  public async getSparepartById(id: string): Promise<SparepartsDTO | null> {
+  public async getSparepartById(id: string): Promise<SparepartDTO | null> {
     return await this.prisma.spareparts.findUnique({
       where: { id },
     });

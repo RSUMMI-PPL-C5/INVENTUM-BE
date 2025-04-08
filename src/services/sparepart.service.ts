@@ -112,7 +112,6 @@ class SparepartService implements ISparepartService {
   }
 
   private validateSparepartData(data: Partial<SparepartsDTO>): boolean {
-    if (!data.modifiedBy) return false;
     if (data.partsName && data.partsName.trim().length === 0) return false;
     if (data.price && data.price < 0) return false;
     return true;

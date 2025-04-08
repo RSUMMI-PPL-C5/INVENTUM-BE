@@ -166,6 +166,19 @@ class MedicalEquipmentController {
       res.status(500).json({ message: (error as Error).message });
     }
   };
+
+  public deleteMedicalEquipment = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const deleted = await this.medicalEquipmentService.deleteMedicalEquipment(req.params.id);
+      if (!deleted) {
+        res.status(404).json({ message: "Sparepart not found" });
+        return;
+      }
+      res.status(200).json({ message: "Sparepart deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  };
 }
 
 export default MedicalEquipmentController;

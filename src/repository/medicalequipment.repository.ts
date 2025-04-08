@@ -131,6 +131,14 @@ class MedicalEquipmentRepository {
       },
     });
   }
+
+  public async deleteMedicalEquipment(id: string): Promise<MedicalEquipmentDTO | null> {
+      // Soft delete by updating `deletedOn` field instead of removing the record
+      return await this.prisma.medicalEquipment.update({
+        where: { id },
+        data: { deletedOn: new Date() },
+      });
+    }
 }
 
 export default MedicalEquipmentRepository;
