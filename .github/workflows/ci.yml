@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - '*'
+      - 'chore/*' # must be deleted later
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   sonarqube:
@@ -36,7 +40,41 @@ jobs:
             -Dsonar.exclusions=src/configs/**, src/**/__tests__/**
 
       - name: Check SonarQube Quality Gate
+        id: quality-gate
         run: |
-            curl -u "${{ secrets.SONAR_TOKEN }}:" \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=InventoryManagement-BE" \
-              | jq -e '.projectStatus.status == "OK"' || exit 1
+            # Tunggu beberapa detik agar analisis selesai
+            sleep 20
+        
+            # Ambil status Quality Gate dari SonarQube
+            RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=InventoryManagement-BE")
+        
+            # Debugging: Tampilkan respons untuk memastikan formatnya benar
+            echo "SonarQube Response: $RESPONSE"
+
+            # Validasi apakah respons adalah JSON
+            if ! echo "$RESPONSE" | jq empty; then
+              echo "Error: Response is not valid JSON"
+              exit 1
+            fi
+        
+            # Parse status Quality Gate
+            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status')
+        
+            # Simpan status ke output untuk digunakan di langkah berikutnya
+            echo "::set-output name=status::$STATUS"
+        
+            # Gagal jika status Quality Gate bukan "OK"
+            if [ "$STATUS" != "OK" ]; then
+              echo "Quality Gate failed: $STATUS"
+              exit 1
+            fi
+          
+      - name: Publish Quality Gate Status
+        if: always()
+        run: |
+          if [ "${{ steps.quality-gate.outputs.status }}" == "OK" ]; then
+            echo "Quality Gate passed ✅"
+          else
+            echo "Quality Gate failed ❌"
+          fi
