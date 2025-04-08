@@ -103,13 +103,22 @@ class MedicalEquipmentRepository {
   }
 
   public async getMedicalEquipment(): Promise<MedicalEquipmentDTO[]> {
-    return await this.prisma.medicalEquipment.findMany();
+    return await this.prisma.medicalEquipment.findMany({
+      where: {
+        deletedOn: null,
+      },
+    });
   }
 
   public async getFilteredMedicalEquipment(
     whereClause: Prisma.MedicalEquipmentWhereInput,
   ): Promise<MedicalEquipmentDTO[]> {
-    return await this.prisma.medicalEquipment.findMany({ where: whereClause });
+    return await this.prisma.medicalEquipment.findMany({
+      where: {
+       ...whereClause,
+       deletedOn: null,
+      }, 
+    });
   }
 
   public async getMedicalEquipmentById(
