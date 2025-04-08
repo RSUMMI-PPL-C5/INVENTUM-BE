@@ -6,7 +6,7 @@ import SparepartService from "../../../../src/services/sparepart.service";
 // Mock the SparepartService
 jest.mock("../../../../src/services/sparepart.service");
 
-describe("SparepartController - getSpareparts", () => {
+describe("SparepartController - READ", () => {
   let sparepartController: SparepartController;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
