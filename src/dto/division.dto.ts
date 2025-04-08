@@ -5,6 +5,3 @@ export interface DivisionDTO extends ListDivisi {}
 export interface DivisionWithChildrenDTO extends DivisionDTO {
   children?: DivisionWithChildrenDTO[];
 }
-
-
-
