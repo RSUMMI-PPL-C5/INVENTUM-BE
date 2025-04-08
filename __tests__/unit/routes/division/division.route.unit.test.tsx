@@ -18,6 +18,8 @@ jest.mock("express", () => {
 
 jest.mock("../../../../src/controllers/division.controller", () => {
   return jest.fn().mockImplementation(() => ({
+    // Merge all mocked controller methods
+    addDivision: jest.fn(),
     getDivisionsTree: jest.fn(),
     getAllDivisions: jest.fn(),
     getDivisionsWithUserCount: jest.fn(),
@@ -26,11 +28,23 @@ jest.mock("../../../../src/controllers/division.controller", () => {
   }));
 });
 
-describe("Division Routes - GET", () => {
+describe("Division Routes - ADD", () => {
   test("router should be defined", () => {
     expect(divisionRoutes).toBeDefined();
   });
 
+  it("should register POST / route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/",
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
+});
+
+describe("Division Routes - GET", () => {
   test("router should be created with Router()", () => {
     expect(Router).toHaveBeenCalled();
   });
@@ -38,11 +52,10 @@ describe("Division Routes - GET", () => {
   test("router should have routes registered", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
 
-    // Check all GET routes
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/",
-      expect.any(Function), // Middleware
-      expect.any(Function), // Controller method
+      expect.any(Function),
+      expect.any(Function),
     );
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/all",
@@ -70,8 +83,8 @@ describe("Division Routes - DELETE", () => {
 
     expect(mockRouter.delete).toHaveBeenCalledWith(
       "/:id",
-      expect.any(Function), // Middleware
-      expect.any(Function), // Controller method
+      expect.any(Function),
+      expect.any(Function),
     );
   });
 });

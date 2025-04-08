@@ -1,7 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DivisionDTO, DivisionWithChildrenDTO } from "../dto/division.dto";
 import AppError from "../utils/appError";
-
 import prisma from "../configs/db.config";
 
 class DivisionRepository {
@@ -9,6 +8,14 @@ class DivisionRepository {
 
   constructor() {
     this.prisma = prisma;
+  }
+
+  public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
+    return await this.prisma.listDivisi.create({ data });
+  }
+
+  public async getDivisionById(id: number): Promise<DivisionDTO | null> {
+    return await this.prisma.listDivisi.findUnique({ where: { id } });
   }
 
   /**
@@ -19,20 +26,10 @@ class DivisionRepository {
   }
 
   /**
-   * Get a division by its ID
-   */
-  public async getDivisionById(id: number): Promise<DivisionDTO | null> {
-    return await this.prisma.listDivisi.findUnique({
-      where: { id },
-    });
-  }
-
-  /**
    * Get hierarchical division structure (root divisions with their children)
    * This formats the data for tree display in the frontend
    */
   public async getDivisionsHierarchy(): Promise<DivisionWithChildrenDTO[]> {
-    // Get only root divisions (those without parents)
     const rootDivisions = await this.prisma.listDivisi.findMany({
       where: { parentId: null },
       include: {
@@ -40,7 +37,7 @@ class DivisionRepository {
           include: {
             children: {
               include: {
-                children: true, // Include up to 3 levels deep
+                children: true, // Up to 3 levels deep
               },
             },
           },
@@ -80,7 +77,6 @@ class DivisionRepository {
   public async getDivisionsWithUserCount(): Promise<
     Array<DivisionDTO & { userCount: number }>
   > {
-    // Add type assertion to tell TypeScript about the _count property
     const divisions = (await this.prisma.listDivisi.findMany({
       include: {
         _count: {
@@ -98,12 +94,8 @@ class DivisionRepository {
   public async deleteDivision(id: number): Promise<boolean> {
     try {
       await this.prisma.user.updateMany({
-        where: {
-          divisiId: id,
-        },
-        data: {
-          divisiId: null,
-        },
+        where: { divisiId: id },
+        data: { divisiId: null },
       });
 
       await this.prisma.listDivisi.deleteMany({
