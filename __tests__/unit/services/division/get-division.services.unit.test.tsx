@@ -80,6 +80,83 @@ import DivisionService, {
         expect(mockRepository.getAllDivisions).toHaveBeenCalledTimes(1);
       });
     });
+
+    describe("getDivisionsHierarchy", () => {
+      it("should return hierarchical structure of divisions", async () => {
+        // Arrange
+        const mockHierarchy = [
+          {
+            id: 1,
+            divisi: "Division A",
+            parentId: null,
+            children: [
+              {
+                id: 2,
+                divisi: "Division B",
+                parentId: 1,
+                children: [],
+              },
+            ],
+          },
+        ];
+        mockRepository.getDivisionsHierarchy = jest.fn().mockResolvedValue(mockHierarchy);
+        const service = new DivisionService(mockRepository);
+    
+        // Act
+        const result = await service.getDivisionsHierarchy();
+    
+        // Assert
+        expect(result).toEqual(mockHierarchy);
+        expect(mockRepository.getDivisionsHierarchy).toHaveBeenCalledTimes(1);
+      });
+    
+      it("should return an empty array if no divisions exist", async () => {
+        // Arrange
+        mockRepository.getDivisionsHierarchy = jest.fn().mockResolvedValue([]);
+        const service = new DivisionService(mockRepository);
+    
+        // Act
+        const result = await service.getDivisionsHierarchy();
+    
+        // Assert
+        expect(result).toEqual([]);
+        expect(mockRepository.getDivisionsHierarchy).toHaveBeenCalledTimes(1);
+      });
+    });
+    
+    describe("getDivisionsWithUserCount", () => {
+      it("should return divisions with their user counts", async () => {
+        // Arrange
+        const mockDivisionsWithUserCount = [
+          { id: 1, divisi: "Division A", parentId: null, userCount: 10 },
+          { id: 2, divisi: "Division B", parentId: 1, userCount: 5 },
+        ];
+        mockRepository.getDivisionsWithUserCount = jest
+          .fn()
+          .mockResolvedValue(mockDivisionsWithUserCount);
+        const service = new DivisionService(mockRepository);
+    
+        // Act
+        const result = await service.getDivisionsWithUserCount();
+    
+        // Assert
+        expect(result).toEqual(mockDivisionsWithUserCount);
+        expect(mockRepository.getDivisionsWithUserCount).toHaveBeenCalledTimes(1);
+      });
+    
+      it("should return an empty array if no divisions exist", async () => {
+        // Arrange
+        mockRepository.getDivisionsWithUserCount = jest.fn().mockResolvedValue([]);
+        const service = new DivisionService(mockRepository);
+    
+        // Act
+        const result = await service.getDivisionsWithUserCount();
+    
+        // Assert
+        expect(result).toEqual([]);
+        expect(mockRepository.getDivisionsWithUserCount).toHaveBeenCalledTimes(1);
+      });
+    });
   
     describe("deleteDivision", () => {
       it("should delete a division by ID", async () => {

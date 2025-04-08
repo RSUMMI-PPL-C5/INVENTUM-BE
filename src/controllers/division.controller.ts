@@ -13,16 +13,17 @@ class DivisionController {
   public addDivision = async (req: Request, res: Response): Promise<void> => {
     try {
       const parentId = req.body.parentId;
-      if (parentId && typeof parentId !== "number") {
-        res.status(400).json({ message: "Parent ID must be a number" });
+  
+      if (parentId !== undefined && parentId !== null && typeof parentId !== "number") {
+        res.status(400).json({ message: "Parent ID must be a number or null" });
         return;
       }
-
+  
       const divisionData = {
         divisi: req.body.divisi,
-        parentId: parentId,
+        parentId: parentId || null, // Jika undefined, set ke null
       };
-
+  
       const newDivision = await this.divisionService.addDivision(divisionData);
       res.status(201).json(newDivision);
     } catch (error) {
