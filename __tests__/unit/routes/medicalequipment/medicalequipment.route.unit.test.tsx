@@ -1,15 +1,18 @@
-import medicalequipmentRoutes from "../../../../src/routes/medicalequipment.route";
+import medicalEquipmentRouter from "../../../../src/routes/medicalequipment.route";
 
-// This test simply imports the route module and verifies it's an object
 describe("Medical Equipment Routes", () => {
   test("should export a router with required methods", () => {
-    // Just verify the router export exists and has expected properties
-    expect(medicalequipmentRoutes).toBeDefined();
+    // Ensure router is defined
+    expect(medicalEquipmentRouter).toBeDefined();
 
-    // Check that it has typical router methods
-    expect(medicalequipmentRoutes).toHaveProperty("get");
+    // Check for common Express router methods
+    expect(medicalEquipmentRouter).toHaveProperty("get");
+    expect(medicalEquipmentRouter).toHaveProperty("post");
+    expect(medicalEquipmentRouter).toHaveProperty("put");
+    expect(medicalEquipmentRouter).toHaveProperty("delete");
+    expect(medicalEquipmentRouter).toHaveProperty("use");
 
-    // A more direct check that it's an Express router
-    expect(medicalequipmentRoutes.name).toBe("router");
+    // Confirm it's an instance of Express Router
+    expect(medicalEquipmentRouter.name).toBe("router");
   });
 });

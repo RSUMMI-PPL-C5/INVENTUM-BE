@@ -1,6 +1,8 @@
 import { PrismaClient, Prisma, MedicalEquipment } from "@prisma/client";
-import { MedicalEquipmentDTO } from "../dto/medicalequipment.dto";
-
+import {
+  AddMedicalEquipmentResponseDTO,
+  MedicalEquipmentDTO,
+} from "../dto/medicalequipment.dto";
 import prisma from "../configs/db.config";
 
 class MedicalEquipmentRepository {
@@ -10,6 +12,50 @@ class MedicalEquipmentRepository {
     this.prisma = prisma;
   }
 
+  public async addMedicalEquipment(
+    equipmentData: any,
+  ): Promise<AddMedicalEquipmentResponseDTO> {
+    const newEquipment = await this.prisma.medicalEquipment.create({
+      data: equipmentData,
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    return {
+      ...newEquipment,
+      brandName: newEquipment.brandName ?? undefined,
+      modelName: newEquipment.modelName ?? undefined,
+    };
+  }
+
+  public async findByInventorisId(
+    inventorisId: string,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const equipment = await this.prisma.medicalEquipment.findUnique({
+      where: { inventorisId },
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    if (!equipment) return null;
+
+    return {
+      ...equipment,
+      brandName: equipment.brandName ?? undefined,
+      modelName: equipment.modelName ?? undefined,
+    };
+  }
+
   public async getMedicalEquipment(): Promise<MedicalEquipmentDTO[]> {
     return await this.prisma.medicalEquipment.findMany();
   }
@@ -17,7 +63,7 @@ class MedicalEquipmentRepository {
   public async getFilteredMedicalEquipment(
     whereClause: Prisma.MedicalEquipmentWhereInput,
   ): Promise<MedicalEquipmentDTO[]> {
-    return await prisma.medicalEquipment.findMany({ where: whereClause });
+    return await this.prisma.medicalEquipment.findMany({ where: whereClause });
   }
 
   public async getMedicalEquipmentById(
