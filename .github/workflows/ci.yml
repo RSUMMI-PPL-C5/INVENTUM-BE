@@ -43,10 +43,10 @@ jobs:
         id: quality-gate
         run: |
             # Tunggu beberapa detik agar analisis selesai
-            sleep 45
+            sleep 30
         
             # Ambil status Quality Gate dari SonarQube
-            RESPONSE=$(curl -s "${{ secrets.SONAR_HOST_URL_TEST }}/api/qualitygates/project_status?projectKey=InventoryManagement-BE")
+            RESPONSE=$(curl -s "http://117.102.83.235:9090/api/qualitygates/project_status?projectKey=InventoryManagement-BE")
         
             # Debugging: Tampilkan respons untuk memastikan formatnya benar
             echo "SonarQube Response: $RESPONSE"
