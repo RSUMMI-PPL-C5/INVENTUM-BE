@@ -8,6 +8,7 @@ import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
+import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.routes";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
 import "dotenv/config";
@@ -46,6 +47,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/sparepart", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
 app.use("/medical-equipment", medicalequipmentRoutes);
 
