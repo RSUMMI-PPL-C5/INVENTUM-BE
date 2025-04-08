@@ -24,7 +24,6 @@ export const addSparepartValidation = [
   body("toolDate")
     .optional()
     .isString()
-    .toDate()
     .withMessage("Tool date must be a valid date"),
 
   body("createdBy").isInt().withMessage("CreatedBy must be an integer"),
