@@ -1,9 +1,13 @@
+import { Prisma } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 import { IMedicalEquipmentService } from "./interface/medicalequipment.service.interface";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
+  MedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
-import { v4 as uuidv4 } from "uuid";
+import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
+import { filterHandlers } from "../filters/medicalequipment.filter";
 import MedicalEquipmentRepository from "../repository/medicalequipment.repository";
 
 class MedicalEquipmentService implements IMedicalEquipmentService {
@@ -13,10 +17,11 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     this.medicalEquipmentRepository = new MedicalEquipmentRepository();
   }
 
+  // ✅ CREATE
   public async addMedicalEquipment(
     equipmentData: AddMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO> {
-    // 🔥 Validasi inventorisId dulu sebelum cek lainnya
+    // Validasi inventorisId
     if (
       !equipmentData.inventorisId ||
       typeof equipmentData.inventorisId !== "string" ||
@@ -25,14 +30,14 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       throw new Error("inventorisId is required and must be a valid string");
     }
 
-    // 🔥 Validasi name dan createdBy setelah inventorisId valid
+    // Validasi name dan createdBy
     if (!equipmentData.name || typeof equipmentData.createdBy !== "number") {
       throw new Error(
         "name and createdBy are required, and createdBy must be a number",
       );
     }
 
-    // Pastikan inventorisId unik sebelum menambahkan data
+    // Pastikan inventorisId unik
     const existingEquipment =
       await this.medicalEquipmentRepository.findByInventorisId(
         equipmentData.inventorisId,
@@ -66,6 +71,39 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
 
     return await this.medicalEquipmentRepository.findByInventorisId(
       inventorisId,
+    );
+  }
+
+  // ✅ READ
+  public async getMedicalEquipment(): Promise<MedicalEquipmentDTO[]> {
+    return await this.medicalEquipmentRepository.getMedicalEquipment();
+  }
+
+  public async getMedicalEquipmentById(
+    id: string,
+  ): Promise<MedicalEquipmentDTO | null> {
+    return await this.medicalEquipmentRepository.getMedicalEquipmentById(id);
+  }
+
+  public async getFilteredMedicalEquipment(
+    filters: MedicalEquipmentFilterOptions,
+  ): Promise<MedicalEquipmentDTO[]> {
+    const whereClause: Prisma.MedicalEquipmentWhereInput = {};
+    filterHandlers.forEach((handler) => handler(filters, whereClause));
+    return await this.medicalEquipmentRepository.getFilteredMedicalEquipment(
+      whereClause,
+    );
+  }
+
+  public async searchMedicalEquipment(
+    name: string,
+  ): Promise<MedicalEquipmentDTO[]> {
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name query is required");
+    }
+
+    return this.medicalEquipmentRepository.getMedicalEquipmentByName(
+      name.trim(),
     );
   }
 }

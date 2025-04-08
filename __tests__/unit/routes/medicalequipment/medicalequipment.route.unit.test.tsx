@@ -2,17 +2,17 @@ import medicalEquipmentRouter from "../../../../src/routes/medicalequipment.rout
 
 describe("Medical Equipment Routes", () => {
   test("should export a router with required methods", () => {
-    // Pastikan `medicalEquipmentRouter` terdefinisi
+    // Ensure router is defined
     expect(medicalEquipmentRouter).toBeDefined();
 
-    // Cek apakah router memiliki metode standar dari Express Router
+    // Check for common Express router methods
     expect(medicalEquipmentRouter).toHaveProperty("get");
     expect(medicalEquipmentRouter).toHaveProperty("post");
     expect(medicalEquipmentRouter).toHaveProperty("put");
     expect(medicalEquipmentRouter).toHaveProperty("delete");
     expect(medicalEquipmentRouter).toHaveProperty("use");
 
-    // Pastikan ini adalah instance dari Express Router
+    // Confirm it's an instance of Express Router
     expect(medicalEquipmentRouter.name).toBe("router");
   });
 });

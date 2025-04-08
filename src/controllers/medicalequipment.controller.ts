@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import MedicalEquipmentService from "../services/medicalequipment.service";
 import { AddMedicalEquipmentDTO } from "../dto/medicalequipment.dto";
 import { validationResult } from "express-validator";
+import { hasFilters } from "../filters/medicalequipment.filter";
+import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
 
 class MedicalEquipmentController {
   private readonly medicalEquipmentService: MedicalEquipmentService;
@@ -16,7 +18,6 @@ class MedicalEquipmentController {
     res: Response,
   ): Promise<void> => {
     try {
-      // Validasi input
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
@@ -36,7 +37,7 @@ class MedicalEquipmentController {
           : undefined,
         status: req.body.status,
         vendor: req.body.vendor,
-        createdBy: req.body.userId || 1, // Default user ID jika tidak ada
+        createdBy: req.body.userId || 1,
       };
 
       const newEquipment =
@@ -57,6 +58,74 @@ class MedicalEquipmentController {
               ? error.message
               : "An unknown error occurred",
         });
+    }
+  };
+
+  /* Get All / Filter / Search Medical Equipment */
+  public getMedicalEquipment = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ error: "Invalid input data" });
+        return;
+      }
+
+      const { search } = req.query;
+
+      if (typeof search === "string") {
+        const result =
+          await this.medicalEquipmentService.searchMedicalEquipment(search);
+        res.status(200).json(result);
+        return;
+      }
+
+      let medicalEquipment;
+      if (hasFilters(req.query)) {
+        const filters: MedicalEquipmentFilterOptions = {
+          status: req.query.status as any,
+          createdOnStart: req.query.createdOnStart as any,
+          createdOnEnd: req.query.createdOnEnd as any,
+          modifiedOnStart: req.query.modifiedOnStart as any,
+          modifiedOnEnd: req.query.modifiedOnEnd as any,
+          purchaseDateStart: req.query.purchaseDateStart as any,
+          purchaseDateEnd: req.query.purchaseDateEnd as any,
+        };
+
+        medicalEquipment =
+          await this.medicalEquipmentService.getFilteredMedicalEquipment(
+            filters,
+          );
+      } else {
+        medicalEquipment =
+          await this.medicalEquipmentService.getMedicalEquipment();
+      }
+
+      res.status(200).json(medicalEquipment);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  };
+
+  /* Get Medical Equipment By ID */
+  public getMedicalEquipmentById = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const medicalEquipment =
+        await this.medicalEquipmentService.getMedicalEquipmentById(
+          req.params.id,
+        );
+      if (!medicalEquipment) {
+        res.status(404).json({ message: "Medical Equipment not found" });
+        return;
+      }
+      res.status(200).json(medicalEquipment);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
     }
   };
 }
