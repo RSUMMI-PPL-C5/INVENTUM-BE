@@ -13,6 +13,13 @@ router.post(
   ),
 );
 
+// PUT - Update Medical Equipment by ID
+router.put("/:id", (req, res, next) => {
+  medicalEquipmentController
+    .updateMedicalEquipment(req, res)
+    .catch((err) => next(err));
+});
+
 // GET - Get All Medical Equipment (with optional search/filter)
 router.get(
   "/",

@@ -4,6 +4,7 @@ import { IMedicalEquipmentService } from "./interface/medicalequipment.service.i
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
+  UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
 import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
@@ -21,7 +22,6 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
   public async addMedicalEquipment(
     equipmentData: AddMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO> {
-    // Validasi inventorisId
     if (
       !equipmentData.inventorisId ||
       typeof equipmentData.inventorisId !== "string" ||
@@ -30,14 +30,12 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       throw new Error("inventorisId is required and must be a valid string");
     }
 
-    // Validasi name dan createdBy
     if (!equipmentData.name || typeof equipmentData.createdBy !== "number") {
       throw new Error(
         "name and createdBy are required, and createdBy must be a number",
       );
     }
 
-    // Pastikan inventorisId unik
     const existingEquipment =
       await this.medicalEquipmentRepository.findByInventorisId(
         equipmentData.inventorisId,
@@ -58,6 +56,7 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     );
   }
 
+  // ✅ READ
   public async findByInventorisId(
     inventorisId: string,
   ): Promise<AddMedicalEquipmentResponseDTO | null> {
@@ -74,7 +73,6 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     );
   }
 
-  // ✅ READ
   public async getMedicalEquipment(): Promise<MedicalEquipmentDTO[]> {
     return await this.medicalEquipmentRepository.getMedicalEquipment();
   }
@@ -104,6 +102,35 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
 
     return this.medicalEquipmentRepository.getMedicalEquipmentByName(
       name.trim(),
+    );
+  }
+
+  // ✅ UPDATE
+  public async updateMedicalEquipment(
+    id: string,
+    equipmentData: UpdateMedicalEquipmentDTO,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new Error("Equipment ID is required and must be a valid string");
+    }
+
+    if (typeof equipmentData.modifiedBy !== "number") {
+      throw new Error("modifiedBy is required and must be a number");
+    }
+
+    const equipment = await this.medicalEquipmentRepository.findById(id);
+    if (!equipment) {
+      throw new Error("Medical equipment not found");
+    }
+
+    const updateData = {
+      ...equipmentData,
+      modifiedOn: new Date(),
+    };
+
+    return await this.medicalEquipmentRepository.updateMedicalEquipment(
+      id,
+      updateData,
     );
   }
 }

@@ -2,6 +2,7 @@ import { MedicalEquipment } from "@prisma/client";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
+  UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
 } from "../../dto/medicalequipment.dto";
 import { MedicalEquipmentFilterOptions } from "../../filters/interface/medicalequipment.filter.interface";
@@ -12,11 +13,11 @@ export interface IMedicalEquipmentService {
     data: AddMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO>;
 
+  // Read
   findByInventorisId(
     inventorisId: string,
   ): Promise<AddMedicalEquipmentResponseDTO | null>;
 
-  // Read
   getMedicalEquipment(): Promise<MedicalEquipmentDTO[]>;
 
   getMedicalEquipmentById(
@@ -30,4 +31,10 @@ export interface IMedicalEquipmentService {
   searchMedicalEquipment(
     name: string,
   ): Promise<MedicalEquipment[]>;
+
+  // Update
+  updateMedicalEquipment(
+    id: string,
+    equipmentData: UpdateMedicalEquipmentDTO,
+  ): Promise<AddMedicalEquipmentResponseDTO | null>;
 }
