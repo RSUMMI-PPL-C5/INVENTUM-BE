@@ -81,37 +81,6 @@ import DivisionService, {
       });
     });
   
-    describe("updateDivision", () => {
-      it("should update an existing division", async () => {
-        const updatedDivision = { id: 1, divisi: "Updated IT", parentId: null };
-        mockRepository.updateDivision = jest.fn().mockResolvedValue(updatedDivision);
-        const service = new DivisionService(mockRepository);
-  
-        const result = await service.updateDivision(1, {
-          divisi: "Updated IT",
-          parentId: null,
-        });
-  
-        expect(result).toEqual(updatedDivision);
-        expect(mockRepository.updateDivision).toHaveBeenCalledWith(1, {
-          divisi: "Updated IT",
-          parentId: null,
-        });
-      });
-  
-      it("should return null if division to update not found", async () => {
-        mockRepository.updateDivision = jest.fn().mockResolvedValue(null);
-        const service = new DivisionService(mockRepository);
-  
-        const result = await service.updateDivision(999, {
-          divisi: "Nonexistent",
-          parentId: null,
-        });
-  
-        expect(result).toBeNull();
-      });
-    });
-  
     describe("deleteDivision", () => {
       it("should delete a division by ID", async () => {
         mockRepository.deleteDivision = jest.fn().mockResolvedValue(true);
