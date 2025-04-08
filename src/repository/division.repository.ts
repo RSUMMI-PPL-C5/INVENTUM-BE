@@ -28,23 +28,39 @@ class DivisionRepository {
   /**
    * Get hierarchical division structure (root divisions with their children)
    * This formats the data for tree display in the frontend
+   * Uses a bottom-up approach to build the hierarchy
    */
   public async getDivisionsHierarchy(): Promise<DivisionWithChildrenDTO[]> {
-    const rootDivisions = await this.prisma.listDivisi.findMany({
-      where: { parentId: null },
+    // Ambil semua divisions dari database dalam satu query
+    const allDivisions = await this.prisma.listDivisi.findMany({
       include: {
-        children: {
-          include: {
-            children: {
-              include: {
-                children: true, // Up to 3 levels deep
-              },
-            },
-          },
+        _count: {
+          select: { children: true },
         },
       },
     });
-
+  
+    const divisionMap: Record<number, DivisionWithChildrenDTO> = {};
+    const rootDivisions: DivisionWithChildrenDTO[] = [];
+  
+    // Inisialisasi semua division dengan children kosong
+    for (const division of allDivisions) {
+      divisionMap[division.id] = { ...division, children: [] };
+    }
+  
+    // Bangun hierarki dengan menambahkan setiap node ke parent-nya
+    for (const division of allDivisions) {
+      const parentId = division.parentId;
+      if (parentId === null) {
+        // Ini adalah root division
+        rootDivisions.push(divisionMap[division.id]);
+      } else if (divisionMap[parentId]) {
+        // Gunakan type assertion untuk memastikan children tidak undefined
+        const parentDivision = divisionMap[parentId];
+        (parentDivision.children as DivisionWithChildrenDTO[]).push(divisionMap[division.id]);
+      }
+    }
+  
     return rootDivisions;
   }
 
@@ -159,26 +175,48 @@ class DivisionRepository {
     return this.hasCircularReference(division.parentId, potentialAncestorId);
   }
 
+  // Cari semua anak langsung dari division dan
+  // Rekursif untuk mendapatkan anak-anak dari setiap anak
+  public async getAllChildrenIds(id: number): Promise<number[]> {
+    const children = await this.prisma.listDivisi.findMany({
+      where: { parentId: id },
+      select: { id: true },
+    }) || []; // Default to empty array if no children found
+  
+    const childIds = children.map((child) => child.id);
+  
+    const descendants = await Promise.all(
+      childIds.map((childId) => this.getAllChildrenIds(childId))
+    );
+  
+    return [...childIds, ...descendants.flat()];
+  }
+  
   public async deleteDivision(id: number): Promise<boolean> {
     try {
+      const childrenIds = await this.getAllChildrenIds(id);
+  
       await this.prisma.user.updateMany({
-        where: { divisiId: id },
-        data: { divisiId: null },
-      });
-
-      await this.prisma.listDivisi.deleteMany({
         where: {
-          OR: [{ id }, { parentId: id }],
+          divisiId: { in: [...childrenIds, id] },
+        },
+        data: {
+          divisiId: null,
         },
       });
-
+  
+      await this.prisma.listDivisi.deleteMany({
+        where: {
+          id: { in: [...childrenIds, id] },
+        },
+      });
+  
       return true;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       throw new AppError(
         `Failed to delete division with ID ${id}: ${errorMessage}`,
-        500,
+        500
       );
     }
   }
