@@ -24,6 +24,16 @@ class SparepartRepository {
     });
   }
 
+  public async updateSparepart(
+    id: string,
+    data: Partial<SparepartsDTO>,
+  ): Promise<SparepartsDTO | null> {
+    return await this.prisma.spareparts.update({
+      where: { id },
+      data,
+    });
+  }
+
   public async deleteSparepart(id: string): Promise<SparepartsDTO | null> {
     return await this.prisma.spareparts.delete({
       where: { id },

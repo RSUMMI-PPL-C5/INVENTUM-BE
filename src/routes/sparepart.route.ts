@@ -6,7 +6,13 @@ import { addSparepartValidation } from "../validations/addsparepart.validation";
 const router = Router();
 const sparepartController = new SparepartController();
 
-router.post("/", addSparepartValidation, sparepartController.addSparepart);
-router.delete("/:id", sparepartController.deleteSparepart);
+router.post(
+  "/",
+  verifyToken,
+  addSparepartValidation,
+  sparepartController.addSparepart,
+);
+router.put("/:id", verifyToken, sparepartController.updateSparepart);
+router.delete("/:id", verifyToken, sparepartController.deleteSparepart);
 
 export default router;
