@@ -29,6 +29,7 @@ jobs:
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=src \
             -Dsonar.tests=__tests__ \
+            -Dsonar.verbose=true \
             -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
