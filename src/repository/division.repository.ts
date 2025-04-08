@@ -91,6 +91,74 @@ class DivisionRepository {
     }));
   }
 
+  public async updateDivision(
+    id: number,
+    data: Prisma.ListDivisiUpdateInput,
+  ): Promise<DivisionDTO> {
+    try {
+      return await this.prisma.listDivisi.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
+      // Handle specific Prisma errors
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // P2025: Record not found
+        if (error.code === "P2025") {
+          throw new AppError(`Division with ID ${id} not found`, 404);
+        }
+        // P2002: Unique constraint violation
+        if (error.code === "P2002") {
+          throw new AppError(`Division with this name already exists`, 400);
+        }
+        // P2003: Foreign key constraint violation
+        if (error.code === "P2003") {
+          throw new AppError(`Invalid parent division ID`, 400);
+        }
+      }
+
+      throw new AppError(
+        `Failed to update division with ID ${id}: ${errorMessage}`,
+        500,
+      );
+    }
+  }
+
+  public async hasCircularReference(
+    divisionId: number,
+    potentialAncestorId: number,
+  ): Promise<boolean> {
+    // Base case: if they're the same, it's not a descendant
+    if (divisionId === potentialAncestorId) {
+      return false;
+    }
+
+    const division = await this.prisma.listDivisi.findUnique({
+      where: { id: divisionId },
+      select: { parentId: true },
+    });
+
+    // If no parent, it's not a descendant
+    if (division === null) {
+      return false;
+    }
+
+    if (division.parentId === null) {
+      return false;
+    }
+
+    // If parent is the potential ancestor, it is a descendant
+    if (division.parentId === potentialAncestorId) {
+      return true;
+    }
+
+    // Recursively check if the parent is a descendant
+    return this.hasCircularReference(division.parentId, potentialAncestorId);
+  }
+
   public async deleteDivision(id: number): Promise<boolean> {
     try {
       await this.prisma.user.updateMany({

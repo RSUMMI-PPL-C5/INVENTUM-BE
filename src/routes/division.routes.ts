@@ -14,6 +14,7 @@ router.get(
   divisionController.getDivisionsWithUserCount,
 );
 router.get("/:id", verifyToken, divisionController.getDivisionById);
+router.put("/:id", verifyToken, divisionController.updateDivision);
 router.delete("/:id", verifyToken, divisionController.deleteDivision);
 
 export default router;
