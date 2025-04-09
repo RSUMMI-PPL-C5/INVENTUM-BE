@@ -36,6 +36,17 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       );
     }
 
+    if (equipmentData.purchasePrice !== undefined && equipmentData.purchasePrice < 0) {
+      throw new Error("Price cannot be negative");
+    }
+
+    if (
+      equipmentData.purchaseDate &&
+      new Date(equipmentData.purchaseDate) > new Date()
+    ) {
+      throw new Error("datePurchase cannot be in the future");
+    }
+
     const existingEquipment =
       await this.medicalEquipmentRepository.findByInventorisId(
         equipmentData.inventorisId,
@@ -118,6 +129,17 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       throw new Error("modifiedBy is required and must be a number");
     }
 
+    if (equipmentData.purchasePrice !== undefined && equipmentData.purchasePrice < 0) {
+      throw new Error("Price cannot be negative");
+    }
+
+    if (
+      equipmentData.purchaseDate &&
+      new Date(equipmentData.purchaseDate) > new Date()
+    ) {
+      throw new Error("datePurchase cannot be in the future");
+    }
+
     const equipment = await this.medicalEquipmentRepository.findById(id);
     if (!equipment) {
       throw new Error("Medical equipment not found");
@@ -135,18 +157,18 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
   }
 
   public async deleteMedicalEquipment(id: string): Promise<MedicalEquipmentDTO | null> {
-      const sparepart = await this.medicalEquipmentRepository.findById(id);
-      if (!sparepart) {
-        return null;
-      }
-  
-      const deletedData: Partial<MedicalEquipmentDTO> = {
-        deletedOn: new Date(),
-      };
-  
-      // Note: If you implement soft delete, call updateSparepart instead
-      return await this.medicalEquipmentRepository.deleteMedicalEquipment(id);
+    const sparepart = await this.medicalEquipmentRepository.findById(id);
+    if (!sparepart) {
+      return null;
     }
+
+    const deletedData: Partial<MedicalEquipmentDTO> = {
+      deletedOn: new Date(),
+    };
+
+    // Note: If you implement soft delete, call updateSparepart instead
+    return await this.medicalEquipmentRepository.deleteMedicalEquipment(id);
+  }
 }
 
 export default MedicalEquipmentService;
