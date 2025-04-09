@@ -137,6 +137,7 @@ class MedicalEquipmentRepository {
         name: {
           contains: nameQuery,
         },
+        deletedOn: null,
       },
     });
   }
