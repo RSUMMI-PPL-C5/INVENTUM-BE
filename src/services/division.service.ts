@@ -8,7 +8,6 @@ class DivisionService implements IDivisionService {
   private readonly divisionRepository: DivisionRepository;
 
   constructor(divisionRepository?: DivisionRepository) {
-    // Dependency injection pattern - allows for easier testing
     this.divisionRepository = divisionRepository || new DivisionRepository();
   }
 
@@ -37,7 +36,6 @@ class DivisionService implements IDivisionService {
 
   /**
    * Get hierarchical structure of divisions
-   * Uses the Composite Pattern through the tree structure
    */
   public async getDivisionsHierarchy(): Promise<DivisionWithChildrenDTO[]> {
     return await this.divisionRepository.getDivisionsHierarchy();
@@ -45,7 +43,6 @@ class DivisionService implements IDivisionService {
 
   /**
    * Get divisions with their user counts
-   * Demonstrates the Decorator Pattern by adding additional information to divisions
    */
   public async getDivisionsWithUserCount(): Promise<
     Array<DivisionDTO & { userCount: number }>
@@ -132,7 +129,7 @@ class DivisionService implements IDivisionService {
   }
 }
 
-// Singleton pattern implementation - ensures single instance throughout the application
+// Singleton pattern implementation
 class DivisionServiceSingleton {
   private static instance: DivisionService;
 

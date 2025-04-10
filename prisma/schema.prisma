@@ -31,7 +31,7 @@ model User {
 
 model ListDivisi {
   id       Int          @id @default(autoincrement())
-  divisi   String?
+  divisi   String?       @unique
   parentId Int?
   parent   ListDivisi?  @relation("ParentChild", fields: [parentId], references: [id])
   children ListDivisi[] @relation("ParentChild")

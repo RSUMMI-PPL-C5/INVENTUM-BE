@@ -9,11 +9,7 @@ const divisionController = new DivisionController();
 router.post("/", verifyToken, divisionController.addDivision);
 router.get("/", verifyToken, divisionController.getDivisionsTree);
 router.get("/all", verifyToken, divisionController.getAllDivisions);
-router.get(
-  "/with-user-count",
-  verifyToken,
-  divisionController.getDivisionsWithUserCount,
-);
+router.get("/with-user-count", verifyToken, divisionController.getDivisionsWithUserCount);
 router.get("/:id", verifyToken, divisionController.getDivisionById);
 router.put("/:id", verifyToken, divisionController.updateDivision);
 router.delete("/:id", verifyToken, divisionController.deleteDivision);

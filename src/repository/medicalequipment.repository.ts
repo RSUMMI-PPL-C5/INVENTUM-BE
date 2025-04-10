@@ -1,6 +1,8 @@
 import { PrismaClient, Prisma, MedicalEquipment } from "@prisma/client";
-import { MedicalEquipmentDTO } from "../dto/medicalequipment.dto";
-
+import {
+  AddMedicalEquipmentResponseDTO,
+  MedicalEquipmentDTO,
+} from "../dto/medicalequipment.dto";
 import prisma from "../configs/db.config";
 
 class MedicalEquipmentRepository {
@@ -10,14 +12,113 @@ class MedicalEquipmentRepository {
     this.prisma = prisma;
   }
 
+  public async addMedicalEquipment(
+    equipmentData: any,
+  ): Promise<AddMedicalEquipmentResponseDTO> {
+    const newEquipment = await this.prisma.medicalEquipment.create({
+      data: equipmentData,
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    return {
+      ...newEquipment,
+      brandName: newEquipment.brandName ?? undefined,
+      modelName: newEquipment.modelName ?? undefined,
+    };
+  }
+
+  public async findByInventorisId(
+    inventorisId: string,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const equipment = await this.prisma.medicalEquipment.findUnique({
+      where: { inventorisId },
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    if (!equipment) return null;
+
+    return {
+      ...equipment,
+      brandName: equipment.brandName ?? undefined,
+      modelName: equipment.modelName ?? undefined,
+    };
+  }
+
+  public async findById(
+    id: string,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const equipment = await this.prisma.medicalEquipment.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    if (!equipment) return null;
+
+    return {
+      ...equipment,
+      brandName: equipment.brandName ?? undefined,
+      modelName: equipment.modelName ?? undefined,
+    };
+  }
+
+  public async updateMedicalEquipment(
+    id: string,
+    data: Partial<AddMedicalEquipmentResponseDTO>,
+  ): Promise<AddMedicalEquipmentResponseDTO | null> {
+    const updatedEquipment = await this.prisma.medicalEquipment.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        inventorisId: true,
+        name: true,
+        brandName: true,
+        modelName: true,
+      },
+    });
+
+    return {
+      ...updatedEquipment,
+      brandName: updatedEquipment.brandName ?? undefined,
+      modelName: updatedEquipment.modelName ?? undefined,
+    };
+  }
+
   public async getMedicalEquipment(): Promise<MedicalEquipmentDTO[]> {
-    return await this.prisma.medicalEquipment.findMany();
+    return await this.prisma.medicalEquipment.findMany({
+      where: {
+        deletedOn: null,
+      },
+    });
   }
 
   public async getFilteredMedicalEquipment(
     whereClause: Prisma.MedicalEquipmentWhereInput,
   ): Promise<MedicalEquipmentDTO[]> {
-    return await prisma.medicalEquipment.findMany({ where: whereClause });
+    return await this.prisma.medicalEquipment.findMany({
+      where: {
+       ...whereClause,
+       deletedOn: null,
+      }, 
+    });
   }
 
   public async getMedicalEquipmentById(
@@ -36,9 +137,18 @@ class MedicalEquipmentRepository {
         name: {
           contains: nameQuery,
         },
+        deletedOn: null,
       },
     });
   }
+
+  public async deleteMedicalEquipment(id: string): Promise<MedicalEquipmentDTO | null> {
+      // Soft delete by updating `deletedOn` field instead of removing the record
+      return await this.prisma.medicalEquipment.update({
+        where: { id },
+        data: { deletedOn: new Date() },
+      });
+    }
 }
 
 export default MedicalEquipmentRepository;

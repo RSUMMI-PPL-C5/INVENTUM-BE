@@ -1,7 +1,7 @@
-import { DivisionDTO } from "../../../../src/dto/division.dto";
-import DivisionRepository from "../../../../src/repository/division.repository";
+import { DivisionDTO } from '../../../../src/dto/division.dto';
+import DivisionRepository from '../../../../src/repository/division.repository';
 
-jest.mock("@prisma/client", () => {
+jest.mock('@prisma/client', () => {
   const mockCreate = jest.fn();
   const mockFindUnique = jest.fn();
 
@@ -19,9 +19,9 @@ jest.mock("@prisma/client", () => {
   };
 });
 
-const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
+const { __mockPrisma: mockPrisma } = jest.requireMock('@prisma/client');
 
-describe("DivisionRepository - ADD", () => {
+describe('DivisionRepository - ADD', () => {
   let divisionRepository: DivisionRepository;
 
   beforeEach(() => {
@@ -29,15 +29,15 @@ describe("DivisionRepository - ADD", () => {
     divisionRepository = new DivisionRepository();
   });
 
-  it("should add a new list divisi", async () => {
+  it('should add a new list divisi', async () => {
     const mockNewDivision: DivisionDTO = {
       id: 2,
-      divisi: "Divisi 2",
+      divisi: 'Divisi 2',
       parentId: 1,
     };
 
     const addData: Partial<DivisionDTO> = {
-      divisi: "Divisi 2",
+      divisi: 'Divisi 2',
       parentId: 1,
     };
 
@@ -45,27 +45,25 @@ describe("DivisionRepository - ADD", () => {
 
     const result = await divisionRepository.addDivision(addData);
 
-    expect(mockPrisma.create).toHaveBeenCalledWith({ data: addData });
+    expect(mockPrisma.create).toHaveBeenCalledWith({data : addData});
     expect(result).toEqual(mockNewDivision);
   });
 
-  it("should throw an error if failed to add a new list divisi", async () => {
+  it('should throw an error if failed to add a new list divisi', async () => {
     const addData: Partial<DivisionDTO> = {
-      divisi: "Divisi 2",
+      divisi: 'Divisi 2',
       parentId: 99,
     };
 
-    mockPrisma.create.mockRejectedValue(new Error("Failed to add list divisi"));
+    mockPrisma.create.mockRejectedValue(new Error('Failed to add list divisi'));
 
-    await expect(divisionRepository.addDivision(addData)).rejects.toThrow(
-      "Failed to add list divisi",
-    );
+    await expect(divisionRepository.addDivision(addData)).rejects.toThrow('Failed to add list divisi');
   });
 
-  it("should get divisi by id", async () => {
+  it('should get divisi by id', async () => {
     const mockNewDivision: DivisionDTO = {
       id: 2,
-      divisi: "Divisi 2",
+      divisi: 'Divisi 2',
       parentId: 1,
     };
 
@@ -77,7 +75,7 @@ describe("DivisionRepository - ADD", () => {
     expect(result).toEqual(mockNewDivision);
   });
 
-  it("should return null if divisi not found", async () => {
+  it('should return null if divisi not found', async () => {
     mockPrisma.findUnique.mockResolvedValue(null);
 
     const result = await divisionRepository.getDivisionById(99);
