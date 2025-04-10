@@ -5,9 +5,6 @@ on:
     branches:
       - '*'
       - 'chore/*' # must be deleted later
-  pull_request:
-    branches:
-      - '*'
 
 jobs:
   sonarqube:
@@ -42,32 +39,38 @@ jobs:
       - name: Check SonarQube Quality Gate
         id: quality-gate
         run: |
-            # Tunggu beberapa detik agar analisis selesai
-            sleep 30
-        
-            # Ambil status Quality Gate dari SonarQube
-            RESPONSE=$(curl -s "http://117.102.83.235:9090/api/qualitygates/project_status?projectKey=InventoryManagement-BE")
-        
-            # Debugging: Tampilkan respons untuk memastikan formatnya benar
-            echo "SonarQube Response: $RESPONSE"
-
-            # Validasi apakah respons adalah JSON
-            if ! echo "$RESPONSE" | jq empty; then
-              echo "Error: Response is not valid JSON"
-              exit 1
-            fi
-        
-            # Parse status Quality Gate
-            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status')
-        
-            # Simpan status ke output untuk digunakan di langkah berikutnya
-            echo "::set-output name=status::$STATUS"
-        
-            # Gagal jika status Quality Gate bukan "OK"
-            if [ "$STATUS" != "OK" ]; then
-              echo "Quality Gate failed: $STATUS"
-              exit 1
-            fi
+          # Tunggu beberapa detik agar analisis selesai
+          sleep 30
+    
+          # Ambil nama branch dari environment variable GITHUB_REF
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
+    
+          # Debugging: Tampilkan nama branch
+          echo "Branch Name: $BRANCH_NAME"
+    
+          # Ambil status Quality Gate dari SonarQube berdasarkan branch
+          RESPONSE=$(curl -s "http://117.102.83.235:9090/api/qualitygates/project_status?projectKey=InventoryManagement-BE&branch=$BRANCH_NAME")
+    
+          # Debugging: Tampilkan respons untuk memastikan formatnya benar
+          echo "SonarQube Response: $RESPONSE"
+    
+          # Validasi apakah respons adalah JSON
+          if ! echo "$RESPONSE" | jq empty; then
+            echo "Error: Response is not valid JSON"
+            exit 1
+          fi
+    
+          # Parse status Quality Gate
+          STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status')
+    
+          # Simpan status ke output untuk digunakan di langkah berikutnya
+          echo "::set-output name=status::$STATUS"
+    
+          # Gagal jika status Quality Gate bukan "OK"
+          if [ "$STATUS" != "OK" ]; then
+            echo "Quality Gate failed: $STATUS"
+            exit 1
+          fi
           
       - name: Publish Quality Gate Status
         if: always()

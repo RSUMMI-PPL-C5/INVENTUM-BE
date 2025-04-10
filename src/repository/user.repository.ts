@@ -24,40 +24,57 @@ class UserRepository {
 	}
 
 	public async getUsers(): Promise<UserDTO[]> {
-		return await this.prisma.user.findMany();
+		return await this.prisma.user.findMany({
+			where: this.notDeletedCondition
+		});
 	}
-
+	
 	public async getFilteredUsers(
 		whereClause: Prisma.UserWhereInput
 	): Promise<UserDTO[]> {
-		return await prisma.user.findMany({ where: whereClause });
+		return await prisma.user.findMany({ 
+			where: {
+				...whereClause,
+				...this.notDeletedCondition
+			} 
+		});
 	}
-
+	
 	public async getUserById(id: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { id },
+		return await this.prisma.user.findFirst({
+			where: { 
+				id,
+				...this.notDeletedCondition
+			},
 		});
 	}
-
+	
 	public async getUserByEmail(email: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { email },
+		return await this.prisma.user.findFirst({
+			where: { 
+				email,
+				...this.notDeletedCondition
+			},
 		});
 	}
-
+	
 	public async findUsersByName(nameQuery: string): Promise<User[]> {
 		return await prisma.user.findMany({
 			where: {
 				fullname: {
 					contains: nameQuery,
 				},
+				...this.notDeletedCondition
 			},
 		});
 	}
-
+	
 	public async findByUsername(username: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { username },
+		return await this.prisma.user.findFirst({
+			where: { 
+				username,
+				...this.notDeletedCondition
+			},
 		});
 	}
 
@@ -72,9 +89,19 @@ class UserRepository {
 	}
 
 	public async deleteUser(id: string): Promise<UserDTO | null> {
-		return await this.prisma.user.delete({
+		return await this.prisma.user.update({
 			where: { id },
+			data: {
+				deletedOn: new Date(),
+				deletedBy: 1
+			},
 		});
+	}
+
+	private get notDeletedCondition(): Prisma.UserWhereInput {
+		return {
+			deletedOn: null
+		};
 	}
 }
 
