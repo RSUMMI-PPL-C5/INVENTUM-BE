@@ -59,7 +59,7 @@ describe('DivisiController - ADD', () => {
     await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent ID must be a number' });
+    expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent ID must be a number or null' });
   });
 
   test('POST /divisi - should return 404 if parent divisi not found', async () => {

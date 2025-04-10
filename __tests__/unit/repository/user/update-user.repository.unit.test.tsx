@@ -20,80 +20,71 @@ jest.mock("@prisma/client", () => {
 // Get access to the mocked Prisma functions
 const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
-describe("User Repository - PUT", () => {
+describe("User Repository - UPDATE", () => {
   let userRepository: UserRepository;
+  const mockUser: UserDTO = {
+    id: "1",
+    email: "user1@example.com",
+    username: "user1",
+    password: "hashedpwd1",
+    role: "USER",
+    fullname: "User One",
+    nokar: "12345",
+    divisiId: 1,
+    waNumber: "123456789",
+    createdBy: 1,
+    createdOn: new Date(),
+    modifiedBy: null,
+    modifiedOn: new Date(),
+    deletedBy: null,
+    deletedOn: null,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     userRepository = new UserRepository();
   });
 
-  it("should update a user by ID", async () => {
-    const mockUser: UserDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedpwd1",
-      role: "USER",
-      fullname: "User One",
-      nokar: "12345",
-      divisiId: 1,
-      waNumber: "123456789",
-      createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-    };
-
-    const updatedData: Partial<UserDTO> = {
+  it("should update a user's information", async () => {
+    const updateData = {
       fullname: "Updated User One",
+      waNumber: "555555555",
+      modifiedBy: 2
     };
 
-    const updatedUser: UserDTO = {
-      ...mockUser,
-      ...updatedData,
-    };
-
+    const updatedUser = { ...mockUser, ...updateData };
     (mockPrisma.update as jest.Mock).mockResolvedValue(updatedUser);
 
-    const result = await userRepository.updateUser("1", updatedData);
+    const result = await userRepository.updateUser("1", updateData);
 
     expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "1",
-      },
-      data: updatedData,
+      where: { id: "1" },
+      data: updateData,
     });
     expect(result).toEqual(updatedUser);
   });
 
+  it("should return null if no user found to update", async () => {
+    const updateData = { fullname: "New Name" };
+    (mockPrisma.update as jest.Mock).mockResolvedValue(null);
+
+    const result = await userRepository.updateUser("999", updateData);
+
+    expect(mockPrisma.update).toHaveBeenCalledWith({
+      where: { id: "999" },
+      data: updateData,
+    });
+    expect(result).toBeNull();
+  });
+
+  
   it("should throw an error if the update fails", async () => {
+    const updateData = { fullname: "New Name" };
     const errorMessage = "Update failed";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(
-      userRepository.updateUser("1", { fullname: "Updated User One" }),
-    ).rejects.toThrow(errorMessage);
+    await expect(userRepository.updateUser("1", updateData)).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledTimes(1);
-  });
-
-  // Negative Case: Update with invalid ID
-  it("should return null if the user ID does not exist", async () => {
-    (mockPrisma.update as jest.Mock).mockResolvedValue(null);
-
-    const result = await userRepository.updateUser("999", {
-      fullname: "Nonexistent User",
-    });
-
-    expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "999",
-      },
-      data: { fullname: "Nonexistent User" },
-    });
-    expect(result).toBeNull();
   });
 
   // Corner Case: Update with empty data

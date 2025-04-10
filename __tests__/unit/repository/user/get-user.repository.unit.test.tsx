@@ -4,18 +4,21 @@ import { UserDTO } from "../../../../src/dto/user.dto";
 // Mock Prisma Client
 jest.mock("@prisma/client", () => {
   const mockFindMany = jest.fn();
-  const mockFindUnique = jest.fn();
+  const mockFindFirst = jest.fn();
 
   return {
     PrismaClient: jest.fn().mockImplementation(() => ({
       user: {
         findMany: mockFindMany,
-        findUnique: mockFindUnique,
+        findFirst: mockFindFirst,
       },
     })),
     __mockPrisma: {
       findMany: mockFindMany,
-      findUnique: mockFindUnique,
+      findFirst: mockFindFirst,
+    },
+    Prisma: {
+      UserWhereInput: jest.fn(),
     },
   };
 });
@@ -25,98 +28,8 @@ const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
 describe("User Repository - GET", () => {
   let userRepository: UserRepository;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    userRepository = new UserRepository();
-  });
-
-  test("should find user by name", async () => {
-    const mockUser = [
-      { id: "1", fullname: "Azmy Arya Rizaldi", email: "azmy@gmail.com" },
-    ];
-    (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUser);
-
-    const result = await userRepository.findUsersByName("Azmy");
-    expect(result).toEqual(mockUser);
-  });
-
-  test("should return an empty array if user is not found by name", async () => {
-    (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
-
-    const result = await userRepository.findUsersByName("John Doe");
-    expect(result).toEqual([]);
-  });
-
-  it("should return a list of users", async () => {
-    const mockUsers: UserDTO[] = [
-      {
-        id: "1",
-        email: "user1@example.com",
-        username: "user1",
-        password: "hashedpwd1",
-        role: "USER",
-        fullname: "User One",
-        nokar: "12345",
-        divisiId: 1,
-        waNumber: "123456789",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
-      },
-      {
-        id: "2",
-        email: "user2@example.com",
-        username: "user2",
-        password: "hashedpwd2",
-        role: "ADMIN",
-        fullname: "User Two",
-        nokar: "67890",
-        divisiId: 2,
-        waNumber: "987654321",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
-      },
-    ];
-    (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUsers);
-
-    const result = await userRepository.getUsers();
-
-    expect(mockPrisma.findMany).toHaveBeenCalled();
-    expect(result).toEqual(mockUsers);
-    expect(result.length).toBe(mockUsers.length);
-    expect(result[0].id).toBe(mockUsers[0].id);
-  });
-
-  it("should return an empty list if no users found", async () => {
-    (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
-
-    const result = await userRepository.getUsers();
-
-    expect(mockPrisma.findMany).toHaveBeenCalled();
-    expect(result).toEqual([]);
-    expect(result.length).toBe(0);
-  });
-
-  it("should throw an error if the database query fails", async () => {
-    const errorMessage = "Database connection error";
-    (mockPrisma.findMany as jest.Mock).mockRejectedValue(
-      new Error(errorMessage),
-    );
-
-    await expect(userRepository.getUsers()).rejects.toThrow(errorMessage);
-    expect(mockPrisma.findMany).toHaveBeenCalledTimes(1);
-  });
-
-  it("should return a user by ID when ID is valid", async () => {
-    const mockUser: UserDTO = {
+  const mockUsers: UserDTO[] = [
+    {
       id: "1",
       email: "user1@example.com",
       username: "user1",
@@ -132,74 +45,140 @@ describe("User Repository - GET", () => {
       modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
-    };
-
-    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(mockUser);
-
-    const result = await userRepository.getUserById("1");
-
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: {
-        id: "1",
-      },
-    });
-    expect(result).toEqual(mockUser);
-  });
-
-  it("should return null if no user found by ID", async () => {
-    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(null);
-
-    const result = await userRepository.getUserById("1");
-
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: {
-        id: "1",
-      },
-    });
-    expect(result).toBeNull();
-  });
-
-  it("should return a user by username when username is valid", async () => {
-    const mockUser: UserDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "testuser",
-      password: "hashedpwd",
-      role: "USER",
-      fullname: "Test User",
-      nokar: "12345",
-      divisiId: 1,
-      waNumber: "123456789",
+    },
+    {
+      id: "2",
+      email: "user2@example.com",
+      username: "user2",
+      password: "hashedpwd2",
+      role: "ADMIN",
+      fullname: "User Two",
+      nokar: "67890",
+      divisiId: 2,
+      waNumber: "987654321",
       createdBy: 1,
       createdOn: new Date(),
       modifiedBy: null,
       modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
-    };
+    },
+  ];
 
-    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(mockUser);
-
-    const result = await userRepository.findByUsername("testuser");
-
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: {
-        username: "testuser",
-      },
-    });
-    expect(result).toEqual(mockUser);
+  beforeEach(() => {
+    jest.clearAllMocks();
+    userRepository = new UserRepository();
   });
 
-  it("should return null if no user found by username", async () => {
-    (mockPrisma.findUnique as jest.Mock).mockResolvedValue(null);
+  describe("getUsers", () => {
+    it("should return all non-deleted users", async () => {
+      (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
-    const result = await userRepository.findByUsername("testuser");
+      const result = await userRepository.getUsers();
 
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: {
-        username: "testuser",
-      },
+      expect(mockPrisma.findMany).toHaveBeenCalledWith({
+        where: { deletedOn: null },
+      });
+      expect(result).toEqual(mockUsers);
     });
-    expect(result).toBeNull();
+
+    it("should return empty array when no users exist", async () => {
+      (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await userRepository.getUsers();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("getFilteredUsers", () => {
+    it("should return filtered users based on criteria", async () => {
+      const whereClause = { role: "ADMIN" };
+      (mockPrisma.findMany as jest.Mock).mockResolvedValue([mockUsers[1]]);
+
+      const result = await userRepository.getFilteredUsers(whereClause);
+
+      expect(mockPrisma.findMany).toHaveBeenCalledWith({
+        where: {
+          ...whereClause,
+          deletedOn: null,
+        },
+      });
+      expect(result).toEqual([mockUsers[1]]);
+    });
+  });
+
+  describe("getUserById", () => {
+    it("should return a user by ID", async () => {
+      (mockPrisma.findFirst as jest.Mock).mockResolvedValue(mockUsers[0]);
+
+      const result = await userRepository.getUserById("1");
+
+      expect(mockPrisma.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: "1",
+          deletedOn: null,
+        },
+      });
+      expect(result).toEqual(mockUsers[0]);
+    });
+
+    it("should return null if user not found", async () => {
+      (mockPrisma.findFirst as jest.Mock).mockResolvedValue(null);
+
+      const result = await userRepository.getUserById("999");
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("getUserByEmail", () => {
+    it("should return a user by email", async () => {
+      (mockPrisma.findFirst as jest.Mock).mockResolvedValue(mockUsers[0]);
+
+      const result = await userRepository.getUserByEmail("user1@example.com");
+
+      expect(mockPrisma.findFirst).toHaveBeenCalledWith({
+        where: {
+          email: "user1@example.com",
+          deletedOn: null,
+        },
+      });
+      expect(result).toEqual(mockUsers[0]);
+    });
+  });
+
+  describe("findUsersByName", () => {
+    it("should return users matching name query", async () => {
+      (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await userRepository.findUsersByName("User");
+
+      expect(mockPrisma.findMany).toHaveBeenCalledWith({
+        where: {
+          fullname: {
+            contains: "User",
+          },
+          deletedOn: null,
+        },
+      });
+      expect(result).toEqual(mockUsers);
+    });
+  });
+
+  describe("findByUsername", () => {
+    it("should return a user by username", async () => {
+      (mockPrisma.findFirst as jest.Mock).mockResolvedValue(mockUsers[0]);
+
+      const result = await userRepository.findByUsername("user1");
+
+      expect(mockPrisma.findFirst).toHaveBeenCalledWith({
+        where: {
+          username: "user1",
+          deletedOn: null,
+        },
+      });
+      expect(result).toEqual(mockUsers[0]);
+    });
   });
 });
