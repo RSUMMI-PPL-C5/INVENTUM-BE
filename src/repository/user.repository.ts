@@ -34,10 +34,22 @@ class UserRepository {
 	}
 
 	public async getUserById(id: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { id },
-		});
-	}
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            include: {
+                divisi: true
+            }
+        });
+    
+        if (!user) {
+            return null;
+        }
+    
+        return {
+            ...user,
+            divisionName: user.divisi?.divisi || null
+        };
+    }
 
 	public async getUserByEmail(email: string): Promise<UserDTO | null> {
 		return await this.prisma.user.findUnique({

@@ -43,7 +43,7 @@ class UserService implements IUserService {
       password: hashedPassword,
       role: userData.role,
       fullname: userData.fullname,
-      nokar: userData.nokar ?? "",
+      nokar: userData.nokar,
       waNumber: userData.waNumber,
       createdBy: userData.createdBy,
       createdOn: new Date(),
@@ -76,8 +76,6 @@ class UserService implements IUserService {
     const { fullname, role, divisiId, modifiedBy } = data;
     if (modifiedBy === undefined) return false;
     if (!fullname || fullname.length < 3) return false;
-    if (role !== undefined && typeof role !== "string") return false;
-    if (divisiId !== undefined && typeof divisiId !== "number") return false;
     return true;
   }
 
@@ -91,7 +89,7 @@ class UserService implements IUserService {
     const updatedData: Partial<UserDTO> = {
       fullname,
       role,
-      divisiId,
+      divisiId: Number(divisiId),
       waNumber,
       modifiedBy,
       modifiedOn: new Date(),

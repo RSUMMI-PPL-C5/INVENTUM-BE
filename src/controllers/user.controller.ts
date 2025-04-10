@@ -27,12 +27,9 @@ class UserController {
 				role: req.body.role,
 				fullname: req.body.fullname,
 				nokar: req.body.nokar,
-				divisiId:
-					req.body.divisiId !== undefined
-						? Number(req.body.divisiId)
-						: undefined,
+				divisiId:req.body.divisiId,
 				waNumber: req.body.waNumber,
-				createdBy: req.body.userId || 1,
+                createdBy: req.body.createdBy,
 			};
 
 			const newUser = await this.userService.addUser(userData);
