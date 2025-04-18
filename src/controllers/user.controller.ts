@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import UserService from "../services/user.service";
+import { PaginationOptions, UserFilterOptions } from "../filters/interface/user.filter.interface";
+import AppError from "../utils/appError";
 import { AddUserDTO } from "../dto/user.dto";
-import { validationResult } from "express-validator";
-import { hasFilters } from "../filters/user.filter";
-import { UserFilterOptions } from "../filters/interface/user.filter.interface";
 
 class UserController {
 	private readonly userService: UserService;
@@ -12,92 +11,106 @@ class UserController {
 		this.userService = new UserService();
 	}
 
-	public addUser = async (req: Request, res: Response): Promise<void> => {
-		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				res.status(400).json({ errors: errors.array() });
-				return;
-			}
+	public createUser = async (req: Request, res: Response ): Promise<void> => {
+        try {
 
-			const userData: AddUserDTO = {
-				email: req.body.email,
-				username: req.body.username,
-				password: req.body.password,
-				role: req.body.role,
-				fullname: req.body.fullname,
-				nokar: req.body.nokar,
-				divisiId:req.body.divisiId,
-				waNumber: req.body.waNumber,
-                createdBy: req.body.createdBy,
-			};
+          const userData : AddUserDTO = {
+            ...req.body,
+            createdBy: (req.user as any).userId,
+            createdOn: new Date(),
+          }
+          
+          const result = await this.userService.createUser(userData)
+        
+          res.status(201).json({
+            status: "success",
+            data: result,
+          })
 
-			const newUser = await this.userService.addUser(userData);
-			res.status(201).json(newUser);
-		} catch (error: unknown) {
-			console.error("Error in addUser controller:", error);
-			res.status(
-				error instanceof Error &&
-					(error.message === "Email already in use" ||
-						error.message === "Username already in use")
-					? 409
-					: 500
-			).json({
-				error:
-					error instanceof Error
-						? error.message
-						: "An unknown error occurred",
-			});
-		}
-	};
+        } catch (error) {
+
+          if (error instanceof AppError) {
+            res.status(error.statusCode).json({
+              status: "error",
+              statusCode: error.statusCode,
+              message: error.message,
+            })
+          } else {
+            res.status(500).json({
+              status: "error",
+              statusCode: 500,
+              message: (error as any).message,
+            })
+          }
+
+        }
+    }
 
     public getUsers = async (req: Request, res: Response): Promise<void> => {
-		try {
-			const errors = validationResult(req);
-			if (!errors.isEmpty()) {
-				res.status(400).json({ error: "Invalid input data" });
-				return;
-			}
-	
-			const { search } = req.query;
-	
-			if (search && typeof search === "string") {
-				const users = await this.userService.searchUser(search);
-				res.status(200).json(users);
-				return;
-			}
-	
-			let users;
-			if (hasFilters(req.query)) {
-				const filters: UserFilterOptions = {
-					role: req.query.role as any,
-					divisiId: req.query.divisiId as any,
-					createdOnStart: req.query.createdOnStart as any,
-					createdOnEnd: req.query.createdOnEnd as any,
-					modifiedOnStart: req.query.modifiedOnStart as any,
-					modifiedOnEnd: req.query.modifiedOnEnd as any,
-				};
-				users = await this.userService.getFilteredUsers(filters);
-			} else {
-				users = await this.userService.getUsers();
-			}
-	
-			res.status(200).json(users);
-		} catch (error) {
-			res.status(500).json({ message: (error as Error).message });
-		}
-	};
+        try {
+    
+          const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+          const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+          
+          const paginationOptions: PaginationOptions = { 
+            page: page > 0 ? page : 1,
+            limit: limit > 0 ? limit : 10
+          };
+    
+          const filters: UserFilterOptions = req.query;
+          const search = req.query.search as string | undefined;
+    
+          const result = await this.userService.getUsers(
+            search, 
+            filters, 
+            paginationOptions
+          );
+        
+          res.status(200).json(result);
+        } catch (error) {
+
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                  status: "error",
+                  statusCode: error.statusCode,
+                  message: error.message,
+                })
+            } else {
+                res.status(500).json({
+                  status: "error",
+                  statusCode: 500,
+                  message: (error as any).message,
+                })
+            }
+        }
+    };
 
 	public getUserById = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const user = await this.userService.getUserById(req.params.id);
+
 			if (!user) {
 				res.status(404).json({ message: "User not found" });
 				return;
 			}
+
 			res.status(200).json(user);
 		} catch (error) {
-			res.status(500).json({ message: (error as Error).message });
+
+			if (error instanceof AppError) {
+                res.status(error.statusCode).json({
+                  status: "error",
+                  statusCode: error.statusCode,
+                  message: error.message,
+                })
+            } else {
+                res.status(500).json({
+                  status: "error",
+                  statusCode: 500,
+                  message: (error as any).message,
+                })
+            }
+
 		}
 	};
 
@@ -107,12 +120,14 @@ class UserController {
 				req.params.id,
 				req.body
 			);
+
 			if (!user) {
 				res.status(404).json({
 					message: "User not found or invalid data",
 				});
 				return;
 			}
+            
 			res.status(200).json(user);
 		} catch (error) {
 			res.status(500).json({ message: (error as Error).message });
@@ -134,3 +149,4 @@ class UserController {
 }
 
 export default UserController;
+

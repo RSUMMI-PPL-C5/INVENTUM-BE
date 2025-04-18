@@ -2,6 +2,7 @@ import { PrismaClient, Prisma, User } from "@prisma/client";
 import { UserDTO, AddUserResponseDTO } from "../dto/user.dto";
 
 import prisma from "../configs/db.config";
+import { UserFilterOptions, PaginationOptions } from "../filters/interface/user.filter.interface";
 
 class UserRepository {
 	private readonly prisma: PrismaClient;
@@ -23,15 +24,74 @@ class UserRepository {
 		return newUser;
 	}
 
-	public async getUsers(): Promise<UserDTO[]> {
-		return await this.prisma.user.findMany();
-	}
+    public async getUsers(
+        search?: string,
+        filters?: UserFilterOptions,
+        pagination?: PaginationOptions
+      ) {
+        const where: any = {};
+    
+        if (search) {
+          where.OR = [
+            { fullname: { contains: search } },
+            { email: { contains: search } },
+            { username: { contains: search } }
+          ];
+        }
 
-	public async getFilteredUsers(
-		whereClause: Prisma.UserWhereInput
-	): Promise<UserDTO[]> {
-		return await prisma.user.findMany({ where: whereClause });
-	}
+        if (filters) {
+          if (filters.role) {
+            where.role = {in : filters.role}
+          }
+    
+          if (filters.divisiId) {
+            where.divisiId = {in: filters.divisiId}
+          }
+    
+          if (filters.createdOnStart || filters.createdOnEnd) {
+            where.createdAt = {};
+            
+            if (filters.createdOnStart) {
+              where.createdAt.gte = new Date(filters.createdOnStart);
+            }
+            
+            if (filters.createdOnEnd) {
+              where.createdAt.lte = new Date(filters.createdOnEnd);
+            }
+          }
+    
+          if (filters.modifiedOnStart || filters.modifiedOnEnd) {
+            where.updatedAt = {};
+            
+            if (filters.modifiedOnStart) {
+              where.updatedAt.gte = new Date(filters.modifiedOnStart);
+            }
+            
+            if (filters.modifiedOnEnd) {
+              where.updatedAt.lte = new Date(filters.modifiedOnEnd);
+            }
+          }
+        }
+    
+        const skip = pagination ? (pagination.page - 1) * pagination.limit : undefined;
+        const take = pagination ? pagination.limit : undefined;
+    
+        const [users, total] = await Promise.all([
+          this.prisma.user.findMany({
+            where,
+            skip,
+            take,
+            include: {
+              divisi: true
+            },
+            orderBy: {
+              id: 'desc'
+            }
+          }),
+          this.prisma.user.count({ where })
+        ]);
+        return { users, total };
+      }
 
 	public async getUserById(id: string): Promise<UserDTO | null> {
         const user = await this.prisma.user.findUnique({
@@ -57,17 +117,7 @@ class UserRepository {
 		});
 	}
 
-	public async findUsersByName(nameQuery: string): Promise<User[]> {
-		return await prisma.user.findMany({
-			where: {
-				fullname: {
-					contains: nameQuery,
-				},
-			},
-		});
-	}
-
-	public async findByUsername(username: string): Promise<UserDTO | null> {
+	public async getUserByUsername(username: string): Promise<UserDTO | null> {
 		return await this.prisma.user.findUnique({
 			where: { username },
 		});
