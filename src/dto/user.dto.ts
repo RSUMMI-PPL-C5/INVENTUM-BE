@@ -1,17 +1,20 @@
 import { User } from "@prisma/client";
 
-export interface UserDTO extends User {}
+export interface UserDTO extends User {
+    divisionName?: string | null;
+}
 
 export interface AddUserDTO {
     email: string;
     username: string;
     password: string;
-    role?: string | null;
-    fullname?: string | null;
-    nokar?: string;
-    divisiId?: number | null;
-    waNumber?: string | null;
-    createdBy: number;
+    fullname: string;
+    waNumber: string;
+    role: string;
+    nokar: string;
+    divisiId: number;
+    createdBy: string;
+    createdOn: string;
 }
   
 export interface AddUserResponseDTO {

@@ -1,14 +1,22 @@
-import { User } from "@prisma/client";
-import { UserFilterOptions } from "../../filters/interface/user.filter.interface";
+import { PaginationOptions, UserFilterOptions } from "../../filters/interface/user.filter.interface";
 import { AddUserDTO, AddUserResponseDTO, UserDTO } from "../../dto/user.dto";
 
-
-export interface IUserService{
-    getUsers(): Promise<UserDTO[]>;
+export interface IUserService {
+    createUser(userData: AddUserDTO): Promise<AddUserResponseDTO>;
+    getUsers(
+      search?: string,
+      filters?: UserFilterOptions,
+      pagination?: PaginationOptions
+    ): Promise<{
+      data: UserDTO[];
+      meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      };
+    }>;
     getUserById(id: string): Promise<UserDTO | null>;
-    getFilteredUsers(filters: UserFilterOptions): Promise<User[]>;
-    addUser(userData: AddUserDTO): Promise<AddUserResponseDTO>;
-    searchUser(name: string): Promise<UserDTO[]>;
     updateUser(id: string, data: Partial<UserDTO>): Promise<UserDTO | null>;
     deleteUser(id: string): Promise<UserDTO | null>;
 }

@@ -10,9 +10,9 @@ export const userFilterQueryValidation = [
     .isArray()
     .withMessage("role must be a string or an array of strings")
     .custom((value) =>
-      value.every((role: any) => ["User", "Admin", "Asesor"].includes(role)),
+      value.every((role: any) => ["User", "Admin", "Fasum"].includes(role)),
     )
-    .withMessage("role must contain user, admin, or asesor"),
+    .withMessage("role must contain user, admin, or fasum"),
 
   query("divisiId")
     .optional()

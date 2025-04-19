@@ -8,5 +8,5 @@ export interface LoginResponseDTO{
     username: string;
     email: string;
     token: string;
-    role: string | null; //still hazy on how this works
+    role: string | null;
 }

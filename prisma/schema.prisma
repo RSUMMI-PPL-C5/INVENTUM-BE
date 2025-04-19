@@ -12,16 +12,16 @@ model User {
   email      String      @unique
   username   String      @unique
   password   String
-  role       String?
-  fullname   String?
+  role       String
+  fullname   String
   nokar      String      @default("")
   divisiId   Int?
-  waNumber   String?
-  createdBy  Int
-  createdOn  DateTime?
-  modifiedBy Int?
-  modifiedOn DateTime    @default(now())
-  deletedBy  Int?
+  waNumber   String
+  createdBy  String?
+  createdOn  DateTime?     @default(now())
+  modifiedBy String?
+  modifiedOn DateTime?    
+  deletedBy  String?
   deletedOn  DateTime?
   requests   Request[]
   divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
