@@ -4,7 +4,6 @@ import {
   AddMedicalEquipmentDTO,
   UpdateMedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
-import { validationResult } from "express-validator";
 import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
 import { PaginationOptions } from "../filters/interface/pagination.interface";
 import AppError from "../utils/appError";
@@ -21,11 +20,6 @@ class MedicalEquipmentController {
     res: Response,
   ): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
-      }
       const equipmentData: AddMedicalEquipmentDTO = {
         ...req.body,
         createdBy: (req.user as any).userId,
@@ -38,7 +32,6 @@ class MedicalEquipmentController {
         data: newEquipment
       });
     } catch (error: unknown) {
-      console.error("Error in addMedicalEquipment controller:", error);
       if (error instanceof AppError) {
         res.status(error.statusCode).json({
           status: "error",
@@ -58,12 +51,6 @@ class MedicalEquipmentController {
     res: Response,
   ): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
-      }
-      
       const { id } = req.params;
       const equipmentData: UpdateMedicalEquipmentDTO = {
         ...req.body,
@@ -108,15 +95,6 @@ class MedicalEquipmentController {
     res: Response,
   ): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ 
-          status: "error",
-          errors: errors.array() 
-        });
-        return;
-      }
-  
       // Get pagination options
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;

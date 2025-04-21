@@ -230,27 +230,6 @@ describe("SparepartController - GET Methods", () => {
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
 
-    it("should return 400 if validation fails", async () => {
-      const validationErrors = [{ msg: "Invalid query parameter" }];
-
-      (validationResult as unknown as jest.Mock).mockReturnValue({
-        isEmpty: jest.fn().mockReturnValue(false),
-        array: jest.fn().mockReturnValue(validationErrors),
-      });
-
-      await sparepartController.getSpareparts(
-        mockRequest as Request,
-        mockResponse as Response
-      );
-
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(mockResponse.json).toHaveBeenCalledWith({
-        status: "error",
-        errors: validationErrors,
-      });
-      expect(mockSparepartService.getSpareparts).not.toHaveBeenCalled();
-    });
-
     it("should handle AppError correctly", async () => {
       const appError = new AppError("Invalid filter parameter", 400);
       mockSparepartService.getSpareparts.mockRejectedValue(appError);

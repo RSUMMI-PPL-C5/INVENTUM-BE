@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
-import { validationResult } from "express-validator";
 import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/services/medicalequipment.service");
@@ -81,35 +80,6 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
       status: "success",
       data: updatedEquipment,
     });
-  });
-
-  it("should return 400 if validation fails", async () => {
-    // Arrange
-    const validationErrorsResult = {
-      isEmpty: jest.fn().mockReturnValue(false),
-      array: jest.fn().mockReturnValue([
-        { param: "name", msg: "Name is required" }
-      ]),
-    };
-
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce(validationErrorsResult);
-
-    // Act
-    await controller.updateMedicalEquipment(mockRequest as Request, mockResponse as Response);
-
-    // Assert
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      errors: expect.arrayContaining([
-        expect.objectContaining({
-          param: "name",
-          msg: "Name is required",
-        }),
-      ]),
-    });
-    
-    // Service should not be called if validation fails
-    expect(mockService.updateMedicalEquipment).not.toHaveBeenCalled();
   });
 
   it("should return status 404 when medical equipment is not found", async () => {

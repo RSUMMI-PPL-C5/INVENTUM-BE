@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import SparepartService from "../services/sparepart.service";
 import { SparepartDTO } from "../dto/sparepart.dto";
-import { validationResult } from "express-validator";
 import { SparepartFilterOptions } from "../filters/interface/spareparts.filter.interface";
 import { PaginationOptions } from "../filters/interface/pagination.interface";
 import AppError from "../utils/appError";
@@ -15,15 +14,6 @@ class SparepartController {
 
   public addSparepart = async (req: Request, res: Response): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ 
-          status: "error",
-          errors: errors.array() 
-        });
-        return;
-      }
-
       const sparepartData: SparepartDTO = {
         ...req.body,
         createdBy: (req.user as any).userId,
@@ -36,7 +26,6 @@ class SparepartController {
         data: newSparepart
       });
     } catch (error: unknown) {
-      console.error("Error in addSparepart controller:", error);
       if (error instanceof AppError) {
         res.status(error.statusCode).json({
           status: "error",
@@ -53,15 +42,6 @@ class SparepartController {
 
   public getSpareparts = async (req: Request, res: Response): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ 
-          status: "error",
-          errors: errors.array() 
-        });
-        return;
-      }
-
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
       
@@ -130,15 +110,6 @@ class SparepartController {
 
   public updateSparepart = async (req: Request, res: Response): Promise<void> => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ 
-          status: "error",
-          errors: errors.array() 
-        });
-        return;
-      }
-      
       const { id } = req.params;
       const sparepartData = {
         ...req.body,
