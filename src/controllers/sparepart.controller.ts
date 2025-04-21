@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import SparepartService from "../services/sparepart.service";
-import { SparepartsDTO, FilterSparepartDTO } from "../dto/sparepart.dto";
+import { SparepartDTO } from "../dto/sparepart.dto";
 import { validationResult } from "express-validator";
+import { SparepartFilterOptions } from "../filters/interface/spareparts.filter.interface";
+import { PaginationOptions } from "../filters/interface/pagination.interface";
+import AppError from "../utils/appError";
 
 class SparepartController {
   private readonly sparepartService: SparepartService;
@@ -10,104 +13,200 @@ class SparepartController {
     this.sparepartService = new SparepartService();
   }
 
+  public addSparepart = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ 
+          status: "error",
+          errors: errors.array() 
+        });
+        return;
+      }
+
+      const sparepartData: SparepartDTO = {
+        ...req.body,
+        createdBy: (req.user as any).userId,
+      };
+
+      const newSparepart = await this.sparepartService.addSparepart(sparepartData);
+      
+      res.status(201).json({
+        status: "success",
+        data: newSparepart
+      });
+    } catch (error: unknown) {
+      console.error("Error in addSparepart controller:", error);
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
+    }
+  };
+
   public getSpareparts = async (req: Request, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
+        res.status(400).json({ 
+          status: "error",
+          errors: errors.array() 
+        });
         return;
       }
 
-      const query = req.query || {};
-      const partsName = query.partsName as string | undefined;
-      const purchaseDateStart = query.purchaseDateStart as string | undefined;
-      const purchaseDateEnd = query.purchaseDateEnd as string | undefined;
-      const priceMin = query.priceMin ? Number(query.priceMin) : undefined;
-      const priceMax = query.priceMax ? Number(query.priceMax) : undefined;
-      const toolLocation = query.toolLocation as string | undefined;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      
+      const paginationOptions: PaginationOptions = { 
+        page: page > 0 ? page : 1,
+        limit: limit > 0 ? limit : 10
+      };
+      
+      const filters: SparepartFilterOptions = req.query as any;
+      const search = req.query.search as string | undefined;
 
-      if (
-        partsName ||
-        purchaseDateStart ||
-        purchaseDateEnd ||
-        priceMin !== undefined ||
-        priceMax !== undefined ||
-        toolLocation
-      ) {
-        const filters: FilterSparepartDTO = {
-          partsName,
-          purchaseDateStart,
-          purchaseDateEnd,
-          priceMin,
-          priceMax,
-          toolLocation,
-        };
+      const result = await this.sparepartService.getSpareparts(
+        search, 
+        filters, 
+        paginationOptions
+      );
 
-        const filteredSpareparts = await this.sparepartService.getFilteredSpareparts(filters);
-        res.status(200).json(filteredSpareparts);
-        return;
+      res.status(200).json(result);
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          statusCode: error.statusCode,
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          statusCode: 500,
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
       }
-
-      const spareparts = await this.sparepartService.getSpareparts();
-      res.status(200).json(spareparts);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
     }
   };
 
   public getSparepartById = async (req: Request, res: Response): Promise<void> => {
     try {
       const sparepart = await this.sparepartService.getSparepartById(req.params.id);
+      
       if (!sparepart) {
-        res.status(404).json({ message: "Sparepart not found" });
+        res.status(404).json({
+          status: "error",
+          message: "Sparepart not found"
+        });
         return;
       }
-      res.status(200).json(sparepart);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  };
-
-  public addSparepart = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
+      
+      res.status(200).json({
+        status: "success",
+        data: sparepart
+      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
       }
-
-      const sparepartData: SparepartsDTO = req.body;
-      const newSparepart = await this.sparepartService.addSparepart(sparepartData);
-      res.status(201).json(newSparepart);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
     }
   };
 
   public updateSparepart = async (req: Request, res: Response): Promise<void> => {
     try {
-      const sparepart = await this.sparepartService.updateSparepart(req.params.id, req.body);
-
-      if (!sparepart) {
-        res.status(404).json({ message: "Sparepart not found or invalid data" });
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ 
+          status: "error",
+          errors: errors.array() 
+        });
         return;
       }
-      res.status(200).json(sparepart);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
+      
+      const { id } = req.params;
+      const sparepartData = {
+        ...req.body,
+        modifiedBy: (req.user as any).userId,
+      };
+
+      const updatedSparepart = await this.sparepartService.updateSparepart(id, sparepartData);
+
+      if (!updatedSparepart) {
+        res.status(404).json({
+          status: "error",
+          message: "Sparepart not found",
+        });
+        return;
+      }
+
+      res.status(200).json({
+        status: "success",
+        data: updatedSparepart,
+      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 
   public deleteSparepart = async (req: Request, res: Response): Promise<void> => {
     try {
-      const deleted = await this.sparepartService.deleteSparepart(req.params.id);
+      const deletedById = (req.user as any).userId;
+      
+      const deleted = await this.sparepartService.deleteSparepart(
+        req.params.id,
+        deletedById
+      );
+      
       if (!deleted) {
-        res.status(404).json({ message: "Sparepart not found" });
+        res.status(404).json({
+          status: "error",
+          message: "Sparepart not found"
+        });
         return;
       }
-      res.status(200).json({ message: "Sparepart deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
+      
+      res.status(200).json({
+        status: "success",
+        message: "Sparepart deleted successfully"
+      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 }
