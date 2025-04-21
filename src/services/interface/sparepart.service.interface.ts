@@ -1,14 +1,22 @@
-import {
-  SparepartDTO,
-  SparepartsDTO,
-  FilterSparepartDTO,
-} from "../../dto/sparepart.dto";
+import { SparepartDTO, SparepartsDTO } from "../../dto/sparepart.dto";
+import { PaginationOptions } from "../../filters/interface/pagination.interface";
+import { SparepartFilterOptions } from "../../filters/interface/spareparts.filter.interface";
 
 export interface ISparepartService {
-  getSpareparts(): Promise<SparepartDTO[]>;
+  getSpareparts(
+    search?: string,
+    filters?: SparepartFilterOptions,
+    pagination?: PaginationOptions
+  ): Promise<{
+    data: SparepartDTO[],
+    meta: {
+      total: number,
+      page: number,
+      limit: number,
+      totalPages: number
+    }
+  }>;
   getSparepartById(id: string): Promise<SparepartDTO | null>;
-  getFilteredSpareparts(filters: FilterSparepartDTO): Promise<SparepartDTO[]>;
-
   addSparepart(userData: SparepartsDTO): Promise<SparepartsDTO>;
   updateSparepart(
     id: string,
