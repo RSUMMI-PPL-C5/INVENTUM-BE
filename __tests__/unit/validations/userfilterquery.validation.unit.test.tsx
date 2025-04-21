@@ -42,7 +42,7 @@ describe("User Filter Query Validation", () => {
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(false);
     expect(result.array()[0].msg).toBe(
-      "role must contain user, admin, or asesor",
+      "role must contain user, admin, or fasum",
     );
   });
 
@@ -100,7 +100,7 @@ describe("User Filter Query Validation", () => {
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(true);
     expect(mockRequest.query.createdOnEnd).toStrictEqual(
-      new Date("2023-01-01T23:59:59.999Z"),
+      new Date("2023-01-01T16:59:59.999Z"),
     );
   });
 
@@ -131,7 +131,7 @@ describe("User Filter Query Validation", () => {
     const result = await runValidation(mockRequest);
     expect(result.isEmpty()).toBe(true);
     expect(mockRequest.query.modifiedOnEnd).toStrictEqual(
-      new Date("2023-01-01T23:59:59.999Z"),
+      new Date("2023-01-01T16:59:59.999Z"),
     );
   });
 

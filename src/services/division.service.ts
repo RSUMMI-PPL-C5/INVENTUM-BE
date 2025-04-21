@@ -11,19 +11,17 @@ class DivisionService implements IDivisionService {
     this.divisionRepository = divisionRepository || new DivisionRepository();
   }
 
-  /**
-   * Add a new division
-   */
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
-    if (data.parentId === null || data.parentId === undefined) {
-      data.parentId = null;
-    } else {
-      const parentExists = await this.divisionRepository.getDivisionById(data.parentId);
-      if (!parentExists) {
-        throw new Error("Parent divisi not found");
-      }
+    data.parentId ??= 1;
+
+    const parentExists = await this.divisionRepository.getDivisionById(
+      data.parentId,
+    );
+
+    if (!parentExists) {
+      throw new Error("Parent divisi not found");
     }
-  
+
     return await this.divisionRepository.addDivision(data);
   }
 

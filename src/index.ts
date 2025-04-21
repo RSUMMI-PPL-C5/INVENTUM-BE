@@ -4,6 +4,15 @@
 /* eslint-disable */
 /* sonar.coverage.exclusions */
 /* coverage-disable */
+const {
+  Sentry,
+  setupSentry,
+  customErrorHandler,
+} = require("../sentry/instrument");
+
+import "dotenv/config";
+setupSentry();
+
 import cors from "cors";
 import express from "express";
 import userRoutes from "./routes/user.route";
@@ -11,7 +20,6 @@ import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
-import "dotenv/config";
 
 const app = express();
 
@@ -26,20 +34,24 @@ if (PROD) {
 }
 
 const corsOptions: cors.CorsOptions = {
-	origin: function (origin, callback) {
-		if (!origin || whitelist.includes(origin)) {
-			callback(null, true);
-		} else {
-			console.error(`Blocked by CORS: ${origin}`);
-			callback(new Error("Not allowed by CORS"));
-		}
-	},
-	credentials: true,
+  origin: function (origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Tambahkan endpoint debug Sentry
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
+});
 
 app.get("/", (req, res) => {
 	res.send("PPL C-5 DEPLOYED!!!");
@@ -50,6 +62,12 @@ app.use("/user", userRoutes);
 app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
 app.use("/medical-equipment", medicalequipmentRoutes);
+
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
+
+// Middleware custom untuk menangani error
+app.use(customErrorHandler);
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {

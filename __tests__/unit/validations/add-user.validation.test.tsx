@@ -1,4 +1,4 @@
-import { addUserValidation } from '../../../src/validations/adduser.validation';
+import { addUserValidation } from '../../../src/validations/user.validation';
 
 describe('Add User Validation', () => {
   test('should export an array with 8 validation rules', () => {

@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import AuthService from "../../../../src/services/auth.service";
 import UserRepository from "../../../../src/repository/user.repository";
+import AppError from "../../../../src/utils/appError";
 
 jest.mock("bcrypt");
 jest.mock("jsonwebtoken");
@@ -26,12 +27,12 @@ describe("AuthService", () => {
         username: "user1",
         password: "hashedPassword",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -39,23 +40,23 @@ describe("AuthService", () => {
         deletedOn: null,
       };
 
-      mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+      mockUserRepository.getUserByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await authService.validateUser("user1", "password");
 
-      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(result).toEqual({
         id: "1",
         username: "user1",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -64,29 +65,29 @@ describe("AuthService", () => {
       });
     });
 
-    it("should throw an error if user is not found", async () => {
-      mockUserRepository.findByUsername.mockResolvedValue(null);
+    it("should throw an AppError if user is not found", async () => {
+      mockUserRepository.getUserByUsername.mockResolvedValue(null);
 
       await expect(authService.validateUser("user1", "password")).rejects.toThrow(
-        "User not found"
+        new AppError("User not found", 404)
       );
 
-      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it("should throw an error if password is invalid", async () => {
+    it("should throw an AppError if password is invalid", async () => {
       const mockUser = {
         id: "1",
         username: "user1",
         password: "hashedPassword",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -94,14 +95,14 @@ describe("AuthService", () => {
         deletedOn: null,
       };
 
-      mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+      mockUserRepository.getUserByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(authService.validateUser("user1", "wrongPassword")).rejects.toThrow(
-        "Invalid username or password"
+        new AppError("Invalid username or password", 401)
       );
 
-      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
       expect(bcrypt.compare).toHaveBeenCalledWith("wrongPassword", "hashedPassword");
     });
   });
@@ -113,12 +114,12 @@ describe("AuthService", () => {
         username: "user1",
         password: "hashedPassword",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -128,7 +129,7 @@ describe("AuthService", () => {
 
       const mockToken = "mockJwtToken";
 
-      mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+      mockUserRepository.getUserByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (jwt.sign as jest.Mock).mockReturnValue(mockToken);
 
@@ -136,10 +137,10 @@ describe("AuthService", () => {
 
       const result = await authService.login("user1", "password");
 
-      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(jwt.sign).toHaveBeenCalledWith(
-        { userId: "1" },
+        { userId: "1", role: "User" },
         "mockSecretKey",
         { expiresIn: "7d" }
       );
@@ -147,12 +148,12 @@ describe("AuthService", () => {
         id: "1",
         username: "user1",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -162,18 +163,18 @@ describe("AuthService", () => {
       });
     });
 
-    it("should throw an error if JWT_SECRET_KEY is not set", async () => {
+    it("should throw an AppError if JWT_SECRET_KEY is not set", async () => {
       const mockUser = {
         id: "1",
         username: "user1",
         password: "hashedPassword",
         email: "user1@example.com",
-        role: "USER",
+        role: "User",
         fullname: "User One",
         nokar: "12345",
         divisiId: 1,
         waNumber: "1234567890",
-        createdBy: 1,
+        createdBy: "1",
         createdOn: dummyDate,
         modifiedBy: null,
         modifiedOn: dummyDate,
@@ -181,16 +182,16 @@ describe("AuthService", () => {
         deletedOn: null,
       };
 
-      mockUserRepository.findByUsername.mockResolvedValue(mockUser);
+      mockUserRepository.getUserByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       delete process.env.JWT_SECRET_KEY;
 
       await expect(authService.login("user1", "password")).rejects.toThrow(
-        "JWT_SECRET_KEY is not set"
+        new AppError("JWT_SECRET_KEY is not set", 500)
       );
 
-      expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(jwt.sign).not.toHaveBeenCalled();
     });

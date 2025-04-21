@@ -1,98 +1,296 @@
-import { Prisma } from "@prisma/client";
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
-import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
+import AppError from "../../../../src/utils/appError";
 import { MedicalEquipmentFilterOptions } from "../../../../src/filters/interface/medicalequipment.filter.interface";
-import { filterHandlers } from "../../../../src/filters/medicalequipment.filter";
+import { PaginationOptions } from "../../../../src/filters/interface/pagination.interface";
+import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
 
-// Mock dependencies
-jest.mock("../../../../src/repository/medicalequipment.repository");
-jest.mock("../../../../src/filters/medicalequipment.filter", () => ({
-  filterHandlers: [jest.fn()],
-}));
-
-describe("MedicalEquipmentService", () => {
+describe("MedicalEquipmentService - Get Methods", () => {
   let service: MedicalEquipmentService;
-  let mockRepository: jest.Mocked<MedicalEquipmentRepository>;
+  let mockRepository: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRepository =
-      new MedicalEquipmentRepository() as jest.Mocked<MedicalEquipmentRepository>;
+
+    mockRepository = {
+      getMedicalEquipment: jest.fn(),
+      getMedicalEquipmentById: jest.fn(),
+    };
+
     service = new MedicalEquipmentService();
-    // @ts-ignore - Replace repository with our mock
-    service["medicalEquipmentRepository"] = mockRepository;
+    (service as any).medicalEquipmentRepository = mockRepository;
   });
 
   describe("getMedicalEquipment", () => {
-    // Positive test case
-    it("should return all medical equipment", async () => {
+    it("should return equipment list with metadata - no parameters", async () => {
       // Arrange
-      const mockData = [
-        { id: "1", name: "Stetoskop" },
-        { id: "2", name: "MRI Machine" },
+      const mockEquipments = [
+        { id: "1", name: "Equipment 1", status: "Active" },
+        { id: "2", name: "Equipment 2", status: "Maintenance" }
       ];
-      mockRepository.getMedicalEquipment = jest
-        .fn()
-        .mockResolvedValue(mockData);
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 2
+      });
 
       // Act
       const result = await service.getMedicalEquipment();
 
       // Assert
-      expect(mockRepository.getMedicalEquipment).toHaveBeenCalled();
-      expect(result).toEqual(mockData);
+      expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
+        undefined, 
+        undefined, 
+        undefined
+      );
+      expect(result).toEqual({
+        data: mockEquipments,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 2,
+          totalPages: 1
+        }
+      });
     });
 
-    // Negative test case
-    it("should throw error when repository throws an error", async () => {
+    it("should apply search parameter", async () => {
+      // Arrange
+      const search = "test";
+      const mockEquipments = [
+        { id: "1", name: "Test Equipment", status: "Active" }
+      ];
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 1
+      });
+
+      // Act
+      const result = await service.getMedicalEquipment(search);
+
+      // Assert
+      expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
+        search, 
+        undefined, 
+        undefined
+      );
+      expect(result).toEqual({
+        data: mockEquipments,
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 1,
+          totalPages: 1
+        }
+      });
+    });
+
+    it("should apply filters", async () => {
+      // Arrange
+      const filters: MedicalEquipmentFilterOptions = {
+        status: ["Active"]
+      };
+      
+      const mockEquipments = [
+        { id: "1", name: "Equipment 1", status: "Active" },
+        { id: "3", name: "Equipment 3", status: "Active" }
+      ];
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 2
+      });
+
+      // Act
+      const result = await service.getMedicalEquipment(undefined, filters);
+
+      // Assert
+      expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
+        undefined, 
+        filters, 
+        undefined
+      );
+      expect(result.data).toEqual(mockEquipments);
+      expect(result.meta.total).toBe(2);
+    });
+
+    it("should apply pagination and calculate total pages correctly", async () => {
+      // Arrange
+      const pagination: PaginationOptions = {
+        page: 2,
+        limit: 10
+      };
+      
+      const mockEquipments = Array(10).fill(null).map((_, i) => ({ 
+        id: `${i + 11}`, 
+        name: `Equipment ${i + 11}` 
+      }));
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 25
+      });
+
+      // Act
+      const result = await service.getMedicalEquipment(undefined, undefined, pagination);
+
+      // Assert
+      expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
+        undefined, 
+        undefined, 
+        pagination
+      );
+      expect(result).toEqual({
+        data: mockEquipments,
+        meta: {
+          total: 25,
+          page: 2,
+          limit: 10,
+          totalPages: 3  // Ceil(25/10) = 3
+        }
+      });
+    });
+
+    it("should combine search, filters and pagination", async () => {
+      // Arrange
+      const search = "test";
+      const filters: MedicalEquipmentFilterOptions = {
+        status: ["Active"],
+      };
+      const pagination: PaginationOptions = {
+        page: 1,
+        limit: 5
+      };
+      
+      const mockEquipments = [
+        { id: "1", name: "Test Equipment 1", status: "Active" }
+      ];
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 1
+      });
+
+      // Act
+      const result = await service.getMedicalEquipment(search, filters, pagination);
+
+      // Assert
+      expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
+        search, 
+        filters, 
+        pagination
+      );
+      expect(result).toEqual({
+        data: mockEquipments,
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 5,
+          totalPages: 1
+        }
+      });
+    });
+
+    it("should handle empty results", async () => {
+      // Arrange
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: [],
+        total: 0
+      });
+
+      // Act
+      const result = await service.getMedicalEquipment();
+
+      // Assert
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 0,
+          totalPages: 1
+        }
+      });
+    });
+
+    it("should handle repository errors", async () => {
       // Arrange
       const error = new Error("Database error");
-      mockRepository.getMedicalEquipment = jest.fn().mockRejectedValue(error);
+      mockRepository.getMedicalEquipment.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(service.getMedicalEquipment()).rejects.toThrow(error);
-      expect(mockRepository.getMedicalEquipment).toHaveBeenCalled();
+      await expect(service.getMedicalEquipment()).rejects.toThrow("Database error");
     });
 
-    // Corner case
-    it("should return empty array when no equipment exists", async () => {
+    it("should handle last page with fewer items than limit", async () => {
       // Arrange
-      mockRepository.getMedicalEquipment = jest.fn().mockResolvedValue([]);
+      const pagination: PaginationOptions = {
+        page: 3,
+        limit: 10
+      };
+      
+      const mockEquipments = Array(5).fill(null).map((_, i) => ({ 
+        id: `${i + 21}`, 
+        name: `Equipment ${i + 21}` 
+      }));
+      
+      mockRepository.getMedicalEquipment.mockResolvedValue({
+        equipments: mockEquipments,
+        total: 25
+      });
 
       // Act
-      const result = await service.getMedicalEquipment();
+      const result = await service.getMedicalEquipment(undefined, undefined, pagination);
 
       // Assert
-      expect(mockRepository.getMedicalEquipment).toHaveBeenCalled();
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        data: mockEquipments,
+        meta: {
+          total: 25,
+          page: 3,
+          limit: 10,
+          totalPages: 3
+        }
+      });
     });
   });
 
   describe("getMedicalEquipmentById", () => {
-    // Positive test case
     it("should return equipment when found by ID", async () => {
       // Arrange
       const id = "valid-id";
-      const mockData = { id, name: "Stetoskop" };
-      mockRepository.getMedicalEquipmentById = jest
-        .fn()
-        .mockResolvedValue(mockData);
+      const mockEquipment: MedicalEquipmentDTO = { 
+        id,
+        name: "Test Equipment", 
+        inventorisId: "INV001", 
+        brandName: "Brand A",
+        modelName: "Model X",
+        purchaseDate: new Date("2022-01-01"),
+        purchasePrice: 1000,
+        status: "Active",
+        vendor: "Vendor A",
+        createdBy: "user-123",
+        createdOn: new Date(),
+        modifiedOn: new Date(),
+        modifiedBy: "user-456",
+        deletedOn: null,
+        deletedBy: null,
+      };
+      
+      mockRepository.getMedicalEquipmentById.mockResolvedValue(mockEquipment);
 
       // Act
       const result = await service.getMedicalEquipmentById(id);
 
       // Assert
       expect(mockRepository.getMedicalEquipmentById).toHaveBeenCalledWith(id);
-      expect(result).toEqual(mockData);
+      expect(result).toEqual(mockEquipment);
     });
 
-    // Negative test case
-    it("should return null when equipment not found by ID", async () => {
+    it("should return null when equipment not found", async () => {
       // Arrange
       const id = "non-existent-id";
-      mockRepository.getMedicalEquipmentById = jest
-        .fn()
-        .mockResolvedValue(null);
+      mockRepository.getMedicalEquipmentById.mockResolvedValue(null);
 
       // Act
       const result = await service.getMedicalEquipmentById(id);
@@ -102,231 +300,31 @@ describe("MedicalEquipmentService", () => {
       expect(result).toBeNull();
     });
 
-    // Error case
+    it("should throw error when id is empty", async () => {
+      // Act & Assert
+      await expect(service.getMedicalEquipmentById("")).rejects.toThrow(
+        new AppError("Equipment ID is required and must be a valid string", 400)
+      );
+      expect(mockRepository.getMedicalEquipmentById).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when id is whitespace", async () => {
+      // Act & Assert
+      await expect(service.getMedicalEquipmentById("   ")).rejects.toThrow(
+        new AppError("Equipment ID is required and must be a valid string", 400)
+      );
+      expect(mockRepository.getMedicalEquipmentById).not.toHaveBeenCalled();
+    });
+
     it("should throw error when repository throws an error", async () => {
       // Arrange
       const id = "error-id";
       const error = new Error("Database error");
-      mockRepository.getMedicalEquipmentById = jest
-        .fn()
-        .mockRejectedValue(error);
+      mockRepository.getMedicalEquipmentById.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(service.getMedicalEquipmentById(id)).rejects.toThrow(error);
+      await expect(service.getMedicalEquipmentById(id)).rejects.toThrow("Database error");
       expect(mockRepository.getMedicalEquipmentById).toHaveBeenCalledWith(id);
-    });
-  });
-
-  describe("getFilteredMedicalEquipment", () => {
-    // Positive test case
-    it("should return filtered equipment", async () => {
-      // Arrange
-      const filters: MedicalEquipmentFilterOptions = {
-        status: ["Active"],
-      };
-      const whereClause = { status: "Active" };
-      const mockData = [{ id: "1", name: "Stetoskop", status: "Active" }];
-      mockRepository.getFilteredMedicalEquipment = jest
-        .fn()
-        .mockResolvedValue(mockData);
-
-      // Act
-      const result = await service.getFilteredMedicalEquipment(filters);
-
-      // Assert
-      expect(filterHandlers[0]).toHaveBeenCalledWith(
-        filters,
-        expect.any(Object),
-      );
-      expect(mockRepository.getFilteredMedicalEquipment).toHaveBeenCalled();
-      expect(result).toEqual(mockData);
-    });
-
-    // Complex filters test case
-    it("should handle complex filters", async () => {
-      // Arrange
-      const filters: MedicalEquipmentFilterOptions = {
-        status: ["Active"],
-        purchaseDateStart: new Date("2023-01-01"),
-        purchaseDateEnd: new Date("2023-12-31"),
-      };
-      const mockData = [{ id: "1", name: "Stetoskop", status: "Active" }];
-      mockRepository.getFilteredMedicalEquipment = jest
-        .fn()
-        .mockResolvedValue(mockData);
-
-      // Act
-      const result = await service.getFilteredMedicalEquipment(filters);
-
-      // Assert
-      expect(filterHandlers[0]).toHaveBeenCalledWith(
-        filters,
-        expect.any(Object),
-      );
-      expect(mockRepository.getFilteredMedicalEquipment).toHaveBeenCalled();
-      expect(result).toEqual(mockData);
-    });
-
-    // Negative test case
-    it("should throw error when repository throws an error", async () => {
-      // Arrange
-      const filters: MedicalEquipmentFilterOptions = {
-        status: ["Active"],
-      };
-      const error = new Error("Filter error");
-      mockRepository.getFilteredMedicalEquipment = jest
-        .fn()
-        .mockRejectedValue(error);
-
-      // Act & Assert
-      await expect(
-        service.getFilteredMedicalEquipment(filters),
-      ).rejects.toThrow(error);
-      expect(mockRepository.getFilteredMedicalEquipment).toHaveBeenCalled();
-    });
-
-    // Corner case - empty filters
-    it("should handle empty filters object", async () => {
-      // Arrange
-      const filters: MedicalEquipmentFilterOptions = {};
-      const mockData = [
-        { id: "1", name: "Stetoskop" },
-        { id: "2", name: "MRI Machine" },
-      ];
-      mockRepository.getFilteredMedicalEquipment = jest
-        .fn()
-        .mockResolvedValue(mockData);
-
-      // Act
-      const result = await service.getFilteredMedicalEquipment(filters);
-
-      // Assert
-      expect(filterHandlers[0]).toHaveBeenCalledWith(
-        filters,
-        expect.any(Object),
-      );
-      expect(mockRepository.getFilteredMedicalEquipment).toHaveBeenCalled();
-      expect(result).toEqual(mockData);
-    });
-  });
-
-  describe("searchMedicalEquipment", () => {
-    // Positive test case
-    it("should return equipment matching the name search", async () => {
-      // Arrange
-      const name = "Stetoskop";
-      const mockData = [{ id: "1", name: "Stetoskop" }];
-      mockRepository.getMedicalEquipmentByName = jest
-        .fn()
-        .mockResolvedValue(mockData);
-
-      // Act
-      const result = await service.searchMedicalEquipment(name);
-
-      // Assert
-      expect(mockRepository.getMedicalEquipmentByName).toHaveBeenCalledWith(
-        name,
-      );
-      expect(result).toEqual(mockData);
-    });
-
-    // Trim test case
-    it("should trim the search string", async () => {
-      // Arrange
-      const name = "  Stetoskop  ";
-      const trimmedName = "Stetoskop";
-      const mockData = [{ id: "1", name: "Stetoskop" }];
-      mockRepository.getMedicalEquipmentByName = jest
-        .fn()
-        .mockResolvedValue(mockData);
-
-      // Act
-      const result = await service.searchMedicalEquipment(name);
-
-      // Assert
-      expect(mockRepository.getMedicalEquipmentByName).toHaveBeenCalledWith(
-        trimmedName,
-      );
-      expect(result).toEqual(mockData);
-    });
-
-    // Negative test cases - invalid search parameters
-    it("should throw error when name is empty string", async () => {
-      // Arrange
-      const name = "";
-
-      // Act & Assert
-      await expect(service.searchMedicalEquipment(name)).rejects.toThrow(
-        "Name query is required",
-      );
-      expect(mockRepository.getMedicalEquipmentByName).not.toHaveBeenCalled();
-    });
-
-    it("should throw error when name is only whitespace", async () => {
-      // Arrange
-      const name = "   ";
-
-      // Act & Assert
-      await expect(service.searchMedicalEquipment(name)).rejects.toThrow(
-        "Name query is required",
-      );
-      expect(mockRepository.getMedicalEquipmentByName).not.toHaveBeenCalled();
-    });
-
-    it("should throw error when name is null", async () => {
-      // Arrange
-      const name = null as unknown as string;
-
-      // Act & Assert
-      await expect(service.searchMedicalEquipment(name)).rejects.toThrow(
-        "Name query is required",
-      );
-      expect(mockRepository.getMedicalEquipmentByName).not.toHaveBeenCalled();
-    });
-
-    it("should throw error when name is undefined", async () => {
-      // Arrange
-      const name = undefined as unknown as string;
-
-      // Act & Assert
-      await expect(service.searchMedicalEquipment(name)).rejects.toThrow(
-        "Name query is required",
-      );
-      expect(mockRepository.getMedicalEquipmentByName).not.toHaveBeenCalled();
-    });
-
-    // Error case from repository
-    it("should throw error when repository throws an error", async () => {
-      // Arrange
-      const name = "Stetoskop";
-      const error = new Error("Search error");
-      mockRepository.getMedicalEquipmentByName = jest
-        .fn()
-        .mockRejectedValue(error);
-
-      // Act & Assert
-      await expect(service.searchMedicalEquipment(name)).rejects.toThrow(error);
-      expect(mockRepository.getMedicalEquipmentByName).toHaveBeenCalledWith(
-        name,
-      );
-    });
-
-    // Corner case - no results
-    it("should return empty array when no equipment matches search", async () => {
-      // Arrange
-      const name = "NonexistentEquipment";
-      mockRepository.getMedicalEquipmentByName = jest
-        .fn()
-        .mockResolvedValue([]);
-
-      // Act
-      const result = await service.searchMedicalEquipment(name);
-
-      // Assert
-      expect(mockRepository.getMedicalEquipmentByName).toHaveBeenCalledWith(
-        name,
-      );
-      expect(result).toEqual([]);
     });
   });
 });

@@ -1,20 +1,9 @@
 import UserService from '../../../../src/services/user.service';
 import UserController from '../../../../src/controllers/user.controller';
 import { Request, Response } from 'express';
+import AppError from '../../../../src/utils/appError';
 
 jest.mock('../../../../src/services/user.service');
-
-const mockValidationResult = (isValid: boolean, errors: any[] = []) => {
-  const mockValidation = {
-    isEmpty: () => isValid,
-    array: () => errors,
-  };
-
-  jest.mock('express-validator', () => ({
-    ...jest.requireActual('express-validator'),
-    validationResult: jest.fn(() => mockValidation),
-  }));
-};
 
 describe('UserController - GET', () => {
     let userController: UserController;
@@ -23,8 +12,6 @@ describe('UserController - GET', () => {
     let mockUserService: {
       getUsers: jest.Mock;
       getUserById: jest.Mock;
-      getFilteredUsers: jest.Mock;
-      searchUser: jest.Mock;
     };
 
     beforeEach(() => {
@@ -34,8 +21,6 @@ describe('UserController - GET', () => {
       mockUserService = {
         getUsers: jest.fn(),
         getUserById: jest.fn(),
-        getFilteredUsers: jest.fn(),
-        searchUser: jest.fn(),
       };
 
       // Mocking the UserService implementation
@@ -50,117 +35,294 @@ describe('UserController - GET', () => {
 
       mockRequest = {
         params: { id: '1' },
-        body: {
-          fullname: 'Updated User One',
-          role: '1',
-          password: 'newpassword',
-          divisiId: 1,
-          waNumber: '1234567890',
-          modifiedBy: 1,
-          nokar: '123',
-          email: 'updatedUser@example.com',
-          username: 'updatedUser',
-        },
+        query: {},
       };
     });
 
-    test('GET /user - should return 400 if validation errors exist', async () => {
-      // Reset modules first to ensure clean state
-      jest.resetModules();
-
-      const mockValidationResult = {
-        isEmpty: () => false,
-        array: () => [{ msg: 'Invalid input' }],
+    test('GET /user - should return users with default pagination', async () => {
+      const mockResult = {
+        data: [
+          {
+            id: '1',
+            email: 'user1@example.com',
+            username: 'user1',
+          },
+          {
+            id: '2',
+            email: 'user2@example.com',
+            username: 'user2',
+          }
+        ],
+        pagination: {
+          total: 2,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
       };
       
-      // Mock express-validator before importing the controller
-      jest.doMock('express-validator', () => ({
-        validationResult: jest.fn().mockImplementation(() => mockValidationResult)
-      }));
+      mockUserService.getUsers.mockResolvedValue(mockResult);
       
-      // Import controller after mocking
-      const { default: UserController } = await import('../../../../src/controllers/user.controller');
-      const userController = new UserController();
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
       
-      mockRequest.query = {}; // Ensure query is defined
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        {}, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    test('GET /user - should use provided pagination parameters', async () => {
+      mockRequest.query = { page: '2', limit: '20' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 30,
+          currentPage: 2,
+          totalPages: 2,
+          limit: 20
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { page: '2', limit: '20' }, 
+        { page: 2, limit: 20 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    test('GET /user - should handle search parameter', async () => {
+      mockRequest.query = { search: 'john' };
+      
+      const mockResult = {
+        data: [/* matching users */],
+        pagination: {
+          total: 1,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        'john', 
+        { search: 'john' }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    test('GET /user - should handle negative page value', async () => {
+      mockRequest.query = { page: '-1' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 10,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      // Verify page is corrected to 1
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { page: '-1' }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+    
+    test('GET /user - should handle zero page value', async () => {
+      mockRequest.query = { page: '0' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 10,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      // Verify page is corrected to 1
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { page: '0' }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+    
+    test('GET /user - should handle negative limit value', async () => {
+      mockRequest.query = { limit: '-5' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 10,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 100
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      // Verify limit is corrected to 10
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { limit: '-5' }, 
+        { page: 1, limit: 10 } // limit defaulted to 10
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+    
+    test('GET /user - should handle zero limit value', async () => {
+      mockRequest.query = { limit: '0' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 10,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      // Verify limit is corrected to 10
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { limit: '0' }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+    
+    test('GET /user - should handle both invalid page and limit values', async () => {
+      mockRequest.query = { page: '-2', limit: '-10' };
+      
+      const mockResult = {
+        data: [/* some users */],
+        pagination: {
+          total: 10,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      // Verify both page and limit are corrected
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { page: '-2', limit: '-10' }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    test('GET /user - should handle filters', async () => {
+      mockRequest.query = { 
+        role: 'admin', 
+        divisiId: '1',
+        createdOnStart: '2023-01-01',
+        createdOnEnd: '2023-12-31',
+      };
+      
+      const mockResult = {
+        data: [/* filtered users */],
+        pagination: {
+          total: 5,
+          currentPage: 1,
+          totalPages: 1,
+          limit: 10
+        }
+      };
+      
+      mockUserService.getUsers.mockResolvedValue(mockResult);
+      
+      await userController.getUsers(mockRequest as Request, mockResponse as Response);
+      
+      expect(mockUserService.getUsers).toHaveBeenCalledWith(
+        undefined, 
+        { 
+          role: 'admin', 
+          divisiId: '1',
+          createdOnStart: '2023-01-01',
+          createdOnEnd: '2023-12-31',
+        }, 
+        { page: 1, limit: 10 }
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    test('GET /user - should handle AppError', async () => {
+      const appError = new AppError('Invalid filter parameter', 400);
+      mockUserService.getUsers.mockRejectedValue(appError);
       
       await userController.getUsers(mockRequest as Request, mockResponse as Response);
       
       expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Invalid input data' });
-      
-      // Clean up by resetting modules
-      jest.resetModules();
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 400,
+        message: "Invalid filter parameter"
+      });
     });
 
-    test('GET /user - should return all users', async () => {
-      const mockUsers = [
-        {
-          id: '1',
-          email: 'user1@example.com',
-          username: 'user1',
-          password: 'password1',
-          role: '1',
-          fullname: 'User One',
-          nokar: '123',
-          divisiId: 1,
-          waNumber: '1234567890',
-          createdBy: 1,
-          createdOn: new Date(),
-          updatedBy: 1,
-          updatedOn: new Date(),
-          deletedBy: null,
-          deletedOn: null,
-          modifiedBy: 1,
-          modifiedOn: new Date(),
-        },
-        {
-          id: '2',
-          email: 'user2@example.com',
-          username: 'user2',
-          password: 'password2',
-          role: '2',
-          fullname: 'User Two',
-          nokar: '456',
-          divisiId: 2,
-          waNumber: '0987654321',
-          createdBy: 1,
-          createdOn: new Date(),
-          updatedBy: 1,
-          updatedOn: new Date(),
-          deletedBy: null,
-          deletedOn: null,
-          modifiedBy: 1,
-          modifiedOn: new Date(),
-        },
-      ];
-    
-      // Mocking the service method to return mock data
-      mockUserService.getUsers.mockResolvedValue(mockUsers);
-    
-      // Ensuring mockRequest.query is defined
-      mockRequest.query = {}; // Ensure query is not undefined
-    
-      await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.getUsers).toHaveBeenCalled();
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
-    });
-    
-    test('GET /user - should handle errors', async () => {
+    test('GET /user - should handle general errors', async () => {
       const errorMessage = 'Database error';
-    
-      // Mock the getUsers method to reject with an error
       mockUserService.getUsers.mockRejectedValue(new Error(errorMessage));
-    
-      mockRequest.query = {}; // Ensure query is not undefined
-    
+      
       await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.getUsers).toHaveBeenCalled();
+      
       expect(mockResponse.status).toHaveBeenCalledWith(500);
-      expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 500,
+        message: errorMessage
+      });
     });
 
     test('GET /user/:id - should return user details', async () => {
@@ -174,15 +336,14 @@ describe('UserController - GET', () => {
         nokar: '123',
         divisiId: 1,
         waNumber: '1234567890',
-        createdBy: 1,
+        createdBy: '1',
         createdOn: new Date(),
-        updatedBy: 1,
-        updatedOn: new Date(),
+        modifiedBy: null,
+        modifiedOn: null,
         deletedBy: null,
         deletedOn: null,
-        modifiedBy: 1,
-        modifiedOn: new Date(),
       };
+      
       mockUserService.getUserById.mockResolvedValue(mockUser);
 
       await userController.getUserById(mockRequest as Request, mockResponse as Response);
@@ -202,7 +363,22 @@ describe('UserController - GET', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({ message: 'User not found' });
     });
 
-    test('GET /user/:id - should handle errors', async () => {
+    test('GET /user/:id - should handle AppError', async () => {
+      const appError = new AppError('Invalid user ID format', 400);
+      mockUserService.getUserById.mockRejectedValue(appError);
+
+      await userController.getUserById(mockRequest as Request, mockResponse as Response);
+
+      expect(mockUserService.getUserById).toHaveBeenCalledWith('1');
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 400,
+        message: 'Invalid user ID format'
+      });
+    });
+
+    test('GET /user/:id - should handle general errors', async () => {
       const errorMessage = 'Database error';
       mockUserService.getUserById.mockRejectedValue(new Error(errorMessage));
 
@@ -210,82 +386,10 @@ describe('UserController - GET', () => {
 
       expect(mockUserService.getUserById).toHaveBeenCalledWith('1');
       expect(mockResponse.status).toHaveBeenCalledWith(500);
-      expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
-    });
-    
-    test('GET /user - should return all users when no filters or search query is provided', async () => {
-      // Mock validation success
-      mockValidationResult(true);
-    
-      mockRequest.query = {}; // No filters or search query
-      const mockUsers = [{ id: 3, name: 'All Users' }];
-      mockUserService.getUsers.mockResolvedValue(mockUsers);
-    
-      await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.getUsers).toHaveBeenCalled();
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
-    });
-    
-    test('GET /user - should return users based on search query', async () => {
-      // Mock validation success
-      const validationSuccess = { isEmpty: () => true };
-      jest.spyOn(require('express-validator'), 'validationResult').mockReturnValue(validationSuccess);
-    
-      mockRequest.query = { search: 'test' }; // Search query
-      const mockUsers = [{ id: 1, name: 'Test User' }];
-      mockUserService.searchUser.mockResolvedValue(mockUsers);
-    
-      await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.searchUser).toHaveBeenCalledWith('test');
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
-    });
-    
-    test('GET /user - should return filtered users when filters are applied', async () => {
-      // Mock validation success
-      const validationSuccess = { isEmpty: () => true };
-      jest.spyOn(require('express-validator'), 'validationResult').mockReturnValue(validationSuccess);
-    
-      mockRequest.query = {
-        role: 'admin',
-        divisiId: '1',
-        createdOnStart: '2023-01-01',
-        createdOnEnd: '2023-12-31',
-      }; // Filters
-      const mockFilteredUsers = [{ id: 2, name: 'Filtered User' }];
-      mockUserService.getFilteredUsers.mockResolvedValue(mockFilteredUsers);
-    
-      await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.getFilteredUsers).toHaveBeenCalledWith({
-        role: 'admin',
-        divisiId: '1',
-        createdOnStart: '2023-01-01',
-        createdOnEnd: '2023-12-31',
-        modifiedOnStart: undefined,
-        modifiedOnEnd: undefined,
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        status: "error",
+        statusCode: 500,
+        message: errorMessage
       });
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockFilteredUsers);
     });
-    
-    test('GET /user - should return all users when no filters or search query is provided', async () => {
-      // Mock validation success
-      const validationSuccess = { isEmpty: () => true };
-      jest.spyOn(require('express-validator'), 'validationResult').mockReturnValue(validationSuccess);
-    
-      mockRequest.query = {}; // No filters or search query
-      const mockUsers = [{ id: 3, name: 'All Users' }];
-      mockUserService.getUsers.mockResolvedValue(mockUsers);
-    
-      await userController.getUsers(mockRequest as Request, mockResponse as Response);
-    
-      expect(mockUserService.getUsers).toHaveBeenCalled();
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith(mockUsers);
-    });
-  }
-);
+});

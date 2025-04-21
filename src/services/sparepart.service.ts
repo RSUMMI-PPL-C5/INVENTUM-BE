@@ -103,10 +103,6 @@ class SparepartService implements ISparepartService {
       return null;
     }
 
-    const deletedData: Partial<SparepartsDTO> = {
-      deletedOn: new Date(),
-    };
-
     // Note: If you implement soft delete, call updateSparepart instead
     return await this.sparepartRepository.deleteSparepart(id);
   }

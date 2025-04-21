@@ -12,7 +12,7 @@ class AuthService implements IAuthService {
   }
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userRepository.findByUsername(username);
+    const user = await this.userRepository.getUserByUsername(username);
     
     if (!user) {
       throw new AppError("User not found", 404);
@@ -38,7 +38,7 @@ class AuthService implements IAuthService {
       throw new AppError("JWT_SECRET_KEY is not set", 500);
     }
 
-    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "7d" });
+    const token = jwt.sign({ userId: user.id, role: user.role}, secretKey, { expiresIn: "7d" });
 
     return { ...user, token };
   }

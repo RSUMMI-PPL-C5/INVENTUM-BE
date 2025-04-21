@@ -1,298 +1,496 @@
-import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
-import prisma from "../../../../src/configs/db.config";
+import MedicalEquipmentRepository from '../../../../src/repository/medicalequipment.repository';
+import { MedicalEquipmentFilterOptions } from '../../../../src/filters/interface/medicalequipment.filter.interface';
+import { PaginationOptions } from '../../../../src/filters/interface/pagination.interface';
 
-// Mock the prisma client
-jest.mock("../../../../src/configs/db.config", () => {
+// Mock Prisma
+jest.mock('@prisma/client', () => {
+  const mockPrismaClient = {
+    medicalEquipment: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      count: jest.fn()
+    }
+  };
   return {
-    __esModule: true,
-    default: {
-      medicalEquipment: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-      },
-    },
+    PrismaClient: jest.fn(() => mockPrismaClient)
   };
 });
 
-describe("MedicalEquipmentRepository", () => {
+// Mock getJakartaTime
+jest.mock('../../../../src/utils/date.utils', () => ({
+  getJakartaTime: jest.fn(() => new Date('2025-04-21T10:00:00Z'))
+}));
+
+describe('MedicalEquipmentRepository - Get Methods', () => {
   let repository: MedicalEquipmentRepository;
-  const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+  let mockPrisma: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     repository = new MedicalEquipmentRepository();
+    mockPrisma = (repository as any).prisma;
   });
 
-  describe("getMedicalEquipment", () => {
-    // Positive test case
-    it("should return all medical equipment", async () => {
+  describe('getMedicalEquipment', () => {
+    it('should return equipment list with total count', async () => {
       // Arrange
-      const mockData = [
-        { id: "1", name: "Stetoskop", status: "Active" },
-        { id: "2", name: "MRI Machine", status: "Maintenance" },
+      const mockEquipments = [
+        { id: '1', name: 'Equipment 1', status: 'Active' },
+        { id: '2', name: 'Equipment 2', status: 'Maintenance' }
       ];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue(mockEquipments);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(2);
 
       // Act
       const result = await repository.getMedicalEquipment();
-
-      // Assert
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockData);
-    });
-
-    // Negative test case
-    it("should throw error when database query fails", async () => {
-      // Arrange
-      const dbError = new Error("Database connection error");
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockRejectedValue(
-        dbError,
-      );
-
-      // Act & Assert
-      await expect(repository.getMedicalEquipment()).rejects.toThrow(dbError);
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledTimes(1);
-    });
-
-    // Corner case
-    it("should return empty array when no equipment exists", async () => {
-      // Arrange
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue([]);
-
-      // Act
-      const result = await repository.getMedicalEquipment();
-
-      // Assert
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe("getFilteredMedicalEquipment", () => {
-    // Positive test case
-    it("should return filtered equipment based on where clause", async () => {
-      // Arrange
-      const whereClause = { status: "Active" };
-      const mockData = [
-        { id: "1", name: "Stetoskop", status: "Active" },
-        { id: "3", name: "Thermometer", status: "Active" },
-      ];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
-
-      // Act
-      const result = await repository.getFilteredMedicalEquipment(whereClause);
 
       // Assert
       expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: whereClause,
+        where: { deletedOn: null },
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
       });
-      expect(result).toEqual(mockData);
+      expect(mockPrisma.medicalEquipment.count).toHaveBeenCalledWith({
+        where: { deletedOn: null }
+      });
+      expect(result).toEqual({
+        equipments: mockEquipments,
+        total: 2
+      });
     });
 
-    // Complex filter test case
-    it("should handle complex filtering criteria", async () => {
+    it('should apply search parameter to multiple fields', async () => {
       // Arrange
-      const whereClause = {
-        status: "Active",
-        AND: [
-          { name: { contains: "Machine" } },
-          { purchaseDate: { gte: new Date("2023-01-01") } },
-        ],
+      const search = 'test';
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
+
+      // Act
+      await repository.getMedicalEquipment(search);
+
+      // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        OR: [
+          { name: { contains: 'test' } },
+          { inventorisId: { contains: 'test' } },
+          { brandName: { contains: 'test' } }
+        ]
       };
-      const mockData = [{ id: "5", name: "X-Ray Machine", status: "Active" }];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+      
+      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
+      });
+      expect(mockPrisma.medicalEquipment.count).toHaveBeenCalledWith({
+        where: expectedWhere
+      });
+    });
+
+    it('should apply status filter correctly', async () => {
+      // Arrange
+      const filters: MedicalEquipmentFilterOptions = {
+        status: ['Active', 'Maintenance']
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
 
       // Act
-      const result = await repository.getFilteredMedicalEquipment(whereClause);
+      await repository.getMedicalEquipment(undefined, filters);
+
+      // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        status: { in: ['Active', 'Maintenance'] }
+      };
+      
+      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
+      });
+    });
+
+    it('should apply purchase date filters correctly', async () => {
+      // Arrange
+      const startDate = new Date('2025-01-01');
+      const endDate = new Date('2025-12-31');
+      
+      const filters: MedicalEquipmentFilterOptions = {
+        purchaseDateStart: startDate,
+        purchaseDateEnd: endDate
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
+
+      // Act
+      await repository.getMedicalEquipment(undefined, filters);
+
+      // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        purchaseDate: {
+          gte: startDate,
+          lte: endDate
+        }
+      };
+      
+      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
+      });
+    });
+
+    it('should apply createdOn filters correctly', async () => {
+      // Arrange
+      const startDate = new Date('2025-01-01');
+      const endDate = new Date('2025-12-31');
+      
+      const filters: MedicalEquipmentFilterOptions = {
+        createdOnStart: startDate,
+        createdOnEnd: endDate
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
+
+      // Act
+      await repository.getMedicalEquipment(undefined, filters);
+
+      // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        createdOn: {
+          gte: startDate,
+          lte: endDate
+        }
+      };
+      
+      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
+      });
+    });
+
+    it('should apply modifiedOn filters correctly', async () => {
+      // Arrange
+      const startDate = new Date('2025-01-01');
+      const endDate = new Date('2025-12-31');
+      
+      const filters: MedicalEquipmentFilterOptions = {
+        modifiedOnStart: startDate,
+        modifiedOnEnd: endDate
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
+
+      // Act
+      await repository.getMedicalEquipment(undefined, filters);
+
+      // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        modifiedOn: {
+          gte: startDate,
+          lte: endDate
+        }
+      };
+      
+      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: undefined,
+        take: undefined,
+        orderBy: { id: "desc" }
+      });
+    });
+
+    it('should apply pagination correctly', async () => {
+      // Arrange
+      const pagination: PaginationOptions = {
+        page: 2,
+        limit: 10
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(25);
+
+      // Act
+      await repository.getMedicalEquipment(undefined, undefined, pagination);
 
       // Assert
       expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: whereClause,
+        where: { deletedOn: null },
+        skip: 10, // (page-1) * limit
+        take: 10,
+        orderBy: { id: "desc" }
       });
-      expect(result).toEqual(mockData);
     });
 
-    // Negative test case
-    it("should throw error when filter query fails", async () => {
+    it('should combine search, filters and pagination', async () => {
       // Arrange
-      const whereClause = { status: "Invalid Status" };
-      const dbError = new Error("Invalid filter criteria");
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockRejectedValue(
-        dbError,
-      );
-
-      // Act & Assert
-      await expect(
-        repository.getFilteredMedicalEquipment(whereClause),
-      ).rejects.toThrow(dbError);
-    });
-
-    // Corner case
-    it("should return empty array when no equipment matches filters", async () => {
-      // Arrange
-      const whereClause = { status: "NonexistentStatus" };
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue([]);
+      const search = 'test';
+      const filters: MedicalEquipmentFilterOptions = {
+        status: ['Active'],
+        createdOnStart: new Date('2025-01-01')
+      };
+      const pagination: PaginationOptions = {
+        page: 2,
+        limit: 5
+      };
+      
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
+      mockPrisma.medicalEquipment.count.mockResolvedValue(0);
 
       // Act
-      const result = await repository.getFilteredMedicalEquipment(whereClause);
+      await repository.getMedicalEquipment(search, filters, pagination);
 
       // Assert
+      const expectedWhere = {
+        deletedOn: null,
+        OR: [
+          { name: { contains: 'test' } },
+          { inventorisId: { contains: 'test' } },
+          { brandName: { contains: 'test' } }
+        ],
+        status: { in: ['Active'] },
+        createdOn: { gte: filters.createdOnStart }
+      };
+      
       expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: whereClause,
+        where: expectedWhere,
+        skip: 5,
+        take: 5,
+        orderBy: { id: "desc" }
       });
-      expect(result).toEqual([]);
     });
   });
 
-  describe("getMedicalEquipmentById", () => {
-    // Positive test case
-    it("should return equipment when found by ID", async () => {
+  describe('findByInventorisId', () => {
+    it('should find equipment by inventorisId', async () => {
       // Arrange
-      const id = "valid-id";
-      const mockData = { id, name: "MRI Machine", status: "Active" };
-      (mockPrisma.medicalEquipment.findUnique as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+      const inventorisId = 'INV001';
+      const mockEquipment = {
+        id: '1',
+        inventorisId: 'INV001',
+        name: 'Test Equipment',
+        brandName: 'Brand',
+        modelName: 'Model'
+      };
+
+      mockPrisma.medicalEquipment.findUnique.mockResolvedValue(mockEquipment);
 
       // Act
-      const result = await repository.getMedicalEquipmentById(id);
+      const result = await repository.findByInventorisId(inventorisId);
 
       // Assert
       expect(mockPrisma.medicalEquipment.findUnique).toHaveBeenCalledWith({
-        where: { id },
+        where: { 
+          inventorisId: 'INV001',
+          deletedOn: null 
+        },
+        select: {
+          id: true,
+          inventorisId: true,
+          name: true,
+          brandName: true,
+          modelName: true,
+        }
       });
-      expect(result).toEqual(mockData);
+      expect(result).toEqual(mockEquipment);
     });
 
-    // Negative test case
-    it("should return null when equipment not found by ID", async () => {
+    it('should convert null brandName and modelName to undefined', async () => {
       // Arrange
-      const id = "non-existent-id";
-      (mockPrisma.medicalEquipment.findUnique as jest.Mock).mockResolvedValue(
-        null,
-      );
+      const inventorisId = 'INV001';
+      const mockEquipment = {
+        id: '1',
+        inventorisId: 'INV001',
+        name: 'Test Equipment',
+        brandName: null,
+        modelName: null
+      };
+
+      mockPrisma.medicalEquipment.findUnique.mockResolvedValue(mockEquipment);
 
       // Act
-      const result = await repository.getMedicalEquipmentById(id);
+      const result = await repository.findByInventorisId(inventorisId);
 
       // Assert
-      expect(mockPrisma.medicalEquipment.findUnique).toHaveBeenCalledWith({
-        where: { id },
+      expect(result).toEqual({
+        ...mockEquipment,
+        brandName: undefined,
+        modelName: undefined
       });
+    });
+
+    it('should return null when equipment not found', async () => {
+      // Arrange
+      mockPrisma.medicalEquipment.findUnique.mockResolvedValue(null);
+
+      // Act
+      const result = await repository.findByInventorisId('NONEXISTENT');
+
+      // Assert
       expect(result).toBeNull();
     });
+  });
 
-    // Corner case
-    it("should throw error when database query by ID fails", async () => {
+  describe('findById', () => {
+    it('should find equipment by id', async () => {
       // Arrange
-      const id = "error-id";
-      const dbError = new Error("Database error");
-      (mockPrisma.medicalEquipment.findUnique as jest.Mock).mockRejectedValue(
-        dbError,
-      );
-
-      // Act & Assert
-      await expect(repository.getMedicalEquipmentById(id)).rejects.toThrow(
-        dbError,
-      );
+      const id = '123';
+      const mockEquipment = {
+        id: '123',
+        inventorisId: 'INV123',
+        name: 'Test Equipment',
+        brandName: 'Brand',
+        modelName: 'Model'
+      };
+  
+      mockPrisma.medicalEquipment.findFirst.mockResolvedValue(mockEquipment);
+  
+      // Act
+      const result = await repository.findById(id);
+  
+      // Assert
+      expect(mockPrisma.medicalEquipment.findFirst).toHaveBeenCalledWith({
+        where: { 
+          id: '123',
+          deletedOn: null 
+        },
+        select: {
+          id: true,
+          inventorisId: true,
+          name: true,
+          brandName: true,
+          modelName: true,
+        }
+      });
+      expect(result).toEqual(mockEquipment);
+    });
+  
+    it('should convert null brandName and modelName to undefined', async () => {
+      // Arrange
+      const id = '456';
+      const mockEquipment = {
+        id: '456',
+        inventorisId: 'INV456',
+        name: 'Test Equipment',
+        brandName: null,
+        modelName: null
+      };
+  
+      mockPrisma.medicalEquipment.findFirst.mockResolvedValue(mockEquipment);
+  
+      // Act
+      const result = await repository.findById(id);
+  
+      // Assert
+      expect(result).toEqual({
+        ...mockEquipment,
+        brandName: undefined,
+        modelName: undefined
+      });
+    });
+  
+    it('should return null when equipment not found', async () => {
+      // Arrange
+      mockPrisma.medicalEquipment.findFirst.mockResolvedValue(null);
+  
+      // Act
+      const result = await repository.findById('NONEXISTENT');
+  
+      // Assert
+      expect(result).toBeNull();
     });
   });
 
-  describe("getMedicalEquipmentByName", () => {
-    // Positive test case
-    it("should return equipment that contains the name query", async () => {
+  describe('getMedicalEquipmentById', () => {
+    it('should get full equipment details by id', async () => {
       // Arrange
-      const nameQuery = "steto";
-      const mockData = [{ id: "1", name: "Stetoskop", status: "Active" }];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+      const id = '123';
+      const mockEquipment = {
+        id: '123',
+        inventorisId: 'INV123',
+        name: 'Test Equipment',
+        status: 'Active',
+        purchaseDate: new Date(),
+        purchasePrice: 1000,
+        // Other fields
+      };
+
+      mockPrisma.medicalEquipment.findFirst.mockResolvedValue(mockEquipment);
 
       // Act
-      const result = await repository.getMedicalEquipmentByName(nameQuery);
+      const result = await repository.getMedicalEquipmentById(id);
 
       // Assert
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: { name: { contains: nameQuery } },
+      expect(mockPrisma.medicalEquipment.findFirst).toHaveBeenCalledWith({
+        where: { 
+          id: '123',
+          deletedOn: null 
+        }
       });
-      expect(result).toEqual(mockData);
+      expect(result).toEqual(mockEquipment);
     });
 
-    // Case sensitivity test
-    it("should perform contains search regardless of case", async () => {
+    it('should return null when equipment not found', async () => {
       // Arrange
-      const nameQuery = "STETO";
-      const mockData = [{ id: "1", name: "Stetoskop", status: "Active" }];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+      mockPrisma.medicalEquipment.findFirst.mockResolvedValue(null);
 
       // Act
-      const result = await repository.getMedicalEquipmentByName(nameQuery);
+      const result = await repository.getMedicalEquipmentById('NONEXISTENT');
 
       // Assert
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: { name: { contains: nameQuery } },
-      });
-      expect(result).toEqual(mockData);
+      expect(result).toBeNull();
     });
+  });
 
-    // Negative test case
-    it("should throw error when name search query fails", async () => {
+  describe('getMedicalEquipmentByName', () => {
+    it('should find equipment by name substring', async () => {
       // Arrange
-      const nameQuery = "error-trigger";
-      const dbError = new Error("Search query error");
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockRejectedValue(
-        dbError,
-      );
-
-      // Act & Assert
-      await expect(
-        repository.getMedicalEquipmentByName(nameQuery),
-      ).rejects.toThrow(dbError);
-    });
-
-    // Corner case - empty search
-    it("should accept empty string as search parameter", async () => {
-      // Arrange
-      const nameQuery = "";
-      const mockData = [
-        { id: "1", name: "Stetoskop", status: "Active" },
-        { id: "2", name: "MRI Machine", status: "Maintenance" },
+      const nameQuery = 'scanner';
+      const mockEquipment = [
+        { id: '1', name: 'CT Scanner', status: 'Active' },
+        { id: '2', name: 'MRI Scanner', status: 'Maintenance' }
       ];
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue(
-        mockData,
-      );
+
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue(mockEquipment);
 
       // Act
       const result = await repository.getMedicalEquipmentByName(nameQuery);
 
       // Assert
       expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: { name: { contains: nameQuery } },
+        where: {
+          name: { contains: 'scanner' },
+          deletedOn: null
+        }
       });
-      expect(result).toEqual(mockData);
+      expect(result).toEqual(mockEquipment);
     });
 
-    // Corner case - no results
-    it("should return empty array when no equipment matches name query", async () => {
+    it('should return empty array when no equipment matches the name', async () => {
       // Arrange
-      const nameQuery = "nonexistent";
-      (mockPrisma.medicalEquipment.findMany as jest.Mock).mockResolvedValue([]);
+      mockPrisma.medicalEquipment.findMany.mockResolvedValue([]);
 
       // Act
-      const result = await repository.getMedicalEquipmentByName(nameQuery);
+      const result = await repository.getMedicalEquipmentByName('nonexistent');
 
       // Assert
-      expect(mockPrisma.medicalEquipment.findMany).toHaveBeenCalledWith({
-        where: { name: { contains: nameQuery } },
-      });
       expect(result).toEqual([]);
     });
   });

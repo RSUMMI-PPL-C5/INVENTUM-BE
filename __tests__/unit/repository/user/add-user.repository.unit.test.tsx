@@ -1,221 +1,126 @@
-import { Prisma } from "@prisma/client";
 import UserRepository from "../../../../src/repository/user.repository";
-import { UserDTO, AddUserResponseDTO } from "../../../../src/dto/user.dto";
+import { AddUserResponseDTO } from "../../../../src/dto/user.dto";
 
-// Get access to the mocked Prisma functions
-const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
+// Mock the date utility - ensure the path matches your import exactly
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn().mockReturnValue(new Date("2025-04-21T00:00:00.000Z")),
+}));
 
 // Mock Prisma Client
 jest.mock("@prisma/client", () => {
   const mockCreate = jest.fn();
-  const mockFindMany = jest.fn();
-  const mockFindUnique = jest.fn();
-  const mockUpdate = jest.fn();
-  const mockDelete = jest.fn();
 
   return {
     PrismaClient: jest.fn().mockImplementation(() => ({
       user: {
         create: mockCreate,
-        findMany: mockFindMany,
-        findUnique: mockFindUnique,
-        update: mockUpdate,
-        delete: mockDelete,
       },
     })),
     __mockPrisma: {
       create: mockCreate,
-      findMany: mockFindMany,
-      findUnique: mockFindUnique,
-      update: mockUpdate,
-      delete: mockDelete,
     },
   };
 });
 
-describe("UserRepository", () => {
+// Get access to the mocked Prisma functions
+const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
+
+describe("User Repository - ADD", () => {
   let userRepository: UserRepository;
+  const mockDate = new Date("2025-04-21T00:00:00.000Z");
 
   beforeEach(() => {
     jest.clearAllMocks();
     userRepository = new UserRepository();
   });
 
-  // Test for createUser method
   it("should create a new user successfully", async () => {
-    const newUserData = {
+    const userData = {
       email: "user1@example.com",
       username: "user1",
-      password: "hashedPassword1",
-    };
-
-    const mockResponse: AddUserResponseDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-    };
-
-    mockPrisma.create.mockResolvedValue(mockResponse);
-
-    const result = await userRepository.createUser(newUserData);
-
-    expect(mockPrisma.create).toHaveBeenCalledWith({
-      data: newUserData,
-      select: {
-        id: true,
-        email: true,
-        username: true,
-      },
-    });
-    expect(result).toEqual(mockResponse);
-  });
-
-  it("should throw an error if user creation fails", async () => {
-    const errorMessage = "User creation failed";
-    const newUserData = {
-      email: "user2@example.com",
-      username: "user2",
-      password: "hashedPassword2",
-    };
-
-    mockPrisma.create.mockRejectedValue(new Error(errorMessage));
-
-    await expect(userRepository.createUser(newUserData)).rejects.toThrow(
-      errorMessage,
-    );
-    expect(mockPrisma.create).toHaveBeenCalledTimes(1);
-  });
-
-  // Test for getFilteredUsers method
-  it("should return users filtered by query", async () => {
-    const filter: Prisma.UserWhereInput = { role: "USER" };
-    const mockFilteredUsers: UserDTO[] = [
-      {
-        id: "1",
-        email: "user1@example.com",
-        username: "user1",
-        password: "password123",
-        role: "USER",
-        fullname: "User One",
-        nokar: "12345",
-        divisiId: 1,
-        waNumber: "123456789",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
-      },
-    ];
-
-    mockPrisma.findMany.mockResolvedValue(mockFilteredUsers);
-
-    const result = await userRepository.getFilteredUsers(filter);
-
-    expect(mockPrisma.findMany).toHaveBeenCalledWith({ where: filter });
-    expect(result).toEqual(mockFilteredUsers);
-  });
-
-  it("should return an empty list if no users match the filter", async () => {
-    const filter: Prisma.UserWhereInput = { role: "ADMIN" };
-
-    mockPrisma.findMany.mockResolvedValue([]);
-
-    const result = await userRepository.getFilteredUsers(filter);
-
-    expect(mockPrisma.findMany).toHaveBeenCalledWith({ where: filter });
-    expect(result).toEqual([]);
-  });
-
-  // Test for getUserByEmail method
-  it("should return a user when found by email", async () => {
-    const mockUser: UserDTO = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedPassword1",
+      password: "hashedpwd1",
       role: "USER",
       fullname: "User One",
       nokar: "12345",
       divisiId: 1,
       waNumber: "123456789",
       createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
     };
 
-    mockPrisma.findUnique.mockResolvedValue(mockUser);
+    const expectedResponse: AddUserResponseDTO = {
+      id: "1",
+      email: "user1@example.com",
+      username: "user1",
+    };
 
-    const result = await userRepository.getUserByEmail("user1@example.com");
+    (mockPrisma.create as jest.Mock).mockResolvedValue(expectedResponse);
 
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: { email: "user1@example.com" },
+    const result = await userRepository.createUser(userData);
+
+    expect(mockPrisma.create).toHaveBeenCalledWith({
+      data: {
+        ...userData,
+        createdOn: mockDate,
+        modifiedOn: mockDate,
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdOn: true,
+        createdBy: true,
+      },
     });
-    expect(result).toEqual(mockUser);
+    expect(result).toEqual(expectedResponse);
   });
 
-  it("should return null if no user is found by email", async () => {
-    mockPrisma.findUnique.mockResolvedValue(null);
+  // Update the other test cases similarly
+  it("should throw an error if user creation fails", async () => {
+    const userData = {
+      email: "user2@example.com",
+      username: "user2",
+      password: "hashedpwd2",
+    };
 
-    const result = await userRepository.getUserByEmail(
-      "nonexistent@example.com",
-    );
+    const errorMessage = "User creation failed";
+    (mockPrisma.create as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    expect(mockPrisma.findUnique).toHaveBeenCalledWith({
-      where: { email: "nonexistent@example.com" },
-    });
-    expect(result).toBeNull();
+    await expect(userRepository.createUser(userData)).rejects.toThrow(errorMessage);
+    expect(mockPrisma.create).toHaveBeenCalledTimes(1);
   });
 
-  // Test for getUsers method
-  it("should return a list of users", async () => {
-    const mockUsers: UserDTO[] = [
-      {
-        id: "1",
-        email: "user1@example.com",
-        username: "user1",
-        role: "USER",
-        password: "password123",
-        fullname: "User One",
-        nokar: "12345",
-        divisiId: 1,
-        waNumber: "123456789",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
+  it("should handle missing optional fields gracefully", async () => {
+    const userData = {
+      email: "user3@example.com",
+      username: "user3",
+      password: "hashedpwd3",
+      createdBy: 1,
+    };
+
+    const expectedResponse: AddUserResponseDTO = {
+      id: "3",
+      email: "user3@example.com",
+      username: "user3",
+    };
+
+    (mockPrisma.create as jest.Mock).mockResolvedValue(expectedResponse);
+
+    const result = await userRepository.createUser(userData);
+
+    expect(mockPrisma.create).toHaveBeenCalledWith({
+      data: {
+        ...userData,
+        createdOn: mockDate,
+        modifiedOn: mockDate,
       },
-      {
-        id: "2",
-        email: "user2@example.com",
-        username: "user2",
-        role: "ADMIN",
-        password: "password123",
-        fullname: "User Two",
-        nokar: "67890",
-        divisiId: 2,
-        waNumber: "987654321",
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: null,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdOn: true,
+        createdBy: true,
       },
-    ];
-
-    mockPrisma.findMany.mockResolvedValue(mockUsers);
-
-    const result = await userRepository.getUsers();
-
-    expect(mockPrisma.findMany).toHaveBeenCalled();
-    expect(result).toEqual(mockUsers);
-    expect(result.length).toBe(mockUsers.length);
+    });
+    expect(result).toEqual(expectedResponse);
   });
 });

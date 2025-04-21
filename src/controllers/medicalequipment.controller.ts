@@ -5,8 +5,9 @@ import {
   UpdateMedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
 import { validationResult } from "express-validator";
-import { hasFilters } from "../filters/medicalequipment.filter";
 import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
+import { PaginationOptions } from "../filters/interface/pagination.interface";
+import AppError from "../utils/appError";
 
 class MedicalEquipmentController {
   private readonly medicalEquipmentService: MedicalEquipmentService;
@@ -15,7 +16,6 @@ class MedicalEquipmentController {
     this.medicalEquipmentService = new MedicalEquipmentService();
   }
 
-  /* Add Medical Equipment */
   public addMedicalEquipment = async (
     req: Request,
     res: Response,
@@ -26,52 +26,49 @@ class MedicalEquipmentController {
         res.status(400).json({ errors: errors.array() });
         return;
       }
-
       const equipmentData: AddMedicalEquipmentDTO = {
-        inventorisId: req.body.inventorisId,
-        name: req.body.name,
-        brandName: req.body.brandName,
-        modelName: req.body.modelName,
-        purchaseDate: req.body.purchaseDate
-          ? new Date(req.body.purchaseDate)
-          : undefined,
-        purchasePrice: req.body.purchasePrice
-          ? Number(req.body.purchasePrice)
-          : undefined,
-        status: req.body.status,
-        vendor: req.body.vendor,
-        createdBy: req.body.userId || 1,
+        ...req.body,
+        createdBy: (req.user as any).userId,
       };
 
       const newEquipment =
         await this.medicalEquipmentService.addMedicalEquipment(equipmentData);
-      res.status(201).json(newEquipment);
+      res.status(201).json({
+        status: "success",
+        data: newEquipment
+      });
     } catch (error: unknown) {
       console.error("Error in addMedicalEquipment controller:", error);
-      res
-        .status(
-          error instanceof Error &&
-            error.message === "Inventoris ID already in use"
-            ? 409
-            : 500,
-        )
-        .json({
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
         });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 
-  /* Update Medical Equipment */
   public updateMedicalEquipment = async (
     req: Request,
     res: Response,
   ): Promise<void> => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+      
       const { id } = req.params;
-      const equipmentData: UpdateMedicalEquipmentDTO = req.body;
+      const equipmentData: UpdateMedicalEquipmentDTO = {
+        ...req.body,
+        modifiedBy: (req.user as any).userId,
+      };
 
       const updatedEquipment =
         await this.medicalEquipmentService.updateMedicalEquipment(
@@ -82,7 +79,7 @@ class MedicalEquipmentController {
       if (!updatedEquipment) {
         res.status(404).json({
           status: "error",
-          message: "Medical equipment not found or update failed",
+          message: "Medical equipment not found",
         });
         return;
       }
@@ -91,15 +88,21 @@ class MedicalEquipmentController {
         status: "success",
         data: updatedEquipment,
       });
-    } catch (error: any) {
-      res.status(400).json({
-        status: "error",
-        message: error.message,
-      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 
-  /* Get All / Filter / Search Medical Equipment */
   public getMedicalEquipment = async (
     req: Request,
     res: Response,
@@ -107,47 +110,49 @@ class MedicalEquipmentController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({ error: "Invalid input data" });
+        res.status(400).json({ 
+          status: "error",
+          errors: errors.array() 
+        });
         return;
       }
-
-      const { search } = req.query;
-
-      if (typeof search === "string") {
-        const result =
-          await this.medicalEquipmentService.searchMedicalEquipment(search);
-        res.status(200).json(result);
-        return;
-      }
-
-      let medicalEquipment;
-      if (hasFilters(req.query)) {
-        const filters: MedicalEquipmentFilterOptions = {
-          status: req.query.status as any,
-          createdOnStart: req.query.createdOnStart as any,
-          createdOnEnd: req.query.createdOnEnd as any,
-          modifiedOnStart: req.query.modifiedOnStart as any,
-          modifiedOnEnd: req.query.modifiedOnEnd as any,
-          purchaseDateStart: req.query.purchaseDateStart as any,
-          purchaseDateEnd: req.query.purchaseDateEnd as any,
-        };
-
-        medicalEquipment =
-          await this.medicalEquipmentService.getFilteredMedicalEquipment(
-            filters,
-          );
+  
+      // Get pagination options
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      
+      const paginationOptions: PaginationOptions = { 
+        page: page > 0 ? page : 1,
+        limit: limit > 0 ? limit : 10
+      };
+      
+      const filters: MedicalEquipmentFilterOptions = req.query as any;
+      const search = req.query.search as string | undefined;
+  
+      const result = await this.medicalEquipmentService.getMedicalEquipment(
+        search, 
+        filters, 
+        paginationOptions
+      );
+  
+      res.status(200).json(result);
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          statusCode: error.statusCode,
+          message: error.message,
+        });
       } else {
-        medicalEquipment =
-          await this.medicalEquipmentService.getMedicalEquipment();
+        res.status(500).json({
+          status: "error",
+          statusCode: 500,
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
       }
-
-      res.status(200).json(medicalEquipment);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
     }
   };
 
-  /* Get Medical Equipment By ID */
   public getMedicalEquipmentById = async (
     req: Request,
     res: Response,
@@ -157,26 +162,70 @@ class MedicalEquipmentController {
         await this.medicalEquipmentService.getMedicalEquipmentById(
           req.params.id,
         );
+      
       if (!medicalEquipment) {
-        res.status(404).json({ message: "Medical Equipment not found" });
+        res.status(404).json({
+          status: "error",
+          message: "Medical Equipment not found"
+        });
         return;
       }
-      res.status(200).json(medicalEquipment);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
+      
+      res.status(200).json({
+        status: "success",
+        data: medicalEquipment
+      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 
-  public deleteMedicalEquipment = async (req: Request, res: Response): Promise<void> => {
+  public deleteMedicalEquipment = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
     try {
-      const deleted = await this.medicalEquipmentService.deleteMedicalEquipment(req.params.id);
+      const deletedById = (req.user as any).userId;
+      
+      const deleted = await this.medicalEquipmentService.deleteMedicalEquipment(
+        req.params.id,
+        deletedById
+      );
+      
       if (!deleted) {
-        res.status(404).json({ message: "Sparepart not found" });
+        res.status(404).json({
+          status: "error",
+          message: "Medical Equipment not found"
+        });
         return;
       }
-      res.status(200).json({ message: "Sparepart deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
+      
+      res.status(200).json({
+        status: "success",
+        message: "Medical Equipment deleted successfully"
+      });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: "error",
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: "error",
+          message: error instanceof Error ? error.message : "An unknown error occurred",
+        });
+      }
     }
   };
 }

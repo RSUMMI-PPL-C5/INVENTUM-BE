@@ -18,9 +18,9 @@ model User {
   divisiId   Int?
   waNumber   String
   createdBy  String?
-  createdOn  DateTime?     @default(now())
+  createdOn  DateTime?
   modifiedBy String?
-  modifiedOn DateTime?    
+  modifiedOn DateTime?     @default(now())
   deletedBy  String?
   deletedOn  DateTime?
   requests   Request[]
@@ -50,11 +50,11 @@ model MedicalEquipment {
   purchasePrice     Int?
   status            String                @default("Active")
   vendor            String?
-  createdBy         Int
+  createdBy         String
   createdOn         DateTime?
-  modifiedBy        Int?
+  modifiedBy        String?
   modifiedOn        DateTime              @default(now())
-  deletedBy         Int?
+  deletedBy         String?
   deletedOn         DateTime?
   spareparts        EquipmentSpareparts[]
   relocationHistory RelocationHistory[]
@@ -83,11 +83,11 @@ model Spareparts {
   price           Int?
   toolLocation    String?
   toolDate        String?
-  createdBy       Int
+  createdBy       String
   createdOn       DateTime?
-  modifiedBy      Int?
+  modifiedBy      String?
   modifiedOn      DateTime              @default(now())
-  deletedBy       Int?
+  deletedBy       String?
   deletedOn       DateTime?
   equipment       EquipmentSpareparts[]
   partsManagement PartsManagement[]

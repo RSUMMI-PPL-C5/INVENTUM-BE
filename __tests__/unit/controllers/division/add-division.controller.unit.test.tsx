@@ -48,6 +48,30 @@ describe('DivisiController - ADD', () => {
     });
   });
 
+  test('POST /divisi - should make parent null if parentId not provided', async () => {
+    mockRequest = {
+      body: {
+        divisi: 'Divisi 1',
+        parentId: undefined
+      }
+    };
+
+    mockDivisionService.addDivision.mockResolvedValue({
+      id: 1,
+      divisi: 'Divisi 1',
+      parentId: null
+    });
+
+    await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(201);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      id: 1,
+      divisi: 'Divisi 1',
+      parentId: null
+    });
+  });
+
   test('POST /divisi - should return 400 if parentId is not a number', async () => {
     mockRequest = {
       body: {
@@ -59,7 +83,7 @@ describe('DivisiController - ADD', () => {
     await divisionController.addDivision(mockRequest as Request, mockResponse as Response);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent ID must be a number' });
+    expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Parent ID must be a number or null' });
   });
 
   test('POST /divisi - should return 404 if parent divisi not found', async () => {

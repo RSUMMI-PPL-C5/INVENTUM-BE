@@ -8,12 +8,13 @@ export interface AddUserDTO {
     email: string;
     username: string;
     password: string;
-    role: string;
     fullname: string;
-    nokar: string;
-    divisiId: number;
     waNumber: string;
+    role: string;
+    nokar: string;
+    divisiId?: number;
     createdBy: string;
+    createdOn: string;
 }
   
 export interface AddUserResponseDTO {
