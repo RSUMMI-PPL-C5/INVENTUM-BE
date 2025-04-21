@@ -16,7 +16,6 @@ class MedicalEquipmentController {
     this.medicalEquipmentService = new MedicalEquipmentService();
   }
 
-  /* Add Medical Equipment */
   public addMedicalEquipment = async (
     req: Request,
     res: Response,
@@ -54,7 +53,6 @@ class MedicalEquipmentController {
     }
   };
 
-  /* Update Medical Equipment */
   public updateMedicalEquipment = async (
     req: Request,
     res: Response,
@@ -155,7 +153,6 @@ class MedicalEquipmentController {
     }
   };
 
-  /* Get Medical Equipment By ID */
   public getMedicalEquipmentById = async (
     req: Request,
     res: Response,
@@ -193,7 +190,6 @@ class MedicalEquipmentController {
     }
   };
 
-  /* Delete Medical Equipment */
   public deleteMedicalEquipment = async (
     req: Request,
     res: Response
