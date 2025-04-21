@@ -15,15 +15,13 @@ jest.mock("express", () => {
 });
 
 // Mock controller
-jest.mock("../../../../src/controllers/division.controller", () => {
+jest.mock("../../../../src/controllers/sparepart.controller", () => {
   return jest.fn().mockImplementation(() => ({
-    addDivision: jest.fn(),
-    getDivisionsTree: jest.fn(),
-    getAllDivisions: jest.fn(),
-    getDivisionsWithUserCount: jest.fn(),
-    getDivisionById: jest.fn(),
-    updateDivision: jest.fn(),
-    deleteDivision: jest.fn(),
+    getSpareparts: jest.fn(),
+    getSparepartById: jest.fn(),
+    addSparepart: jest.fn(),
+    updateSparepart: jest.fn(),
+    deleteSparepart: jest.fn(),
   }));
 });
 
@@ -31,14 +29,29 @@ jest.mock("../../../../src/controllers/division.controller", () => {
 jest.mock("../../../../src/middleware/verifyToken", () =>
   jest.fn((_req: any, _res: any, next: any) => next())
 );
+
 jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next())
 );
 
-// Import the route after all mocks
-import "../../../../src/routes/division.route";
+// Mock validation
+jest.mock("../../../../src/validations/sparepartfilterquery.validation", () => ({
+  sparepartFilterQueryValidation: jest.fn((_req: any, _res: any, next: any) => next())
+}));
 
-describe("Division Routes", () => {
+jest.mock("../../../../src/validations/spareparts.validation", () => ({
+  addSparepartValidation: jest.fn((_req: any, _res: any, next: any) => next()),
+  updateSparepartValidation: jest.fn((_req: any, _res: any, next: any) => next())
+}));
+
+jest.mock("../../../../src/middleware/validateRequest", () => ({
+  validateRequest: jest.fn((_req: any, _res: any, next: any) => next())
+}));
+
+// Import the route after all mocks
+import "../../../../src/routes/sparepart.route";
+
+describe("Sparepart Routes", () => {
   it("should create router with Router()", () => {
     expect(Router).toHaveBeenCalled();
   });
@@ -51,34 +64,11 @@ describe("Division Routes", () => {
     );
   });
 
-  it("should register POST / route", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.post).toHaveBeenCalledWith(
-      "/",
-      expect.any(Function)
-    );
-  });
-
-  it("should register GET / route", () => {
+  it("should register GET / route with filter validation", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/",
-      expect.any(Function)
-    );
-  });
-
-  it("should register GET /all route", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/all",
-      expect.any(Function)
-    );
-  });
-
-  it("should register GET /with-user-count route", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/with-user-count",
+      expect.any(Function),
       expect.any(Function)
     );
   });
@@ -91,10 +81,22 @@ describe("Division Routes", () => {
     );
   });
 
-  it("should register PUT /:id route", () => {
+  it("should register POST / route with validation", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/",
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function)
+    );
+  });
+
+  it("should register PUT /:id route with validation", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.put).toHaveBeenCalledWith(
       "/:id",
+      expect.any(Function),
+      expect.any(Function),
       expect.any(Function)
     );
   });

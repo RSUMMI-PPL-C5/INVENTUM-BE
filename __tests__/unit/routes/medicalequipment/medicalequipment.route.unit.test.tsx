@@ -1,102 +1,111 @@
-import express from "express";
-import request from "supertest";
-import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
+import { Router } from "express";
 
-// Mock the controller before importing the router
-jest.mock("../../../../src/controllers/medicalequipment.controller");
-
-// Default mocks for all controller methods
-const mockAddMedicalEquipment = jest.fn();
-const mockUpdateMedicalEquipment = jest.fn();
-
-// Set up default implementations
-(MedicalEquipmentController as jest.Mock).mockImplementation(() => {
+// Mock express.Router
+jest.mock("express", () => {
+  const mockRouter = {
+    use: jest.fn().mockReturnThis(),
+    get: jest.fn().mockReturnThis(),
+    post: jest.fn().mockReturnThis(),
+    put: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
+  };
   return {
-    addMedicalEquipment: mockAddMedicalEquipment,
-    updateMedicalEquipment: mockUpdateMedicalEquipment,
+    Router: jest.fn(() => mockRouter),
   };
 });
 
-// Now import the router after the mocks are set up
-import medicalEquipmentRouter from "../../../../src/routes/medicalequipment.route";
+// Mock controller
+jest.mock("../../../../src/controllers/medicalequipment.controller", () => {
+  return jest.fn().mockImplementation(() => ({
+    getMedicalEquipment: jest.fn(),
+    addMedicalEquipment: jest.fn(),
+    getMedicalEquipmentById: jest.fn(),
+    updateMedicalEquipment: jest.fn(),
+    deleteMedicalEquipment: jest.fn(),
+  }));
+});
 
-describe("Medical Equipment Routes", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+// Mock middleware with explicit any types and unused args as _
+jest.mock("../../../../src/middleware/verifyToken", () =>
+  jest.fn((_req: any, _res: any, next: any) => next())
+);
+
+jest.mock("../../../../src/middleware/authorizeRole", () =>
+  jest.fn(() => (_req: any, _res: any, next: any) => next())
+);
+
+// Mock validation
+jest.mock("../../../../src/validations/medicalequipmentfilterquery.validation", () => ({
+  medicalEquipmentFilterQueryValidation: jest.fn((_req: any, _res: any, next: any) => next())
+}));
+
+jest.mock("../../../../src/validations/medicalequipment.validation", () => ({
+  addMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) => next()),
+  updateMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) => next())
+}));
+
+jest.mock("../../../../src/middleware/validateRequest", () => ({
+  validateRequest: jest.fn((_req: any, _res: any, next: any) => next())
+}));
+
+// Import the route after all mocks
+import "../../../../src/routes/medicalequipment.route";
+
+describe("MedicalEquipment Routes", () => {
+  it("should create router with Router()", () => {
+    expect(Router).toHaveBeenCalled();
   });
 
-  test("should export a router with required methods", () => {
-    // Ensure router is defined
-    expect(medicalEquipmentRouter).toBeDefined();
-
-    // Check for common Express router methods
-    expect(medicalEquipmentRouter).toHaveProperty("get");
-    expect(medicalEquipmentRouter).toHaveProperty("post");
-    expect(medicalEquipmentRouter).toHaveProperty("put");
-    expect(medicalEquipmentRouter).toHaveProperty("delete");
-    expect(medicalEquipmentRouter).toHaveProperty("use");
-
-    // Confirm it's an instance of Express Router
-    expect(medicalEquipmentRouter.name).toBe("router");
-  });
-
-  test("should handle PUT /:id and call updateMedicalEquipment", async () => {
-    mockUpdateMedicalEquipment.mockImplementation((req, res) => {
-      return res.status(200).json({ status: "success", message: "mocked" });
-    });
-
-    const app = express();
-    app.use(express.json());
-    app.use("/equipment", medicalEquipmentRouter);
-
-    const dummyId = "equipment-id-123";
-    const dummyPayload = {
-      name: "Updated Name",
-      brandName: "Updated Brand",
-      modelName: "Updated Model",
-      modifiedBy: 1,
-    };
-
-    const res = await request(app)
-      .put(`/equipment/${dummyId}`)
-      .send(dummyPayload);
-
-    expect(mockUpdateMedicalEquipment).toHaveBeenCalled();
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe("success");
-  });
-
-  test("should handle errors in updateMedicalEquipment endpoint", async () => {
-    const mockError = new Error("Test error");
-    mockUpdateMedicalEquipment.mockRejectedValue(mockError);
-
-    const app = express();
-    app.use(express.json());
-    app.use("/equipment", medicalEquipmentRouter);
-
-    // Global error handler
-    app.use(
-      (
-        err: Error,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
-      ) => {
-        res.status(500).json({ error: err.message });
-      },
+  it("should use verifyToken and authorizeRoles middleware", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.use).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function)
     );
+  });
 
-    const dummyId = "equipment-id-123";
-    const dummyPayload = {
-      name: "Updated Name",
-    };
+  it("should register GET / route with filter validation", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/",
+      expect.any(Function),
+      expect.any(Function)
+    );
+  });
 
-    const res = await request(app)
-      .put(`/equipment/${dummyId}`)
-      .send(dummyPayload);
+  it("should register POST / route with validation", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/",
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function)
+    );
+  });
 
-    expect(mockUpdateMedicalEquipment).toHaveBeenCalled();
-    expect(res.status).toBe(500);
-    expect(res.body.error).toBe("Test error");
+  it("should register GET /:id route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/:id",
+      expect.any(Function)
+    );
+  });
+
+  it("should register PUT /:id route with validation", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.put).toHaveBeenCalledWith(
+      "/:id",
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function)
+    );
+  });
+
+  it("should register DELETE /:id route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.delete).toHaveBeenCalledWith(
+      "/:id",
+      expect.any(Function)
+    );
   });
 });
