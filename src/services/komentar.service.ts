@@ -1,5 +1,5 @@
 import KomentarRepository from "../repository/komentar.repository";
-import { KomentarDTO, KomentarResponseDTO } from "../dto/komentar.dto";
+import { KomentarDTO } from "../dto/komentar.dto";
 import { Komentar } from "@prisma/client";
 
 class KomentarService {
