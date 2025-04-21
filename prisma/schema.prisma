@@ -25,6 +25,7 @@ model User {
   deletedOn  DateTime?
   requests   Request[]
   divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
+  komentar   Komentar[]
 
   @@index([divisiId], map: "User_divisiId_fkey")
 }
@@ -133,6 +134,7 @@ model Request {
   modifiedBy       Int?
   modifiedOn       DateTime     @default(now())
   notifications    Notifikasi[]
+  komentar         Komentar[]
   user             User         @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "Request_userId_fkey")
@@ -148,4 +150,18 @@ model Notifikasi {
   request   Request? @relation(fields: [requestId], references: [id])
 
   @@index([requestId], map: "Notifikasi_requestId_fkey")
+}
+
+model Komentar {
+  id         String   @id @default(uuid())
+  text       String   @db.Text
+  userId     String
+  requestId  String?
+  createdAt  DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  request    Request? @relation(fields: [requestId], references: [id])
+
+  @@index([userId], map: "Komentar_userId_fkey")
+  @@index([requestId], map: "Komentar_requestId_fkey")
 }
