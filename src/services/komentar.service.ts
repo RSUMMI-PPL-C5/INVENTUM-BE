@@ -10,7 +10,7 @@ class KomentarService {
   }
 
   /**
-   * Add a new comment
+   * Add a new comment for security
    */
   public async addKomentar(komentarData: KomentarDTO): Promise<Komentar> {
     return this.komentarRepository.addKomentar(komentarData);
