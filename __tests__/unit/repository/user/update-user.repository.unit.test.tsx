@@ -1,5 +1,6 @@
 import UserRepository from "../../../../src/repository/user.repository";
 import { UserDTO } from "../../../../src/dto/user.dto";
+import { getJakartaTime } from "../../../../src/utils/date.utils";
 
 // Mock Prisma Client
 jest.mock("@prisma/client", () => {
@@ -17,6 +18,11 @@ jest.mock("@prisma/client", () => {
   };
 });
 
+// Mock getJakartaTime
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn(),
+}));
+
 // Get access to the mocked Prisma functions
 const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
@@ -32,7 +38,7 @@ describe("User Repository - UPDATE", () => {
     nokar: "12345",
     divisiId: 1,
     waNumber: "123456789",
-    createdBy: 1,
+    createdBy: "1",
     createdOn: new Date(),
     modifiedBy: null,
     modifiedOn: new Date(),
@@ -40,26 +46,33 @@ describe("User Repository - UPDATE", () => {
     deletedOn: null,
   };
 
+  let mockDate: Date;
+
   beforeEach(() => {
     jest.clearAllMocks();
     userRepository = new UserRepository();
+    mockDate = new Date();
+    (getJakartaTime as jest.Mock).mockReturnValue(mockDate);
   });
 
   it("should update a user's information", async () => {
     const updateData = {
       fullname: "Updated User One",
       waNumber: "555555555",
-      modifiedBy: 2
+      modifiedBy: "2",
     };
 
-    const updatedUser = { ...mockUser, ...updateData };
+    const updatedUser = { ...mockUser, ...updateData, modifiedOn: mockDate };
     (mockPrisma.update as jest.Mock).mockResolvedValue(updatedUser);
 
     const result = await userRepository.updateUser("1", updateData);
 
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: { id: "1" },
-      data: updateData,
+      data: {
+        ...updateData,
+        modifiedOn: mockDate,
+      },
     });
     expect(result).toEqual(updatedUser);
   });
@@ -72,19 +85,27 @@ describe("User Repository - UPDATE", () => {
 
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: { id: "999" },
-      data: updateData,
+      data: {
+        ...updateData,
+        modifiedOn: mockDate,
+      },
     });
     expect(result).toBeNull();
   });
 
-  
   it("should throw an error if the update fails", async () => {
     const updateData = { fullname: "New Name" };
     const errorMessage = "Update failed";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
     await expect(userRepository.updateUser("1", updateData)).rejects.toThrow(errorMessage);
-    expect(mockPrisma.update).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.update).toHaveBeenCalledWith({
+      where: { id: "1" },
+      data: {
+        ...updateData,
+        modifiedOn: mockDate,
+      },
+    });
   });
 
   // Corner Case: Update with empty data
@@ -92,14 +113,12 @@ describe("User Repository - UPDATE", () => {
     const errorMessage = "No data provided for update";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.updateUser("1", {})).rejects.toThrow(
-      errorMessage,
-    );
+    await expect(userRepository.updateUser("1", {})).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "1",
+      where: { id: "1" },
+      data: {
+        modifiedOn: mockDate,
       },
-      data: {},
     });
   });
 
@@ -112,10 +131,11 @@ describe("User Repository - UPDATE", () => {
       userRepository.updateUser("1", { fullname: 12345 as unknown as string }),
     ).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "1",
+      where: { id: "1" },
+      data: {
+        fullname: 12345,
+        modifiedOn: mockDate,
       },
-      data: { fullname: 12345 },
     });
   });
 
@@ -128,10 +148,11 @@ describe("User Repository - UPDATE", () => {
       userRepository.updateUser("1", { fullname: "Updated User One" }),
     ).rejects.toThrow(errorMessage);
     expect(mockPrisma.update).toHaveBeenCalledWith({
-      where: {
-        id: "1",
+      where: { id: "1" },
+      data: {
+        fullname: "Updated User One",
+        modifiedOn: mockDate,
       },
-      data: { fullname: "Updated User One" },
     });
   });
 });

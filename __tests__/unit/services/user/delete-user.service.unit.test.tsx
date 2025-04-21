@@ -1,10 +1,10 @@
-import { UserDTO } from '../../../../src/dto/user.dto';
-import UserService from '../../../../src/services/user.service';
-import UserRepository from '../../../../src/repository/user.repository';
+import { UserDTO } from "../../../../src/dto/user.dto";
+import UserService from "../../../../src/services/user.service";
+import UserRepository from "../../../../src/repository/user.repository";
 
-jest.mock('../../../../src/repository/user.repository');
+jest.mock("../../../../src/repository/user.repository");
 
-describe('UserService - DELETE', () => {
+describe("UserService - deleteUser", () => {
   let userService: UserService;
   let mockUserRepository: jest.Mocked<UserRepository>;
 
@@ -15,49 +15,101 @@ describe('UserService - DELETE', () => {
     (userService as any).userRepository = mockUserRepository; // Inject mocked repository
   });
 
-  describe('deleteUser', () => {
-    it('should delete a user by id', async () => {
-      const mockUser: UserDTO = {
-        id: '1',
-        email: 'user1@example.com',
-        username: 'user1',
-        password: 'password1',
-        role: '1',
-        fullname: 'User One',
-        nokar: '123',
-        divisiId: 1,
-        waNumber: '1234567890',
-        createdBy: 1,
-        createdOn: new Date(),
-        modifiedBy: 1,
-        modifiedOn: new Date(),
-        deletedBy: null,
-        deletedOn: null,
-      };
+  it("should delete a user successfully", async () => {
+    const mockUser: UserDTO = {
+      id: "1",
+      email: "user1@example.com",
+      username: "user1",
+      password: "hashedpwd1",
+      role: "USER",
+      fullname: "User One",
+      nokar: "12345",
+      divisiId: 1,
+      waNumber: "123456789",
+      createdBy: "1",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: null,
+      deletedBy: "1",
+      deletedOn: new Date(),
+    };
 
-      mockUserRepository.deleteUser.mockResolvedValue(mockUser);
+    mockUserRepository.deleteUser.mockResolvedValue(mockUser);
 
-      const result = await userService.deleteUser('1');
+    const result = await userService.deleteUser("1", "1");
 
-      expect(mockUserRepository.deleteUser).toHaveBeenCalledWith('1');
-      expect(result).toEqual(mockUser);
-    });
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("1", "1");
+    expect(result).toEqual(mockUser);
+  });
 
-    it('should return null if user not found', async () => {
-      mockUserRepository.deleteUser.mockResolvedValue(null);
+  it("should return null if user not found", async () => {
+    mockUserRepository.deleteUser.mockResolvedValue(null);
 
-      const result = await userService.deleteUser('999');
+    const result = await userService.deleteUser("nonexistent-id", "1");
 
-      expect(mockUserRepository.deleteUser).toHaveBeenCalledWith('999');
-      expect(result).toBeNull();
-    });
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("nonexistent-id", "1");
+    expect(result).toBeNull();
+  });
 
-    it('should handle errors', async () => {
-      const errorMessage = 'Database error';
-      mockUserRepository.deleteUser.mockRejectedValue(new Error(errorMessage));
+  it("should handle errors thrown by the repository", async () => {
+    mockUserRepository.deleteUser.mockRejectedValue(new Error("Database error"));
 
-      await expect(userService.deleteUser('1')).rejects.toThrow(errorMessage);
-      expect(mockUserRepository.deleteUser).toHaveBeenCalledWith('1');
-    });
+    await expect(userService.deleteUser("1", "1")).rejects.toThrow("Database error");
+
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("1", "1");
+  });
+
+  it("should handle cases where deletedBy is not provided", async () => {
+    const mockUser: UserDTO = {
+      id: "1",
+      email: "user1@example.com",
+      username: "user1",
+      password: "hashedpwd1",
+      role: "USER",
+      fullname: "User One",
+      nokar: "12345",
+      divisiId: 1,
+      waNumber: "123456789",
+      createdBy: "1",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: null,
+      deletedBy: null,
+      deletedOn: new Date(),
+    };
+
+    mockUserRepository.deleteUser.mockResolvedValue(mockUser);
+
+    const result = await userService.deleteUser("1");
+
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("1", undefined);
+    expect(result).toEqual(mockUser);
+  });
+
+  it("should handle edge case where deletedBy is an empty string", async () => {
+    const mockUser: UserDTO = {
+      id: "1",
+      email: "user1@example.com",
+      username: "user1",
+      password: "hashedpwd1",
+      role: "USER",
+      fullname: "User One",
+      nokar: "12345",
+      divisiId: 1,
+      waNumber: "123456789",
+      createdBy: "1",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: null,
+      deletedBy: "",
+      deletedOn: new Date(),
+    };
+
+    mockUserRepository.deleteUser.mockResolvedValue(mockUser);
+
+    const result = await userService.deleteUser("1", "");
+
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("1", "");
+    expect(result).toEqual(mockUser);
   });
 });

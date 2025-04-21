@@ -1,212 +1,133 @@
-import { Request, Response } from 'express';
-import { validationResult, ValidationError } from 'express-validator';
-import UserController from '../../../../src/controllers/user.controller';
-import UserService from '../../../../src/services/user.service';
+import { Request, Response } from "express";
+import UserController from "../../../../src/controllers/user.controller";
+import UserService from "../../../../src/services/user.service";
+import AppError from "../../../../src/utils/appError";
+import { validationResult } from "express-validator";
+import { getJakartaTime } from "../../../../src/utils/date.utils";
 
 // Mock dependencies
-jest.mock('../../../../src/services/user.service');
-
-// Fix the validationResult mock with proper typing
-jest.mock('express-validator', () => ({
-  validationResult: jest.fn()
+jest.mock("../../../../src/services/user.service");
+jest.mock("express-validator", () => ({
+  validationResult: jest.fn(),
+}));
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn(),
 }));
 
-// Get the mock function with proper typing
 const mockValidationResult = validationResult as jest.MockedFunction<typeof validationResult>;
+const mockGetJakartaTime = getJakartaTime as jest.MockedFunction<typeof getJakartaTime>;
 
-describe('UserController - ADD', () => {
+describe("UserController - createUser", () => {
   let userController: UserController;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockUserService: jest.Mocked<UserService>;
 
   beforeEach(() => {
-    // Reset mocks
     jest.clearAllMocks();
-    
-    // Mock response object
+
     mockResponse = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-    
-    // Mock request object
-    mockRequest = {
-      body: {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'password123',
-        role: 'user',
-        fullname: 'Test User',
-        nokar: '123456',
-        divisiId: '1',
-        waNumber: '081234567890',
-        userId: 2
-      }
+      json: jest.fn(),
     };
 
-    // Setup UserService mock
+    mockRequest = {
+      body: {
+        email: "test@example.com",
+        username: "testuser",
+        password: "password123",
+        role: "user",
+        fullname: "Test User",
+        nokar: "123456",
+        divisiId: 1,
+        waNumber: "081234567890",
+      },
+      user: { userId: 2 },
+    };
+
     mockUserService = new UserService() as jest.Mocked<UserService>;
     (UserService as jest.Mock).mockImplementation(() => mockUserService);
-    
-    // Create controller instance
+
     userController = new UserController();
   });
 
-  test('should initialize with UserService', () => {
-    // Changed to not check exact count since constructor might be called multiple times
-    expect(UserService).toHaveBeenCalled();
-  });
+  it("should successfully create a user and return 201", async () => {
+    mockGetJakartaTime.mockReturnValue(new Date("2025-04-20T10:00:00Z"));
 
-  test('should return 400 for validation errors', async () => {
-    // Mock validation errors
-    const mockErrors = {
-      isEmpty: () => false,
-      array: () => [{ msg: 'Email is required' }] as ValidationError[]
-    };
-    mockValidationResult.mockReturnValue(mockErrors as any);
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
-    expect(mockValidationResult).toHaveBeenCalledWith(mockRequest);
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({ errors: mockErrors.array() });
-  });
-  
-  test('should successfully add user and return 201', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Mock successful user creation
     const mockNewUser = { id: 1, ...mockRequest.body };
-    mockUserService.addUser = jest.fn().mockResolvedValue(mockNewUser);
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
-    expect(mockUserService.addUser).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      username: 'testuser',
-      password: 'password123',
-      role: 'user',
-      fullname: 'Test User',
-      nokar: '123456',
-      divisiId: 1,
-      waNumber: '081234567890',
+    mockUserService.createUser.mockResolvedValue(mockNewUser);
+
+    await userController.createUser(mockRequest as Request, mockResponse as Response);
+
+    expect(mockUserService.createUser).toHaveBeenCalledWith({
+      ...mockRequest.body,
       createdBy: 2
     });
     expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith(mockNewUser);
-  });
-  
-  test('should use default createdBy when userId is not provided', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Remove userId from request
-    const requestWithoutUserId = {
-      body: { ...mockRequest.body }
-    };
-    delete requestWithoutUserId.body.userId;
-    
-    // Mock successful user creation
-    mockUserService.addUser = jest.fn().mockResolvedValue({ id: 1 });
-    
-    await userController.addUser(requestWithoutUserId as Request, mockResponse as Response);
-    
-    expect(mockUserService.addUser).toHaveBeenCalledWith(expect.objectContaining({
-      createdBy: 1 // Default value
-    }));
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      status: "success",
+      data: mockNewUser,
+    });
   });
 
-  test('should handle undefined divisiId', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Remove divisiId from request
-    const requestWithoutDivisiId = {
-      body: { ...mockRequest.body }
-    };
-    delete requestWithoutDivisiId.body.divisiId;
-    
-    // Mock successful user creation
-    mockUserService.addUser = jest.fn().mockResolvedValue({ id: 1 });
-    
-    await userController.addUser(requestWithoutDivisiId as Request, mockResponse as Response);
-    
-    expect(mockUserService.addUser).toHaveBeenCalledWith(expect.objectContaining({
-      divisiId: undefined
-    }));
-  });
+  it("should handle AppError and return the appropriate status code", async () => {
+    const appError = new AppError("Email already exists", 409);
+    mockUserService.createUser.mockRejectedValue(appError);
 
-  test('should handle "Email already in use" error with 409', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Mock error
-    mockUserService.addUser = jest.fn().mockRejectedValue(new Error('Email already in use'));
-    
-    // Spy on console.error
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
+    await userController.createUser(mockRequest as Request, mockResponse as Response);
+
     expect(mockResponse.status).toHaveBeenCalledWith(409);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Email already in use' });
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    consoleErrorSpy.mockRestore();
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      status: "error",
+      statusCode: 409,
+      message: "Email already exists",
+    });
   });
 
-  test('should handle "Username already in use" error with 409', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Mock error
-    mockUserService.addUser = jest.fn().mockRejectedValue(new Error('Username already in use'));
-    
-    // Spy on console.error
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
-    expect(mockResponse.status).toHaveBeenCalledWith(409);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Username already in use' });
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    consoleErrorSpy.mockRestore();
-  });
+  it("should handle generic errors and return 500", async () => {
+    mockUserService.createUser.mockRejectedValue(new Error("Database error"));
 
-  test('should handle generic Error with 500', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
-    
-    // Mock generic error
-    mockUserService.addUser = jest.fn().mockRejectedValue(new Error('Database connection failed'));
-    
-    // Spy on console.error
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
+    await userController.createUser(mockRequest as Request, mockResponse as Response);
+
     expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Database connection failed' });
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    consoleErrorSpy.mockRestore();
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      status: "error",
+      statusCode: 500,
+      message: "Database error",
+    });
   });
 
-  test('should handle non-Error object with 500', async () => {
-    // Mock successful validation
-    mockValidationResult.mockReturnValue({ isEmpty: () => true } as any);
+  it("should use data from request body and user ID", async () => {
+    mockGetJakartaTime.mockReturnValue(new Date("2025-04-20T10:00:00Z"));
     
-    // Mock non-Error object
-    mockUserService.addUser = jest.fn().mockRejectedValue('Something went wrong');
-    
-    // Spy on console.error
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-    
-    await userController.addUser(mockRequest as Request, mockResponse as Response);
-    
-    expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({ error: 'An unknown error occurred' });
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    consoleErrorSpy.mockRestore();
+    const customRequest = {
+      body: {
+        email: "custom@example.com",
+        username: "customuser",
+        password: "custom123",
+        role: "admin",
+        fullname: "Custom User",
+        nokar: "654321",
+        divisiId: 2,
+        waNumber: "089876543210",
+      },
+      user: { userId: 5 },
+    };
+
+    // Change id from number to string
+    const mockCustomUser = { id: "2", ...customRequest.body };
+    mockUserService.createUser.mockResolvedValue(mockCustomUser);
+
+    await userController.createUser(customRequest as unknown as Request, mockResponse as Response);
+
+    expect(mockUserService.createUser).toHaveBeenCalledWith({
+      ...customRequest.body,
+      createdBy: 5
+    });
+    expect(mockResponse.status).toHaveBeenCalledWith(201);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      status: "success",
+      data: mockCustomUser
+    });
   });
 });

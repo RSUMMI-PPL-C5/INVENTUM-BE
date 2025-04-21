@@ -1,6 +1,11 @@
 import UserRepository from "../../../../src/repository/user.repository";
 import { AddUserResponseDTO } from "../../../../src/dto/user.dto";
 
+// Mock the date utility - ensure the path matches your import exactly
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn().mockReturnValue(new Date("2025-04-21T00:00:00.000Z")),
+}));
+
 // Mock Prisma Client
 jest.mock("@prisma/client", () => {
   const mockCreate = jest.fn();
@@ -22,6 +27,7 @@ const { __mockPrisma: mockPrisma } = jest.requireMock("@prisma/client");
 
 describe("User Repository - ADD", () => {
   let userRepository: UserRepository;
+  const mockDate = new Date("2025-04-21T00:00:00.000Z");
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -52,16 +58,23 @@ describe("User Repository - ADD", () => {
     const result = await userRepository.createUser(userData);
 
     expect(mockPrisma.create).toHaveBeenCalledWith({
-      data: userData,
+      data: {
+        ...userData,
+        createdOn: mockDate,
+        modifiedOn: mockDate,
+      },
       select: {
         id: true,
         email: true,
         username: true,
+        createdOn: true,
+        createdBy: true,
       },
     });
     expect(result).toEqual(expectedResponse);
   });
 
+  // Update the other test cases similarly
   it("should throw an error if user creation fails", async () => {
     const userData = {
       email: "user2@example.com",
@@ -95,11 +108,17 @@ describe("User Repository - ADD", () => {
     const result = await userRepository.createUser(userData);
 
     expect(mockPrisma.create).toHaveBeenCalledWith({
-      data: userData,
+      data: {
+        ...userData,
+        createdOn: mockDate,
+        modifiedOn: mockDate,
+      },
       select: {
         id: true,
         email: true,
         username: true,
+        createdOn: true,
+        createdBy: true,
       },
     });
     expect(result).toEqual(expectedResponse);

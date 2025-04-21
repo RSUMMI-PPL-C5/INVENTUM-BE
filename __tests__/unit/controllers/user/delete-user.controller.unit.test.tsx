@@ -32,17 +32,7 @@ describe("UserController - DELETE", () => {
 
     mockRequest = {
       params: { id: "1" },
-      body: {
-        fullname: "Updated User One",
-        role: "1",
-        password: "newpassword",
-        divisiId: 1,
-        waNumber: "1234567890",
-        modifiedBy: 1,
-        nokar: "123",
-        email: "updatedUser@example.com",
-        username: "updatedUser",
-      },
+      user: { userId: "2" }, // Adding user with userId for authentication
     };
   });
 
@@ -52,19 +42,17 @@ describe("UserController - DELETE", () => {
       email: "user1@example.com",
       username: "user1",
       password: "password1",
-      role: "1",
+      role: "USER",
       fullname: "User One",
       nokar: "123",
       divisiId: 1,
       waNumber: "1234567890",
-      createdBy: 1,
+      createdBy: "1",
       createdOn: new Date(),
-      updatedBy: 1,
-      updatedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-      modifiedBy: 1,
-      modifiedOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: null,
+      deletedBy: "2",
+      deletedOn: new Date(),
     };
     mockUserService.deleteUser.mockResolvedValue(mockUser);
 
@@ -73,7 +61,7 @@ describe("UserController - DELETE", () => {
       mockResponse as Response,
     );
 
-    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
+    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1", "2");
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.json).toHaveBeenCalledWith({
       message: "User deleted successfully",
@@ -88,7 +76,7 @@ describe("UserController - DELETE", () => {
       mockResponse as Response,
     );
 
-    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
+    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1", "2");
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith({
       message: "User not found",
@@ -104,7 +92,7 @@ describe("UserController - DELETE", () => {
       mockResponse as Response,
     );
 
-    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
+    expect(mockUserService.deleteUser).toHaveBeenCalledWith("1", "2");
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
   });

@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 import { AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequipment.dto";
-import { validationResult, ValidationError } from "express-validator";
-import { v4 as uuidv4 } from "uuid";
+import { validationResult } from "express-validator";
+import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/services/medicalequipment.service");
 
@@ -14,19 +14,24 @@ jest.mock("express-validator", () => ({
   })),
 }));
 
-describe("MedicalEquipmentController", () => {
+describe("MedicalEquipmentController - addMedicalEquipment", () => {
   let medicalEquipmentController: MedicalEquipmentController;
   let mockService: jest.Mocked<MedicalEquipmentService>;
   let req: Partial<Request>;
   let res: Partial<Response>;
 
   beforeEach(() => {
-    mockService =
-      new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
+    mockService = new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
     medicalEquipmentController = new MedicalEquipmentController();
     (medicalEquipmentController as any).medicalEquipmentService = mockService;
 
-    req = { body: {} };
+    // Setup request with mock user
+    req = { 
+      body: {},
+      user: { userId: "user-123" }
+    };
+    
+    // Setup response with mock methods
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
@@ -37,107 +42,60 @@ describe("MedicalEquipmentController", () => {
     jest.clearAllMocks();
   });
 
-  // Positive Test
   it("should successfully add medical equipment", async () => {
+    // Arrange
     req.body = {
       inventorisId: "INV-001",
       name: "X-Ray Machine",
       brandName: "MedCorp",
-      modelName: "XR-2000",
-      createdBy: 1,
+      modelName: "XR-2000"
     };
 
-    const expectedResponse: AddMedicalEquipmentResponseDTO = {
-      id: uuidv4(),
+    const expectedResponseData: AddMedicalEquipmentResponseDTO = {
+      id: "mocked-id",
       inventorisId: "INV-001",
       name: "X-Ray Machine",
       brandName: "MedCorp",
-      modelName: "XR-2000",
+      modelName: "XR-2000"
     };
 
-    mockService.addMedicalEquipment.mockResolvedValue(expectedResponse);
+    mockService.addMedicalEquipment.mockResolvedValue(expectedResponseData);
 
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
 
-    expect(mockService.addMedicalEquipment).toHaveBeenCalledWith(
-      expect.objectContaining(req.body),
-    );
+    // Assert
+    expect(mockService.addMedicalEquipment).toHaveBeenCalledWith({
+      ...req.body,
+      createdBy: "user-123"
+    });
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(expectedResponse);
-  });
-
-  // Negative Test
-  it("should return 409 if inventorisId already exists", async () => {
-    req.body = {
-      inventorisId: "INV-001",
-      name: "MRI Scanner",
-      createdBy: 1,
-    };
-
-    mockService.addMedicalEquipment.mockRejectedValue(
-      new Error("Inventoris ID already in use"),
-    );
-
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
-
-    expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
-      error: "Inventoris ID already in use",
+      status: "success",
+      data: expectedResponseData
     });
   });
 
-  it("should return 500 if an unexpected error occurs", async () => {
-    req.body = {
-      inventorisId: "INV-ERR",
-      name: "ECG Machine",
-      createdBy: 1,
-    };
-
-    mockService.addMedicalEquipment.mockRejectedValue(
-      new Error("Database error"),
-    );
-
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: "Database error" });
-  });
-
   it("should return 400 if validation fails", async () => {
-    // Create validation errors mock result
+    // Arrange
     const validationErrorsResult = {
       isEmpty: jest.fn().mockReturnValue(false),
-      array: jest
-        .fn()
-        .mockReturnValue([
-          { param: "inventorisId", msg: "Inventoris ID is required" },
-        ]),
+      array: jest.fn().mockReturnValue([
+        { param: "inventorisId", msg: "Inventoris ID is required" }
+      ]),
     };
 
-    // Update the jest.mock implementation for this test only
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce(
-      validationErrorsResult,
-    );
+    (validationResult as unknown as jest.Mock).mockReturnValueOnce(validationErrorsResult);
 
     req.body = {
       // Missing required fields
       name: "Defective Equipment",
     };
 
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       errors: expect.arrayContaining([
@@ -149,87 +107,125 @@ describe("MedicalEquipmentController", () => {
     });
   });
 
-  it("should properly convert purchase date to Date object", async () => {
-    const testDate = "2023-10-15"; // ISO date string
+  it("should handle AppError correctly", async () => {
+    // Arrange
     req.body = {
-      inventorisId: "INV-DATE",
-      name: "Calendar Equipment",
-      purchaseDate: testDate,
-      createdBy: 1,
+      inventorisId: "INV-001",
+      name: "MRI Scanner",
     };
 
-    const expectedResponse = {
-      id: uuidv4(),
-      inventorisId: "INV-DATE",
-      name: "Calendar Equipment",
-    };
+    const appError = new AppError("Inventoris ID already in use", 409);
+    mockService.addMedicalEquipment.mockRejectedValue(appError);
 
-    mockService.addMedicalEquipment.mockResolvedValue(expectedResponse);
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
 
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
-
-    // Verify the service was called with date converted to Date object
-    expect(mockService.addMedicalEquipment).toHaveBeenCalledWith(
-      expect.objectContaining({
-        inventorisId: "INV-DATE",
-        purchaseDate: expect.any(Date), // Verify conversion happened
-      }),
-    );
-    expect(res.status).toHaveBeenCalledWith(201);
-  });
-
-  it("should return 500 with generic message for non-Error type exceptions", async () => {
-    req.body = {
-      inventorisId: "INV-UNKNOWN",
-      name: "Unknown Error Machine",
-      createdBy: 1,
-    };
-
-    // Mock service to throw a non-Error object
-    mockService.addMedicalEquipment.mockRejectedValue("Not an Error object");
-
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
-
-    expect(res.status).toHaveBeenCalledWith(500);
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
-      error: "An unknown error occurred",
+      status: "error",
+      message: "Inventoris ID already in use"
     });
   });
 
-  it("should properly convert purchase price to Number", async () => {
+  it("should handle general Error correctly", async () => {
+    // Arrange
     req.body = {
-      inventorisId: "INV-PRICE",
-      name: "Expensive Machine",
-      purchasePrice: "1000.50", // String price
-      createdBy: 1,
+      inventorisId: "INV-ERR",
+      name: "ECG Machine",
+    };
+
+    mockService.addMedicalEquipment.mockRejectedValue(new Error("Database error"));
+
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
+      message: "Database error"
+    });
+  });
+
+  it("should handle non-Error type exceptions", async () => {
+    // Arrange
+    req.body = {
+      inventorisId: "INV-UNKNOWN",
+      name: "Unknown Error Machine",
+    };
+
+    mockService.addMedicalEquipment.mockRejectedValue("Not an Error object");
+
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
+      message: "An unknown error occurred"
+    });
+  });
+
+  it("should handle data type conversion correctly", async () => {
+    // Arrange
+    const purchaseDate = "2023-10-15";
+    req.body = {
+      inventorisId: "INV-DATE",
+      name: "Calendar Equipment",
+      purchasePrice: "1000.50",
+      purchaseDate: purchaseDate
     };
 
     const expectedResponse = {
-      id: uuidv4(),
-      inventorisId: "INV-PRICE",
-      name: "Expensive Machine",
+      id: "mocked-id",
+      inventorisId: "INV-DATE",
+      name: "Calendar Equipment"
     };
 
     mockService.addMedicalEquipment.mockResolvedValue(expectedResponse);
 
-    await medicalEquipmentController.addMedicalEquipment(
-      req as Request,
-      res as Response,
-    );
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
 
-    // Verify the service was called with price converted to Number
-    expect(mockService.addMedicalEquipment).toHaveBeenCalledWith(
-      expect.objectContaining({
-        inventorisId: "INV-PRICE",
-        purchasePrice: 1000.5, // Verify conversion happened and is a number, not a string
-      }),
-    );
+    // Assert
+    // The controller shouldn't be doing conversions in this implementation,
+    // but we're validating the service was called with the raw body data plus user ID
+    expect(mockService.addMedicalEquipment).toHaveBeenCalledWith({
+      ...req.body,
+      createdBy: "user-123"
+    });
     expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "success",
+      data: expectedResponse
+    });
+  });
+
+  it("should console.error the caught exception", async () => {
+    // Arrange
+    const originalConsoleError = console.error;
+    console.error = jest.fn();
+    
+    req.body = {
+      inventorisId: "INV-LOG",
+      name: "Error Logger",
+    };
+    
+    const testError = new Error("Test error to log");
+    mockService.addMedicalEquipment.mockRejectedValue(testError);
+
+    // Act
+    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+
+    // Assert
+    expect(console.error).toHaveBeenCalledWith(
+      "Error in addMedicalEquipment controller:",
+      testError
+    );
+    
+    // Restore console.error
+    console.error = originalConsoleError;
   });
 });

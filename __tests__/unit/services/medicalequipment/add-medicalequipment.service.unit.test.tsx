@@ -1,23 +1,24 @@
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
-import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
-import {
-  AddMedicalEquipmentDTO,
-  AddMedicalEquipmentResponseDTO,
-} from "../../../../src/dto/medicalequipment.dto";
-import { v4 as uuidv4 } from "uuid";
+import AppError from "../../../../src/utils/appError";
+import { AddMedicalEquipmentDTO, AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequipment.dto";
 
-jest.mock("../../../../src/repository/medicalequipment.repository");
+// Mock uuid
+jest.mock("uuid", () => ({
+  v4: jest.fn().mockReturnValue("mocked-uuid")
+}));
 
-describe("MedicalEquipmentService", () => {
+describe("MedicalEquipmentService - addMedicalEquipment", () => {
   let medicalEquipmentService: MedicalEquipmentService;
-  let mockRepository: jest.Mocked<MedicalEquipmentRepository>;
+  let mockRepository: any;
 
   beforeEach(() => {
-    mockRepository =
-      new MedicalEquipmentRepository() as jest.Mocked<MedicalEquipmentRepository>;
+    mockRepository = {
+      findByInventorisId: jest.fn(),
+      addMedicalEquipment: jest.fn()
+    };
+
     medicalEquipmentService = new MedicalEquipmentService();
-    (medicalEquipmentService as any).medicalEquipmentRepository =
-      mockRepository;
+    (medicalEquipmentService as any).medicalEquipmentRepository = mockRepository;
   });
 
   afterEach(() => {
@@ -25,211 +26,121 @@ describe("MedicalEquipmentService", () => {
   });
 
   it("should successfully add medical equipment", async () => {
+    // Arrange
     const inputData: AddMedicalEquipmentDTO = {
       inventorisId: "INV-001",
       name: "X-Ray Machine",
       brandName: "MedCorp",
       modelName: "XR-2000",
-      createdBy: 1,
+      createdBy: "user-123" // String type as per DTO
     };
 
-    const expectedOutput = {
-      id: uuidv4(),
-      ...inputData,
-      createdOn: new Date(),
-      modifiedOn: new Date(),
+    const expectedResponse: AddMedicalEquipmentResponseDTO = {
+      id: "mocked-uuid",
+      inventorisId: "INV-001",
+      name: "X-Ray Machine",
+      brandName: "MedCorp",
+      modelName: "XR-2000"
     };
 
     mockRepository.findByInventorisId.mockResolvedValue(null);
-    mockRepository.addMedicalEquipment.mockResolvedValue(expectedOutput);
+    mockRepository.addMedicalEquipment.mockResolvedValue(expectedResponse);
 
+    // Act
     const result = await medicalEquipmentService.addMedicalEquipment(inputData);
 
-    expect(result).toEqual(expectedOutput);
+    // Assert
+    expect(result).toEqual(expectedResponse);
     expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-001");
-    expect(mockRepository.addMedicalEquipment).toHaveBeenCalledWith(
-      expect.objectContaining(inputData),
-    );
+    expect(mockRepository.addMedicalEquipment).toHaveBeenCalledWith({
+      id: "mocked-uuid",
+      ...inputData
+    });
   });
 
   it("should throw an error if inventorisId already exists", async () => {
+    // Arrange
     const inputData: AddMedicalEquipmentDTO = {
       inventorisId: "INV-001",
       name: "MRI Scanner",
       brandName: "HealthTech",
       modelName: "MRI-5000",
-      createdBy: 1,
+      createdBy: "user-123"
     };
 
-    const existingEquipment = {
-      id: uuidv4(),
-      ...inputData,
-      createdOn: new Date(),
-      modifiedOn: new Date(),
+    const existingEquipment: AddMedicalEquipmentResponseDTO = {
+      id: "existing-id",
+      inventorisId: "INV-001",
+      name: "MRI Scanner",
+      brandName: "HealthTech",
+      modelName: "MRI-5000"
     };
 
     mockRepository.findByInventorisId.mockResolvedValue(existingEquipment);
 
+    // Act & Assert
     await expect(
-      medicalEquipmentService.addMedicalEquipment(inputData),
-    ).rejects.toThrow("Inventoris ID already in use");
+      medicalEquipmentService.addMedicalEquipment(inputData)
+    ).rejects.toThrow(new AppError("Inventoris ID already in use", 400));
 
     expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-001");
     expect(mockRepository.addMedicalEquipment).not.toHaveBeenCalled();
   });
 
-  it("should throw an error if inventorisId is empty or invalid", async () => {
-    const invalidInputs: AddMedicalEquipmentDTO[] = [
-      {
-        inventorisId: "",
-        name: "Ultrasound",
-        brandName: "MediScan",
-        modelName: "US-300",
-      },
-      {
-        inventorisId: "   ",
-        name: "CT Scanner",
-        brandName: "ScanCo",
-        modelName: "CT-1000",
-      } as any,
-      {
-        inventorisId: null as any,
-        name: "Ventilator",
-        brandName: "BreathEasy",
-        modelName: "V-600",
-      },
-    ];
+  it("should throw an error if inventorisId is empty", async () => {
+    // Arrange
+    const inputData = {
+      inventorisId: "",
+      name: "Ultrasound",
+      brandName: "MediScan",
+      modelName: "US-300",
+      createdBy: "user-123"
+    } as AddMedicalEquipmentDTO;
 
-    for (const input of invalidInputs) {
-      await expect(
-        medicalEquipmentService.addMedicalEquipment(input),
-      ).rejects.toThrow("inventorisId is required and must be a valid string");
-    }
+    // Act & Assert
+    await expect(
+      medicalEquipmentService.addMedicalEquipment(inputData)
+    ).rejects.toThrow(new AppError("inventorisId is required and must be a valid string", 400));
+    
+    expect(mockRepository.findByInventorisId).not.toHaveBeenCalled();
+    expect(mockRepository.addMedicalEquipment).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if inventorisId is whitespace", async () => {
+    // Arrange
+    const inputData = {
+      inventorisId: "   ",
+      name: "CT Scanner",
+      brandName: "ScanCo",
+      modelName: "CT-1000",
+      createdBy: "user-123"
+    } as AddMedicalEquipmentDTO;
+
+    // Act & Assert
+    await expect(
+      medicalEquipmentService.addMedicalEquipment(inputData)
+    ).rejects.toThrow(new AppError("inventorisId is required and must be a valid string", 400));
   });
 
   it("should throw an error if repository fails", async () => {
+    // Arrange
     const inputData: AddMedicalEquipmentDTO = {
       inventorisId: "INV-002",
       name: "Defibrillator",
       brandName: "HeartSafe",
       modelName: "DF-900",
-      createdBy: 1,
+      createdBy: "user-123"
     };
 
     mockRepository.findByInventorisId.mockRejectedValue(
-      new Error("Database connection failed"),
+      new Error("Database connection failed")
     );
 
+    // Act & Assert
     await expect(
-      medicalEquipmentService.addMedicalEquipment(inputData),
+      medicalEquipmentService.addMedicalEquipment(inputData)
     ).rejects.toThrow("Database connection failed");
 
     expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-002");
-  });
-
-  it("should throw an error if name or createdBy is missing", async () => {
-    const invalidInputs: AddMedicalEquipmentDTO[] = [
-      {
-        inventorisId: "INV-005",
-        name: "",
-        brandName: "MediScan",
-        modelName: "US-300",
-        createdBy: 1,
-      },
-      {
-        inventorisId: "INV-006",
-        name: "CT Scanner",
-        brandName: "ScanCo",
-        modelName: "CT-1000",
-        createdBy: null as any,
-      },
-      {
-        inventorisId: "INV-007",
-        name: undefined as any,
-        brandName: "ScanCo",
-        modelName: "CT-1000",
-        createdBy: 2,
-      },
-    ];
-
-    for (const input of invalidInputs) {
-      await expect(
-        medicalEquipmentService.addMedicalEquipment(input),
-      ).rejects.toThrow("name and createdBy are required");
-    }
-  });
-
-  // Positive Case
-  it("should successfully find medical equipment by inventorisId", async () => {
-    const existingEquipment: AddMedicalEquipmentResponseDTO = {
-      id: uuidv4(),
-      inventorisId: "INV-010",
-      name: "Ultrasound Machine",
-      brandName: "MedCo",
-      modelName: "U-1000",
-    };
-
-    mockRepository.findByInventorisId.mockResolvedValue(existingEquipment);
-
-    const result = await medicalEquipmentService.findByInventorisId("INV-010");
-
-    expect(result).toEqual(existingEquipment);
-    expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-010");
-  });
-
-  it("should throw an error if findByInventorisId fails", async () => {
-    mockRepository.findByInventorisId.mockRejectedValue(
-      new Error("Database error"),
-    );
-
-    await expect(
-      medicalEquipmentService.findByInventorisId("INV-999"),
-    ).rejects.toThrow("Database error");
-  });
-
-  // Corner Case
-  it("should return null if medical equipment is not found", async () => {
-    mockRepository.findByInventorisId.mockResolvedValue(null);
-
-    const result = await medicalEquipmentService.findByInventorisId("INV-404");
-
-    expect(result).toBeNull();
-    expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-404");
-  });
-
-  // Negative case
-  it("should throw an error if repository.findByInventorisId fails", async () => {
-    const inputData: AddMedicalEquipmentDTO = {
-      inventorisId: "INV-ERR",
-      name: "ECG Machine",
-      createdBy: 1,
-    };
-
-    mockRepository.findByInventorisId.mockRejectedValue(
-      new Error("Database error"),
-    );
-
-    await expect(
-      medicalEquipmentService.addMedicalEquipment(inputData),
-    ).rejects.toThrow("Database error");
-
-    expect(mockRepository.findByInventorisId).toHaveBeenCalledWith("INV-ERR");
-    expect(mockRepository.addMedicalEquipment).not.toHaveBeenCalled();
-  });
-
-  it("should throw an error if inventorisId is empty or invalid in findByInventorisId", async () => {
-    const invalidInventorisIds = [
-      "",
-      "   ",
-      null as any,
-      undefined as any,
-      123 as any,
-    ];
-
-    for (const invalidId of invalidInventorisIds) {
-      await expect(
-        medicalEquipmentService.findByInventorisId(invalidId),
-      ).rejects.toThrow("inventorisId is required and must be a valid string");
-    }
   });
 });

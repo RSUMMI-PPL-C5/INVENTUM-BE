@@ -1,11 +1,14 @@
 import UserService from "../../../../src/services/user.service";
 import UserRepository from "../../../../src/repository/user.repository";
 import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/repository/user.repository");
 jest.mock("bcrypt");
+jest.mock("uuid");
 
-describe("UserService - ADD", () => {
+describe("UserService - createUser", () => {
   let userService: UserService;
   let mockUserRepository: jest.Mocked<UserRepository>;
 
@@ -14,131 +17,218 @@ describe("UserService - ADD", () => {
     mockUserRepository = new UserRepository() as jest.Mocked<UserRepository>;
     userService = new UserService();
     (userService as any).userRepository = mockUserRepository;
+
+    // Default mock for uuid
+    (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
   });
 
-  it("should add a new user successfully", async () => {
+  // POSITIVE CASES
+
+  it("should create a new user successfully", async () => {
     const mockUserData = {
       email: "user1@example.com",
       username: "user1",
       password: "password1",
       role: "USER",
       fullname: "User One",
-      createdBy: 1,
+      createdBy: "1",
+      nokar: "123",
+      waNumber: "081234567890",
+      createdOn: new Date().toISOString(),
     };
 
-    const mockCreatedUser = { id: "1", ...mockUserData, password: "hashedPassword" };
+    const mockCreatedUser = {
+      id: "generated-uuid",
+      ...mockUserData,
+      password: "hashedPassword",
+    };
+
     mockUserRepository.getUserByEmail.mockResolvedValue(null);
-    mockUserRepository.findByUsername.mockResolvedValue(null);
+    mockUserRepository.getUserByUsername.mockResolvedValue(null);
     (bcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword");
     mockUserRepository.createUser.mockResolvedValue(mockCreatedUser);
 
-    const result = await userService.addUser(mockUserData);
+    const result = await userService.createUser(mockUserData);
 
     expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
-    expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
+    expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
     expect(bcrypt.hash).toHaveBeenCalledWith("password1", 10);
-    expect(mockUserRepository.createUser).toHaveBeenCalled();
+    expect(uuidv4).toHaveBeenCalled();
+    expect(mockUserRepository.createUser).toHaveBeenCalledWith({
+      ...mockUserData,
+      id: "generated-uuid",
+      password: "hashedPassword",
+      divisi: undefined,
+    });
     expect(result).toEqual(mockCreatedUser);
   });
 
-  it("should throw an error if email is already in use", async () => {
-    const mockExistingUser = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedPassword",
-      role: "USER",
-      fullname: "User One",
-      nokar: "123",
-      divisiId: null,
-      waNumber: null,
-      createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-    };
-  
-    mockUserRepository.getUserByEmail.mockResolvedValue(mockExistingUser);
-  
-    await expect(
-      userService.addUser({ email: "user1@example.com", username: "user1", password: "password1", createdBy: 1 })
-    ).rejects.toThrow("Email already in use");
-  
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
-    expect(mockUserRepository.findByUsername).not.toHaveBeenCalled();
-  });
-
-  it("should throw an error if username is already in use", async () => {
-    const mockExistingUser = {
-      id: "1",
-      email: "user1@example.com",
-      username: "user1",
-      password: "hashedPassword",
-      role: "USER",
-      fullname: "User One",
-      nokar: "123",
-      divisiId: null,
-      waNumber: null,
-      createdBy: 1,
-      createdOn: new Date(),
-      modifiedBy: null,
-      modifiedOn: new Date(),
-      deletedBy: null,
-      deletedOn: null,
-    };
-  
-    mockUserRepository.getUserByEmail.mockResolvedValue(null);
-    mockUserRepository.findByUsername.mockResolvedValue(mockExistingUser);
-  
-    await expect(
-      userService.addUser({ email: "user1@example.com", username: "user1", password: "password1", createdBy: 1 })
-    ).rejects.toThrow("Username already in use");
-  
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
-    expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user1");
-  });
-
-  it("should add a new user with divisiId successfully", async () => {
+  it("should create a new user with divisiId successfully", async () => {
     const mockUserData = {
       email: "user2@example.com",
       username: "user2",
       password: "password2",
       role: "USER",
       fullname: "User Two",
+      createdBy: "1",
       nokar: "456",
-      waNumber: "9876543210",
-      createdBy: 1,
-      divisiId: 2, // divisiId is provided
+      waNumber: "081234567891",
+      divisiId: 2,
+      createdOn: new Date().toISOString(),
     };
-  
+
     const mockCreatedUser = {
-      id: "2",
+      id: "generated-uuid",
       ...mockUserData,
       password: "hashedPassword",
-      createdOn: new Date(),
-      modifiedOn: new Date(),
-      divisi: { connect: { id: 2 } }, // divisi is connected
     };
-  
+
     mockUserRepository.getUserByEmail.mockResolvedValue(null);
-    mockUserRepository.findByUsername.mockResolvedValue(null);
+    mockUserRepository.getUserByUsername.mockResolvedValue(null);
+    mockUserRepository.getUserByNokar.mockResolvedValue(null);
     (bcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword");
     mockUserRepository.createUser.mockResolvedValue(mockCreatedUser);
-  
-    const result = await userService.addUser(mockUserData);
-  
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user2@example.com");
-    expect(mockUserRepository.findByUsername).toHaveBeenCalledWith("user2");
-    expect(bcrypt.hash).toHaveBeenCalledWith("password2", 10);
-    expect(mockUserRepository.createUser).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: "user2@example.com",
-        username: "user2",
-        divisi: { connect: { id: 2 } }, // Ensure divisi is connected
-      })
-    );
+
+    const result = await userService.createUser(mockUserData);
+
+    expect(mockUserRepository.getUserByNokar).toHaveBeenCalledWith("456");
+    expect(mockUserRepository.createUser).toHaveBeenCalledWith({
+      ...mockUserData,
+      id: "generated-uuid",
+      password: "hashedPassword",
+      divisi: { connect: { id: 2 } },
+      divisiId: undefined,
+    });
     expect(result).toEqual(mockCreatedUser);
+  });
+
+  // NEGATIVE CASES
+
+  it("should throw an error if email is already in use", async () => {
+    const mockExistingUser = {
+      id: "123",
+      email: "test@example.com",
+      username: "testuser",
+      password: "password123",
+      role: "user",
+      fullname: "Test User",
+      nokar: "12345",
+      waNumber: "1234567890",
+      createdBy: "admin",
+      createdOn: new Date(),
+      divisiId: 1,
+      modifiedBy: null, 
+      modifiedOn: null, 
+      deletedBy: null,
+      deletedOn: null
+    };
+
+    mockUserRepository.getUserByEmail.mockResolvedValue(mockExistingUser);
+
+    const mockUserData = {
+      email: "user1@example.com",
+      username: "newuser",
+      password: "password1",
+      role: "USER",
+      fullname: "New User",
+      createdBy: "1",
+      nokar: "456",
+      waNumber: "081234567891",
+      createdOn: new Date().toISOString(),
+    };
+
+    await expect(userService.createUser(mockUserData)).rejects.toThrow(
+      new AppError("Email already in use", 400)
+    );
+
+    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
+    expect(mockUserRepository.getUserByUsername).not.toHaveBeenCalled();
+    expect(mockUserRepository.createUser).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if username is already in use", async () => {
+    const mockExistingUser = {
+      id: "1",
+      email: "existing@example.com",
+      username: "user1",
+      password: "hashedPassword",
+      role: "USER",
+      fullname: "Existing User",
+      nokar: "123",
+      waNumber: "081234567890",
+      createdBy: "1",
+      createdOn: new Date(),
+      divisiId: 1,
+      modifiedBy: null, 
+      modifiedOn: null, 
+      deletedBy: null,
+      deletedOn: null
+    };
+
+    mockUserRepository.getUserByEmail.mockResolvedValue(null);
+    mockUserRepository.getUserByUsername.mockResolvedValue(mockExistingUser);
+
+    const mockUserData = {
+      email: "new@example.com",
+      username: "user1",
+      password: "password1",
+      role: "USER",
+      fullname: "New User",
+      createdBy: "1",
+      nokar: "456",
+      waNumber: "081234567891",
+      createdOn: new Date().toISOString(),
+    };
+
+    await expect(userService.createUser(mockUserData)).rejects.toThrow(
+      new AppError("Username already in use", 400)
+    );
+
+    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("new@example.com");
+    expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
+    expect(mockUserRepository.createUser).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error if nokar is already in use", async () => {
+    const mockExistingUser = {
+      id: "1",
+      email: "existing@example.com",
+      username: "existinguser",
+      password: "hashedPassword",
+      role: "USER",
+      fullname: "Existing User",
+      nokar: "123456",
+      waNumber: "081234567890",
+      createdBy: "1",
+      createdOn: new Date(),
+      divisiId: 1,
+      modifiedBy: null, 
+      modifiedOn: null, 
+      deletedBy: null,
+      deletedOn: null
+    };
+
+    mockUserRepository.getUserByEmail.mockResolvedValue(null);
+    mockUserRepository.getUserByUsername.mockResolvedValue(null);
+    mockUserRepository.getUserByNokar.mockResolvedValue(mockExistingUser);
+
+    const mockUserData = {
+      email: "new@example.com",
+      username: "newuser",
+      password: "password1",
+      role: "USER",
+      fullname: "New User",
+      createdBy: "1",
+      nokar: "123456",
+      waNumber: "081234567891",
+      createdOn: new Date().toISOString(),
+    };
+
+    await expect(userService.createUser(mockUserData)).rejects.toThrow(
+      new AppError("Nokar already in use", 400)
+    );
+
+    expect(mockUserRepository.getUserByNokar).toHaveBeenCalledWith("123456");
+    expect(mockUserRepository.createUser).not.toHaveBeenCalled();
   });
 });
