@@ -12,7 +12,7 @@ export interface AddUserDTO {
     waNumber: string;
     role: string;
     nokar: string;
-    divisiId: number;
+    divisiId?: number;
     createdBy: string;
     createdOn: string;
 }

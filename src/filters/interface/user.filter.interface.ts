@@ -6,9 +6,3 @@ export interface UserFilterOptions {
   modifiedOnStart?: Date;
   modifiedOnEnd?: Date;
 }
-
-export interface PaginationOptions {
-    page: number;
-    limit: number;
-    skip?: number;
-}

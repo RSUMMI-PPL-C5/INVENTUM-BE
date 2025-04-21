@@ -1,4 +1,5 @@
-import { PaginationOptions, UserFilterOptions } from "../../filters/interface/user.filter.interface";
+import { PaginationOptions } from "../../filters/interface/pagination.interface";
+import { UserFilterOptions } from "../../filters/interface/user.filter.interface";
 import { AddUserDTO, AddUserResponseDTO, UserDTO } from "../../dto/user.dto";
 
 export interface IUserService {
@@ -17,6 +18,6 @@ export interface IUserService {
       };
     }>;
     getUserById(id: string): Promise<UserDTO | null>;
-    updateUser(id: string, data: Partial<UserDTO>): Promise<UserDTO | null>;
-    deleteUser(id: string): Promise<UserDTO | null>;
+    updateUser(id: string, data: Partial<UserDTO>, modifierId: string): Promise<UserDTO | null>;
+    deleteUser(id: string, deletedBy?: string): Promise<UserDTO | null>;
 }

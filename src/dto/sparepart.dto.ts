@@ -18,10 +18,10 @@ export interface SparepartsDTO {
   price?: number | null;
   toolLocation?: string | null;
   toolDate?: string | null;
-  createdBy: number;
+  createdBy: string;
   createdOn?: Date | null;
-  modifiedBy?: number | null;
+  modifiedBy?: string | null;
   modifiedOn: Date;
-  deletedBy?: number | null;
+  deletedBy?: string | null;
   deletedOn?: Date | null;
 }

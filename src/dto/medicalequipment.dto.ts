@@ -11,7 +11,8 @@ export interface AddMedicalEquipmentDTO {
   purchasePrice?: number;
   status?: string;
   vendor?: string;
-  createdBy: number;
+  createdBy: string;
+  createdOn?: Date;
 }
 
 export interface AddMedicalEquipmentResponseDTO {
@@ -26,7 +27,10 @@ export interface UpdateMedicalEquipmentDTO {
   name?: string;
   brandName?: string;
   modelName?: string;
-  modifiedBy: number;
+  modifiedBy: string;
+  modifiedOn?: Date;
   purchaseDate?: Date;
   purchasePrice?: number;
+  status?: string;
+  vendor?: string;
 }

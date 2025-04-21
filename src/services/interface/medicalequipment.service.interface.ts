@@ -1,4 +1,3 @@
-import { MedicalEquipment } from "@prisma/client";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
@@ -6,6 +5,7 @@ import {
   MedicalEquipmentDTO,
 } from "../../dto/medicalequipment.dto";
 import { MedicalEquipmentFilterOptions } from "../../filters/interface/medicalequipment.filter.interface";
+import { PaginationOptions } from "../../filters/interface/pagination.interface";
 
 export interface IMedicalEquipmentService {
   // Create
@@ -13,28 +13,33 @@ export interface IMedicalEquipmentService {
     data: AddMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO>;
 
-  // Read
-  findByInventorisId(
-    inventorisId: string,
-  ): Promise<AddMedicalEquipmentResponseDTO | null>;
-
-  getMedicalEquipment(): Promise<MedicalEquipmentDTO[]>;
+  getMedicalEquipment(
+    search?: string,
+    filters?: MedicalEquipmentFilterOptions,
+    pagination?: PaginationOptions
+  ): Promise<{
+    data: MedicalEquipmentDTO[],
+    meta: {
+      total: number,
+      page: number,
+      limit: number,
+      totalPages: number
+    }
+  }>;
 
   getMedicalEquipmentById(
     id: string,
   ): Promise<MedicalEquipmentDTO | null>;
-
-  getFilteredMedicalEquipment(
-    filters: MedicalEquipmentFilterOptions,
-  ): Promise<MedicalEquipment[]>;
-
-  searchMedicalEquipment(
-    name: string,
-  ): Promise<MedicalEquipment[]>;
 
   // Update
   updateMedicalEquipment(
     id: string,
     equipmentData: UpdateMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO | null>;
+  
+  // Delete
+  deleteMedicalEquipment(
+    id: string,
+    deletedById?: string
+  ): Promise<MedicalEquipmentDTO | null>;
 }

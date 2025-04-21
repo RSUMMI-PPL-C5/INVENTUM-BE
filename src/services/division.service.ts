@@ -12,9 +12,7 @@ class DivisionService implements IDivisionService {
   }
 
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
-    if (!data.parentId) {
-      data.parentId = 1;
-    }
+    data.parentId ??= 1;
 
     const parentExists = await this.divisionRepository.getDivisionById(
       data.parentId,

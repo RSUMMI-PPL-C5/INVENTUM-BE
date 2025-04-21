@@ -1,34 +1,44 @@
 import { PrismaClient } from "@prisma/client";
 import { UserDTO, AddUserResponseDTO } from "../dto/user.dto";
-
+import { getJakartaTime } from "../utils/date.utils";
 import prisma from "../configs/db.config";
-import { UserFilterOptions, PaginationOptions } from "../filters/interface/user.filter.interface";
+import { UserFilterOptions } from "../filters/interface/user.filter.interface";
+import { PaginationOptions } from "../filters/interface/pagination.interface";
 
 class UserRepository {
-	private readonly prisma: PrismaClient;
+    private readonly prisma: PrismaClient;
 
-	constructor() {
-		this.prisma = prisma;
-	}
+    constructor() {
+        this.prisma = prisma;
+    }
 
     public async createUser(userData: any): Promise<AddUserResponseDTO> {
-		const newUser = await this.prisma.user.create({
-			data: userData,
-			select: {
-				id: true,
-				email: true,
-				username: true,
-			},
-		});
+        const jakartaTime = getJakartaTime();
+        const newUser = await this.prisma.user.create({
+            data: {
+                ...userData,
+                createdOn: jakartaTime,
+                modifiedOn: jakartaTime,
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                createdOn: true,
+                createdBy: true,
+            },
+        });
 
-		return newUser;
-	}
+        return newUser;
+    }
 
   private buildWhereClause(
     search?: string,
     filters?: UserFilterOptions
   ): any {
-    const where: any = {};
+    const where: any = {
+      deletedOn: null, // Filter to exclude soft deleted records
+    };
   
     if (search) {
       where.OR = [
@@ -47,33 +57,33 @@ class UserRepository {
         where.divisiId = { in: filters.divisiId };
       }
   
-      this.addCreatedAtFilter(where, filters);
-      this.addUpdatedAtFilter(where, filters);
+      this.addCreatedOnFilter(where, filters);
+      this.addModifiedOnFilter(where, filters);
     }
   
     return where;
   }
   
-  private addCreatedAtFilter(where: any, filters: UserFilterOptions): void {
+  private addCreatedOnFilter(where: any, filters: UserFilterOptions): void {
     if (filters.createdOnStart || filters.createdOnEnd) {
-      where.createdAt = {};
+      where.createdOn = {};
       if (filters.createdOnStart) {
-        where.createdAt.gte = new Date(filters.createdOnStart);
+        where.createdOn.gte = new Date(filters.createdOnStart);
       }
       if (filters.createdOnEnd) {
-        where.createdAt.lte = new Date(filters.createdOnEnd);
+        where.createdOn.lte = new Date(filters.createdOnEnd);
       }
     }
   }
   
-  private addUpdatedAtFilter(where: any, filters: UserFilterOptions): void {
+  private addModifiedOnFilter(where: any, filters: UserFilterOptions): void {
     if (filters.modifiedOnStart || filters.modifiedOnEnd) {
-      where.updatedAt = {};
+      where.modifiedOn = {};
       if (filters.modifiedOnStart) {
-        where.updatedAt.gte = new Date(filters.modifiedOnStart);
+        where.modifiedOn.gte = new Date(filters.modifiedOnStart);
       }
       if (filters.modifiedOnEnd) {
-        where.updatedAt.lte = new Date(filters.modifiedOnEnd);
+        where.modifiedOn.lte = new Date(filters.modifiedOnEnd);
       }
     }
   }
@@ -106,9 +116,12 @@ class UserRepository {
     return { users, total };
   }
 
-	public async getUserById(id: string): Promise<UserDTO | null> {
-        const user = await this.prisma.user.findUnique({
-            where: { id },
+    public async getUserById(id: string): Promise<UserDTO | null> {
+        const user = await this.prisma.user.findFirst({
+            where: { 
+                id,
+                deletedOn: null
+            },
             include: {
                 divisi: true
             }
@@ -124,33 +137,55 @@ class UserRepository {
         };
     }
 
-	public async getUserByEmail(email: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { email },
-		});
-	}
+    public async getUserByEmail(email: string): Promise<UserDTO | null> {
+        return await this.prisma.user.findFirst({
+            where: { 
+                email,
+                deletedOn: null
+            },
+        });
+    }
 
-	public async getUserByUsername(username: string): Promise<UserDTO | null> {
-		return await this.prisma.user.findUnique({
-			where: { username },
-		});
-	}
+    public async getUserByUsername(username: string): Promise<UserDTO | null> {
+        return await this.prisma.user.findFirst({
+            where: { 
+                username,
+                deletedOn: null
+            },
+        });
+    }
 
-	public async updateUser(
-		id: string,
-		data: Partial<UserDTO>
-	): Promise<UserDTO | null> {
-		return await this.prisma.user.update({
-			where: { id },
-			data,
-		});
-	}
+    public async getUserByNokar(nokar: string): Promise<UserDTO | null> {
+        return await this.prisma.user.findFirst({
+            where: { 
+                nokar,
+                deletedOn: null
+            },
+        });
+    }
 
-	public async deleteUser(id: string): Promise<UserDTO | null> {
-		return await this.prisma.user.delete({
-			where: { id },
-		});
-	}
+    public async updateUser(
+        id: string,
+        data: Partial<UserDTO>
+    ): Promise<UserDTO | null> {
+        return await this.prisma.user.update({
+            where: { id },
+            data: {
+                ...data,
+                modifiedOn: getJakartaTime(),
+            },
+        });
+    }
+
+    public async deleteUser(id: string, deletedBy?: string): Promise<UserDTO | null> {
+      return await this.prisma.user.update({
+          where: { id },
+          data: { 
+              deletedOn: getJakartaTime(),
+              deletedBy: deletedBy,
+          },
+      });
+  }
 }
 
 export default UserRepository;

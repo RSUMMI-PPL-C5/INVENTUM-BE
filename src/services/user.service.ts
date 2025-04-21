@@ -1,7 +1,7 @@
-import { Prisma } from "@prisma/client";
 import { IUserService } from "./interface/user.service.interface";
 import { UserDTO, AddUserDTO, AddUserResponseDTO } from "../dto/user.dto";
-import { UserFilterOptions, PaginationOptions} from "../filters/interface/user.filter.interface";
+import { UserFilterOptions } from "../filters/interface/user.filter.interface";
+import { PaginationOptions } from "../filters/interface/pagination.interface";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import UserRepository from "../repository/user.repository";
@@ -15,33 +15,38 @@ class UserService implements IUserService {
   }
 
   public async createUser(userData: AddUserDTO): Promise<AddUserResponseDTO> {
-
     const emailExists = await this.userRepository.getUserByEmail(userData.email);
     if (emailExists) {
-      throw new AppError("Email already in use", 400);
-    }
-    
-    const usernameExists = await this.userRepository.getUserByUsername(userData.username);
-    if (usernameExists) {
-      throw new AppError("Username already in use", 400);
+        throw new AppError("Email already in use", 400);
     }
 
+    const usernameExists = await this.userRepository.getUserByUsername(userData.username);
+    if (usernameExists) {
+        throw new AppError("Username already in use", 400);
+    }
+    
+    if (userData.nokar && userData.nokar !== "") {
+      const nokarExists = await this.userRepository.getUserByNokar(userData.nokar);
+      if (nokarExists) {
+          throw new AppError("Nokar already in use", 400);
+      }
+  }
+
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    const {password, divisiId, ...data} = userData
-    
-    return await this.userRepository.createUser(
-        {
-            ...data,
-            id: uuidv4(), 
-            password: hashedPassword,
-            divisi: {
-                connect: {
-                    id: userData.divisiId,
-                }
-            }, 
-        }
-    );
+
+    const { password, divisiId, ...data } = userData;
+    return await this.userRepository.createUser({
+        ...data,
+        id: uuidv4(),
+        password: hashedPassword,
+        divisi: divisiId
+            ? {
+                  connect: {
+                      id: divisiId,
+                  },
+              }
+            : undefined,
+    });
   }
 
   public async getUsers(
@@ -57,8 +62,8 @@ class UserService implements IUserService {
       data: users,
       meta: {
         total,
-        page: pagination?.page || 1,
-        limit: pagination?.limit || users.length,
+        page: pagination?.page ?? 1,
+        limit: pagination?.limit ?? users.length,
         totalPages
       }
     };
@@ -68,40 +73,35 @@ class UserService implements IUserService {
     return await this.userRepository.getUserById(id);
   }
 
-  private validateUserData(data: Partial<UserDTO>): boolean {
-    const { fullname, role, divisiId, modifiedBy } = data;
-    if (modifiedBy === undefined) return false;
-    if (!fullname || fullname.length < 3) return false;
-    return true;
-  }
-
-  public async updateUser(id: string, data: Partial<UserDTO>): Promise<UserDTO | null> {
+  public async updateUser(id: string, data: Partial<UserDTO>, modifierId: string): Promise<UserDTO | null> {
     const user = await this.userRepository.getUserById(id);
-    
-    if (!user || !this.validateUserData(data)) {
-      return null;
+
+    if (!user) {
+        return null;
     }
 
-    const { fullname, role, password, divisiId, waNumber, modifiedBy, email } = data;
+    const { fullname, role, password, divisiId, waNumber, email, nokar } = data;
+
     const updatedData: Partial<UserDTO> = {
-      fullname,
-      role,
-      divisiId: Number(divisiId),
-      waNumber,
-      modifiedBy,
-      modifiedOn: new Date(),
-      email,
+        ...(fullname && { fullname }),
+        ...(role && { role }),
+        ...(divisiId !== undefined && { divisiId: Number(divisiId) }),
+        ...(waNumber && { waNumber }),
+        ...(email && { email }),
+        ...(nokar && { nokar }),
+        modifiedBy: modifierId,
     };
 
+    // Hash password if provided
     if (password !== undefined) {
-      updatedData.password = await bcrypt.hash(password, 10);
+        updatedData.password = await bcrypt.hash(password, 10);
     }
 
     return await this.userRepository.updateUser(id, updatedData);
   }
 
-  public async deleteUser(id: string): Promise<UserDTO | null> {
-    return await this.userRepository.deleteUser(id);
+  public async deleteUser(id: string, deletedBy?: string): Promise<UserDTO | null> {
+    return await this.userRepository.deleteUser(id, deletedBy);
   }
 }
 

@@ -1,33 +1,5 @@
-import { query, ValidationChain } from "express-validator";
-
-/**
- * Creates a date field validation chain
- * @param fieldName Name of the date field
- * @param isEndDate Whether this is an end date field (to set time to end of day)
- * @returns ValidationChain for the date field
- */
-
-const createDateValidation = (
-  fieldName: string,
-  isEndDate: boolean,
-): ValidationChain => {
-  const chain = query(fieldName)
-    .optional()
-    .isISO8601()
-    .withMessage(`${fieldName} must be a valid ISO date`);
-
-  if (isEndDate) {
-    return chain.customSanitizer((value) => {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        date.setUTCHours(23, 59, 59, 999);
-      }
-      return date;
-    });
-  } else {
-    return chain.customSanitizer((value) => new Date(value));
-  }
-};
+import { query } from "express-validator";
+import { toJakartaDate } from "../utils/date.utils";
 
 export const medicalEquipmentFilterQueryValidation = [
   query("status")
@@ -43,13 +15,41 @@ export const medicalEquipmentFilterQueryValidation = [
         ["Active", "Maintenance", "Inactive"].includes(status),
       ),
     )
-    .withMessage("status must contain Active, Maintenance, Inactive"),
+    .withMessage("status must contain Active, Maintenance, or Inactive"),
 
-  // Date fields using the helper function
-  createDateValidation("createdOnStart", false),
-  createDateValidation("createdOnEnd", true),
-  createDateValidation("modifiedOnStart", false),
-  createDateValidation("modifiedOnEnd", true),
-  createDateValidation("purchaseDateStart", false),
-  createDateValidation("purchaseDateEnd", true),
+  query("purchaseDateStart")
+    .optional()
+    .isISO8601()
+    .withMessage("purchaseDateStart must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value)),
+
+  query("purchaseDateEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("purchaseDateEnd must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value, true)),
+
+  query("createdOnStart")
+    .optional()
+    .isISO8601()
+    .withMessage("createdOnStart must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value)),
+
+  query("createdOnEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("createdOnEnd must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value, true)),
+
+  query("modifiedOnStart")
+    .optional()
+    .isISO8601()
+    .withMessage("modifiedOnStart must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value)),
+
+  query("modifiedOnEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("modifiedOnEnd must be a valid ISO date")
+    .customSanitizer((value) => toJakartaDate(value, true)),
 ];
