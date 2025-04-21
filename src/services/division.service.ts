@@ -12,36 +12,26 @@ class DivisionService implements IDivisionService {
   }
 
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
-    data.parentId ??= 1;
-
-    const parentExists = await this.divisionRepository.getDivisionById(
-      data.parentId,
-    );
-
-    if (!parentExists) {
-      throw new Error("Parent divisi not found");
+    if (data.parentId === null || data.parentId === undefined) {
+      data.parentId = null;
+    } else {
+      const parentExists = await this.divisionRepository.getDivisionById(data.parentId);
+      if (!parentExists) {
+        throw new Error("Parent divisi not found");
+      }
     }
-
+  
     return await this.divisionRepository.addDivision(data);
   }
 
-  /**
-   * Get all divisions as a flat list
-   */
   public async getAllDivisions(): Promise<DivisionDTO[]> {
     return await this.divisionRepository.getAllDivisions();
   }
 
-  /**
-   * Get hierarchical structure of divisions
-   */
   public async getDivisionsHierarchy(): Promise<DivisionWithChildrenDTO[]> {
     return await this.divisionRepository.getDivisionsHierarchy();
   }
 
-  /**
-   * Get divisions with their user counts
-   */
   public async getDivisionsWithUserCount(): Promise<
     Array<DivisionDTO & { userCount: number }>
   > {
@@ -79,7 +69,6 @@ class DivisionService implements IDivisionService {
       }
     }
 
-    // Update the division
     try {
       return await this.divisionRepository.updateDivision(id, data);
     } catch (error) {
