@@ -24,6 +24,7 @@ model User {
   deletedBy  String?
   deletedOn  DateTime?
   requests   Request[]
+  comments   Comment[]
   divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
 
   @@index([divisiId], map: "User_divisiId_fkey")
@@ -121,20 +122,26 @@ model EquipmentSpareparts {
   @@index([sparepartId], map: "EquipmentSpareparts_sparepartId_fkey")
 }
 
+enum RequestType{
+  MAINTENANCE
+  CALIBRATION
+}
+
 model Request {
-  id               String       @id
+  id               String       @id @unique
   userId           String
   medicalEquipment String
   complaint        String?
   submissionDate   DateTime
   status           String       @default("Pending")
-  createdBy        Int
+  createdBy        String
   createdOn        DateTime?
-  modifiedBy       Int?
+  modifiedBy       String?
   modifiedOn       DateTime     @default(now())
   notifications    Notifikasi[]
+  comments         Comment[]
   user             User         @relation(fields: [userId], references: [id])
-
+  requestType      RequestType  @default(MAINTENANCE)
   @@index([userId], map: "Request_userId_fkey")
 }
 
@@ -148,4 +155,17 @@ model Notifikasi {
   request   Request? @relation(fields: [requestId], references: [id])
 
   @@index([requestId], map: "Notifikasi_requestId_fkey")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  text       String   @db.Text
+  userId     String
+  requestId  String?
+  createdAt  DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  request    Request? @relation(fields: [requestId], references: [id])
+  @@index([userId], map: "Komentar_userId_fkey")
+  @@index([requestId], map: "Komentar_requestId_fkey")
 }
