@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @unique
+  email      String      @unique
+  username   String      @unique
+  password   String
+  role       String
+  fullname   String
+  nokar      String      @default("")
+  divisiId   Int?
+  waNumber   String
+  createdBy  String?
+  createdOn  DateTime?
+  modifiedBy String?
+  modifiedOn DateTime?     @default(now())
+  deletedBy  String?
+  deletedOn  DateTime?
+  requests   Request[]
+  comments   Comment[]
+  divisi     ListDivisi? @relation(fields: [divisiId], references: [id])
+
+  @@index([divisiId], map: "User_divisiId_fkey")
+}
+
+model ListDivisi {
+  id       Int          @id @default(autoincrement())
+  divisi   String?       @unique
+  parentId Int?
+  parent   ListDivisi?  @relation("ParentChild", fields: [parentId], references: [id])
+  children ListDivisi[] @relation("ParentChild")
+  users    User[]
+
+  @@index([parentId], map: "ListDivisi_parentId_fkey")
+}
+
+model MedicalEquipment {
+  id                String            @id @unique
+  inventorisId      String                @unique
+  name              String
+  brandName         String?
+  modelName         String?
+  purchaseDate      DateTime?
+  purchasePrice     Int?
+  status            String                @default("Active")
+  vendor            String?
+  createdBy         String
+  createdOn         DateTime?
+  modifiedBy        String?
+  modifiedOn        DateTime              @default(now())
+  deletedBy         String?
+  deletedOn         DateTime?
+  spareparts        EquipmentSpareparts[]
+  relocationHistory RelocationHistory[]
+}
+
+model RelocationHistory {
+  id                 String      @id @unique
+  medicalEquipmentId String
+  initLocation       String
+  currentLocation    String
+  requestDate        String
+  shiftReason        String?
+  createdBy          Int
+  createdOn          DateTime?
+  modifiedBy         Int?
+  modifiedOn         DateTime         @default(now())
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([medicalEquipmentId], map: "RelocationHistory_medicalEquipmentId_fkey")
+}
+
+model Spareparts {
+  id              String                @id @unique
+  partsName       String
+  purchaseDate    DateTime?
+  price           Int?
+  toolLocation    String?
+  toolDate        String?
+  createdBy       String
+  createdOn       DateTime?
+  modifiedBy      String?
+  modifiedOn      DateTime              @default(now())
+  deletedBy       String?
+  deletedOn       DateTime?
+  equipment       EquipmentSpareparts[]
+  partsManagement PartsManagement[]
+}
+
+model PartsManagement {
+  id                   String     @id @unique
+  sparepartId          String
+  replacementComponent String
+  replacementDate      DateTime
+  availabilityCost     Int?
+  createdBy            Int
+  createdOn            DateTime?
+  modifiedBy           Int?
+  modifiedOn           DateTime   @default(now())
+  sparepart            Spareparts @relation(fields: [sparepartId], references: [id])
+
+  @@index([sparepartId], map: "PartsManagement_sparepartId_fkey")
+}
+
+model EquipmentSpareparts {
+  id          String      @id @unique
+  equipmentId String
+  sparepartId String
+  createdBy   Int
+  createdOn   DateTime?
+  equipment   MedicalEquipment @relation(fields: [equipmentId], references: [id])
+  sparepart   Spareparts       @relation(fields: [sparepartId], references: [id])
+
+  @@unique([equipmentId, sparepartId])
+  @@index([sparepartId], map: "EquipmentSpareparts_sparepartId_fkey")
+}
+
+enum RequestType{
+  MAINTENANCE
+  CALIBRATION
+}
+
+model Request {
+  id               String       @id @unique
+  userId           String
+  medicalEquipment String
+  complaint        String?
+  submissionDate   DateTime
+  status           String       @default("Pending")
+  createdBy        String
+  createdOn        DateTime?
+  modifiedBy       String?
+  modifiedOn       DateTime     @default(now())
+  notifications    Notifikasi[]
+  comments         Comment[]
+  user             User         @relation(fields: [userId], references: [id])
+  requestType      RequestType  @default(MAINTENANCE)
+  @@index([userId], map: "Request_userId_fkey")
+}
+
+model Notifikasi {
+  id        String   @id
+  userId    String?
+  requestId String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdOn DateTime @default(now())
+  request   Request? @relation(fields: [requestId], references: [id])
+
+  @@index([requestId], map: "Notifikasi_requestId_fkey")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  text       String   @db.Text
+  userId     String
+  requestId  String?
+  createdAt  DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  request    Request? @relation(fields: [requestId], references: [id])
+  @@index([userId], map: "Komentar_userId_fkey")
+  @@index([requestId], map: "Komentar_requestId_fkey")
+}
