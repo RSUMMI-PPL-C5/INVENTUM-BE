@@ -25,7 +25,7 @@ jobs:
       - name: Run SonarQube analysis
         run: |
           npx sonarqube-scanner \
-            -Dsonar.projectKey=InventoryManagement-BE \
+            -Dsonar.projectKey=INVENTUM-BE-KEY \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=src \
