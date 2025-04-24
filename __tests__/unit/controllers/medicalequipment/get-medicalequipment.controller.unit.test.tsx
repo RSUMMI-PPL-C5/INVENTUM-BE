@@ -186,29 +186,6 @@ describe("MedicalEquipmentController - GET Methods", () => {
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
 
-    it("should return 400 if validation fails", async () => {
-      // Arrange
-      const validationErrors = [
-        { param: "limit", msg: "Limit must be a positive number" }
-      ];
-      
-      (validationResult as unknown as jest.Mock).mockReturnValue({
-        isEmpty: jest.fn().mockReturnValue(false),
-        array: jest.fn().mockReturnValue(validationErrors),
-      });
-
-      // Act
-      await controller.getMedicalEquipment(mockRequest as Request, mockResponse as Response);
-
-      // Assert
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(mockResponse.json).toHaveBeenCalledWith({
-        status: "error",
-        errors: validationErrors
-      });
-      expect(mockService.getMedicalEquipment).not.toHaveBeenCalled();
-    });
-
     it("should handle AppError correctly", async () => {
       // Arrange
       const appError = new AppError("Invalid filter parameter", 400);

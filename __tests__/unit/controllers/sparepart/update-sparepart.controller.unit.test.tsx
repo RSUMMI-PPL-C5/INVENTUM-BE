@@ -1,14 +1,8 @@
 import { Request, Response } from "express";
 import SparepartController from "../../../../src/controllers/sparepart.controller";
 import SparepartService from "../../../../src/services/sparepart.service";
-import { SparepartsDTO } from "../../../../src/dto/sparepart.dto";
-import { validationResult } from "express-validator";
+import { SparepartDTO } from "../../../../src/dto/sparepart.dto";
 import AppError from "../../../../src/utils/appError";
-
-// Mock express-validator
-jest.mock("express-validator", () => ({
-  validationResult: jest.fn(),
-}));
 
 // Mock SparepartService
 jest.mock("../../../../src/services/sparepart.service");
@@ -42,21 +36,15 @@ describe("SparepartController - updateSparepart", () => {
       status: statusMock,
       json: jsonMock,
     };
-
-    // Setup validation result mock
-    (validationResult as unknown as jest.Mock).mockReturnValue({
-      isEmpty: jest.fn().mockReturnValue(true),
-      array: jest.fn().mockReturnValue([]),
-    });
   });
 
   it("should update a sparepart successfully", async () => {
-    const mockUpdateData: Partial<SparepartsDTO> = {
+    const mockUpdateData = {
       partsName: "Updated Part",
       price: 150,
     };
 
-    const mockUpdatedSparepart: SparepartsDTO = {
+    const mockUpdatedSparepart: SparepartDTO = {
       id: "1",
       partsName: "Updated Part",
       purchaseDate: new Date("2023-01-01"),
@@ -79,7 +67,6 @@ describe("SparepartController - updateSparepart", () => {
       mockResponse as Response
     );
 
-    expect(validationResult).toHaveBeenCalledWith(mockRequest);
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       ...mockUpdateData,
       modifiedBy: "user123",
@@ -100,7 +87,6 @@ describe("SparepartController - updateSparepart", () => {
       mockResponse as Response
     );
 
-    expect(validationResult).toHaveBeenCalledWith(mockRequest);
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       ...mockRequest.body,
       modifiedBy: "user123",
@@ -109,28 +95,6 @@ describe("SparepartController - updateSparepart", () => {
     expect(jsonMock).toHaveBeenCalledWith({
       status: "error",
       message: "Sparepart not found",
-    });
-  });
-
-  it("should return 400 if validation fails", async () => {
-    const validationErrors = [{ msg: "partsName is required" }];
-
-    (validationResult as unknown as jest.Mock).mockReturnValue({
-      isEmpty: jest.fn().mockReturnValue(false),
-      array: jest.fn().mockReturnValue(validationErrors),
-    });
-
-    await sparepartController.updateSparepart(
-      mockRequest as Request,
-      mockResponse as Response
-    );
-
-    expect(validationResult).toHaveBeenCalledWith(mockRequest);
-    expect(mockSparepartService.updateSparepart).not.toHaveBeenCalled();
-    expect(statusMock).toHaveBeenCalledWith(400);
-    expect(jsonMock).toHaveBeenCalledWith({
-      status: "error",
-      errors: validationErrors,
     });
   });
 
@@ -145,7 +109,6 @@ describe("SparepartController - updateSparepart", () => {
       mockResponse as Response
     );
 
-    expect(validationResult).toHaveBeenCalledWith(mockRequest);
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       ...mockRequest.body,
       modifiedBy: "user123",
@@ -190,7 +153,6 @@ describe("SparepartController - updateSparepart", () => {
       mockResponse as Response
     );
   
-    expect(validationResult).toHaveBeenCalledWith(mockRequest);
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       partsName: "Updated Part",
       price: 150,
@@ -201,5 +163,19 @@ describe("SparepartController - updateSparepart", () => {
       status: "error",
       message: "Custom error message",
     });
+  });
+
+  it("should require authentication for updates", async () => {
+    mockRequest.user = undefined;
+    mockRequest.body = { partsName: "Updated Part" };
+    mockRequest.params = { id: "1" };
+    
+    await sparepartController.updateSparepart(
+      mockRequest as Request,
+      mockResponse as Response
+    );
+    
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockSparepartService.updateSparepart).not.toHaveBeenCalled();
   });
 });

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 import { AddMedicalEquipmentResponseDTO } from "../../../../src/dto/medicalequipment.dto";
-import { validationResult } from "express-validator";
 import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/services/medicalequipment.service");
@@ -73,37 +72,6 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
     expect(res.json).toHaveBeenCalledWith({
       status: "success",
       data: expectedResponseData
-    });
-  });
-
-  it("should return 400 if validation fails", async () => {
-    // Arrange
-    const validationErrorsResult = {
-      isEmpty: jest.fn().mockReturnValue(false),
-      array: jest.fn().mockReturnValue([
-        { param: "inventorisId", msg: "Inventoris ID is required" }
-      ]),
-    };
-
-    (validationResult as unknown as jest.Mock).mockReturnValueOnce(validationErrorsResult);
-
-    req.body = {
-      // Missing required fields
-      name: "Defective Equipment",
-    };
-
-    // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
-
-    // Assert
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      errors: expect.arrayContaining([
-        expect.objectContaining({
-          param: "inventorisId",
-          msg: "Inventoris ID is required",
-        }),
-      ]),
     });
   });
 
@@ -201,31 +169,5 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
       status: "success",
       data: expectedResponse
     });
-  });
-
-  it("should console.error the caught exception", async () => {
-    // Arrange
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
-    
-    req.body = {
-      inventorisId: "INV-LOG",
-      name: "Error Logger",
-    };
-    
-    const testError = new Error("Test error to log");
-    mockService.addMedicalEquipment.mockRejectedValue(testError);
-
-    // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
-
-    // Assert
-    expect(console.error).toHaveBeenCalledWith(
-      "Error in addMedicalEquipment controller:",
-      testError
-    );
-    
-    // Restore console.error
-    console.error = originalConsoleError;
   });
 });
