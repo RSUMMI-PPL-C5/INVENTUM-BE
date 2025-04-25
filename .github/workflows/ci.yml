@@ -25,7 +25,7 @@ jobs:
         run: npm ci # Using 'npm ci' instead of 'npm install' for more reliable CI builds
 
       - name: Run linting
-        run: npm run lint # Add this if you have linting configured
+        run: npm run lint 
 
       - name: Run Jest tests with coverage
         run: npm run test -- --coverage
@@ -37,7 +37,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=INVENTUM-BE-KEY
+            -Dsonar.projectKey=INVENTUM-BE
             -Dsonar.projectName=INVENTUM-BE
             -Dsonar.sources=src
             -Dsonar.tests=__tests__
