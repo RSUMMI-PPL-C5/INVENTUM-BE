@@ -3,10 +3,10 @@ name: Dependency Scanning
 on:
   push:
     branches:
-      - '*'
-      - 'chore/*' # must be deleted later
+      - "*"
+      - "chore/*" # must be deleted later
   schedule:
-    - cron: '0 0 * * 0'  # Setiap Minggu
+    - cron: "0 0 * * 0" # Setiap Minggu
 
 jobs:
   dependency-scanning:

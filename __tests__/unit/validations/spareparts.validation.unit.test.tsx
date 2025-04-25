@@ -1,23 +1,26 @@
 import { validationResult } from "express-validator";
-import { addSparepartValidation, updateSparepartValidation } from "../../../src/validations/spareparts.validation";
+import {
+  addSparepartValidation,
+  updateSparepartValidation,
+} from "../../../src/validations/spareparts.validation";
 
 const runValidation = async (validation: any[], body: any) => {
-    const req = {
-      body,
-      params: {},
-      query: {},
-      cookies: {},
-      headers: {},
-      get: jest.fn(),
-    };
-    const res = {};
-    const next = jest.fn();
-    
-    for (const rule of validation) {
-      await rule.run(req, res, next);
-    }
-    return validationResult(req);
+  const req = {
+    body,
+    params: {},
+    query: {},
+    cookies: {},
+    headers: {},
+    get: jest.fn(),
   };
+  const res = {};
+  const next = jest.fn();
+
+  for (const rule of validation) {
+    await rule.run(req, res, next);
+  }
+  return validationResult(req);
+};
 
 describe("addSparepartValidation", () => {
   it("should pass with valid data", async () => {
@@ -35,8 +38,8 @@ describe("addSparepartValidation", () => {
     const result = await runValidation(addSparepartValidation, {});
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-        expect.objectContaining({ path: "partsName" })
-      );
+      expect.objectContaining({ path: "partsName" }),
+    );
   });
 
   it("should fail if purchaseDate is in the future", async () => {
@@ -47,7 +50,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Purchase date cannot be in the future" })
+      expect.objectContaining({ msg: "Purchase date cannot be in the future" }),
     );
   });
 
@@ -58,7 +61,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Purchase date must be a valid date" })
+      expect.objectContaining({ msg: "Purchase date must be a valid date" }),
     );
   });
 
@@ -69,7 +72,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Price cannot be negative" })
+      expect.objectContaining({ msg: "Price cannot be negative" }),
     );
   });
 
@@ -80,7 +83,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Price must be a number" })
+      expect.objectContaining({ msg: "Price must be a number" }),
     );
   });
 
@@ -91,7 +94,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Tool location must be a string" })
+      expect.objectContaining({ msg: "Tool location must be a string" }),
     );
   });
 
@@ -102,7 +105,7 @@ describe("addSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Tool date must be a valid date" })
+      expect.objectContaining({ msg: "Tool date must be a valid date" }),
     );
   });
 });
@@ -130,7 +133,9 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Sparepart name cannot be empty if provided" })
+      expect.objectContaining({
+        msg: "Sparepart name cannot be empty if provided",
+      }),
     );
   });
 
@@ -141,7 +146,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Purchase date cannot be in the future" })
+      expect.objectContaining({ msg: "Purchase date cannot be in the future" }),
     );
   });
 
@@ -151,7 +156,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Purchase date must be a valid date" })
+      expect.objectContaining({ msg: "Purchase date must be a valid date" }),
     );
   });
 
@@ -161,7 +166,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Price cannot be negative" })
+      expect.objectContaining({ msg: "Price cannot be negative" }),
     );
   });
 
@@ -171,7 +176,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Price must be a number" })
+      expect.objectContaining({ msg: "Price must be a number" }),
     );
   });
 
@@ -181,7 +186,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Tool location must be a string" })
+      expect.objectContaining({ msg: "Tool location must be a string" }),
     );
   });
 
@@ -191,7 +196,7 @@ describe("updateSparepartValidation", () => {
     });
     expect(result.isEmpty()).toBe(false);
     expect(result.array()).toContainEqual(
-      expect.objectContaining({ msg: "Tool date must be a valid date" })
+      expect.objectContaining({ msg: "Tool date must be a valid date" }),
     );
   });
 });

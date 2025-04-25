@@ -12,7 +12,7 @@ jest.mock("express-validator");
 const createSparepart = (
   id: string,
   partsName: string,
-  price: number
+  price: number,
 ): SparepartDTO => ({
   id,
   partsName,
@@ -37,7 +37,8 @@ describe("SparepartController - GET Methods", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockSparepartService = new SparepartService() as jest.Mocked<SparepartService>;
+    mockSparepartService =
+      new SparepartService() as jest.Mocked<SparepartService>;
     sparepartController = new SparepartController();
     (sparepartController as any).sparepartService = mockSparepartService;
 
@@ -76,13 +77,13 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         undefined,
         expect.any(Object),
-        { page: 1, limit: 10 }
+        { page: 1, limit: 10 },
       );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
@@ -105,13 +106,13 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         "test",
         expect.objectContaining({ toolLocation: "Warehouse A" }),
-        { page: 1, limit: 10 }
+        { page: 1, limit: 10 },
       );
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
@@ -126,26 +127,26 @@ describe("SparepartController - GET Methods", () => {
           totalPages: 1,
         },
       };
-  
+
       mockSparepartService.getSpareparts.mockResolvedValue(mockResult);
-  
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-  
+
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         undefined,
         expect.any(Object),
-        { page: 1, limit: 10 }
+        { page: 1, limit: 10 },
       );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
-  
+
     it("should parse page and limit from query parameters", async () => {
       mockRequest.query = { page: "2", limit: "5" };
-  
+
       const mockResult = {
         data: [createSparepart("1", "Part 1", 100)],
         meta: {
@@ -155,26 +156,26 @@ describe("SparepartController - GET Methods", () => {
           totalPages: 1,
         },
       };
-  
+
       mockSparepartService.getSpareparts.mockResolvedValue(mockResult);
-  
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-  
+
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         undefined,
         expect.any(Object),
-        { page: 2, limit: 5 }
+        { page: 2, limit: 5 },
       );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
-  
+
     it("should use default values if page or limit are invalid", async () => {
       mockRequest.query = { page: "-1", limit: "0" };
-  
+
       const mockResult = {
         data: [createSparepart("1", "Part 1", 100)],
         meta: {
@@ -184,26 +185,26 @@ describe("SparepartController - GET Methods", () => {
           totalPages: 1,
         },
       };
-  
+
       mockSparepartService.getSpareparts.mockResolvedValue(mockResult);
-  
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-  
+
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         undefined,
         expect.any(Object),
-        { page: 1, limit: 10 }
+        { page: 1, limit: 10 },
       );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
-  
+
     it("should handle non-numeric page and limit values", async () => {
       mockRequest.query = { page: "abc", limit: "xyz" };
-  
+
       const mockResult = {
         data: [createSparepart("1", "Part 1", 100)],
         meta: {
@@ -213,18 +214,18 @@ describe("SparepartController - GET Methods", () => {
           totalPages: 1,
         },
       };
-  
+
       mockSparepartService.getSpareparts.mockResolvedValue(mockResult);
-  
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-  
+
       expect(mockSparepartService.getSpareparts).toHaveBeenCalledWith(
         undefined,
         expect.any(Object),
-        { page: 1, limit: 10 }
+        { page: 1, limit: 10 },
       );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
@@ -236,7 +237,7 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -249,12 +250,12 @@ describe("SparepartController - GET Methods", () => {
 
     it("should handle general errors with 500 status", async () => {
       mockSparepartService.getSpareparts.mockRejectedValue(
-        new Error("Database error")
+        new Error("Database error"),
       );
 
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockResponse.status).toHaveBeenCalledWith(500);
@@ -275,7 +276,7 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSparepartById(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockSparepartService.getSparepartById).toHaveBeenCalledWith("1");
@@ -292,7 +293,7 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSparepartById(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockSparepartService.getSparepartById).toHaveBeenCalledWith("1");
@@ -309,7 +310,7 @@ describe("SparepartController - GET Methods", () => {
 
       await sparepartController.getSparepartById(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -322,14 +323,14 @@ describe("SparepartController - GET Methods", () => {
     it("should return 500 with the error message if an Error instance is thrown", async () => {
       const errorMessage = "Unexpected server error";
       const error = new Error(errorMessage);
-    
+
       mockSparepartService.getSpareparts.mockRejectedValue(error);
-    
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-    
+
       expect(mockSparepartService.getSpareparts).toHaveBeenCalled();
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -341,14 +342,14 @@ describe("SparepartController - GET Methods", () => {
 
     it("should return 500 with 'An unknown error occurred' if an unknown error is thrown", async () => {
       mockRequest.params = { id: "1" };
-    
+
       mockSparepartService.getSparepartById.mockRejectedValue("Unknown error");
-    
+
       await sparepartController.getSparepartById(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-    
+
       expect(mockSparepartService.getSparepartById).toHaveBeenCalledWith("1");
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -359,13 +360,15 @@ describe("SparepartController - GET Methods", () => {
 
     it("should return 500 with error.message if error is an instance of Error", async () => {
       const errorMessage = "Some server error";
-      mockSparepartService.getSpareparts.mockRejectedValue(new Error(errorMessage));
-    
+      mockSparepartService.getSpareparts.mockRejectedValue(
+        new Error(errorMessage),
+      );
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-    
+
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
         status: "error",
@@ -373,15 +376,17 @@ describe("SparepartController - GET Methods", () => {
         message: errorMessage,
       });
     });
-    
+
     it("should return 500 with 'An unknown error occurred' if error is not an instance of Error", async () => {
-      mockSparepartService.getSpareparts.mockRejectedValue("Totally unknown error");
-    
+      mockSparepartService.getSpareparts.mockRejectedValue(
+        "Totally unknown error",
+      );
+
       await sparepartController.getSpareparts(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
-    
+
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
         status: "error",
@@ -392,12 +397,12 @@ describe("SparepartController - GET Methods", () => {
 
     it("should handle general errors with 500 status", async () => {
       mockSparepartService.getSparepartById.mockRejectedValue(
-        new Error("Database error")
+        new Error("Database error"),
       );
 
       await sparepartController.getSparepartById(
         mockRequest as Request,
-        mockResponse as Response
+        mockResponse as Response,
       );
 
       expect(mockResponse.status).toHaveBeenCalledWith(500);

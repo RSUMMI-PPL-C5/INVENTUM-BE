@@ -50,23 +50,25 @@ describe("verifyToken Middleware", () => {
     verifyToken(req as Request, res as Response, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: "Access Denied. No token provided." });
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Access Denied. No token provided.",
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
   it("should return 500 if JWT_SECRET_KEY is missing", () => {
     delete process.env.JWT_SECRET_KEY;
     const token = "some.token";
-  
+
     (req.header as jest.Mock).mockReturnValue(`Bearer ${token}`);
-  
+
     verifyToken(req as Request, res as Response, next);
-  
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ message: "JWT_SECRET_KEY is not set" });
+    expect(res.json).toHaveBeenCalledWith({
+      message: "JWT_SECRET_KEY is not set",
+    });
   });
-  
-  
 
   it("should return 400 if token is invalid", () => {
     const invalidToken = "invalid.token";

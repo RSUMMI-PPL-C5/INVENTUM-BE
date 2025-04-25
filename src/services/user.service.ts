@@ -15,57 +15,67 @@ class UserService implements IUserService {
   }
 
   public async createUser(userData: AddUserDTO): Promise<AddUserResponseDTO> {
-    const emailExists = await this.userRepository.getUserByEmail(userData.email);
+    const emailExists = await this.userRepository.getUserByEmail(
+      userData.email,
+    );
     if (emailExists) {
-        throw new AppError("Email already in use", 400);
+      throw new AppError("Email already in use", 400);
     }
 
-    const usernameExists = await this.userRepository.getUserByUsername(userData.username);
+    const usernameExists = await this.userRepository.getUserByUsername(
+      userData.username,
+    );
     if (usernameExists) {
-        throw new AppError("Username already in use", 400);
+      throw new AppError("Username already in use", 400);
     }
-    
+
     if (userData.nokar && userData.nokar !== "") {
-      const nokarExists = await this.userRepository.getUserByNokar(userData.nokar);
+      const nokarExists = await this.userRepository.getUserByNokar(
+        userData.nokar,
+      );
       if (nokarExists) {
-          throw new AppError("Nokar already in use", 400);
+        throw new AppError("Nokar already in use", 400);
       }
-  }
+    }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     const { password, divisiId, ...data } = userData;
     return await this.userRepository.createUser({
-        ...data,
-        id: uuidv4(),
-        password: hashedPassword,
-        divisi: divisiId
-            ? {
-                  connect: {
-                      id: divisiId,
-                  },
-              }
-            : undefined,
+      ...data,
+      id: uuidv4(),
+      password: hashedPassword,
+      divisi: divisiId
+        ? {
+            connect: {
+              id: divisiId,
+            },
+          }
+        : undefined,
     });
   }
 
   public async getUsers(
     search?: string,
     filters?: UserFilterOptions,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ) {
-    const { users, total } = await this.userRepository.getUsers(search, filters, pagination);
-    
+    const { users, total } = await this.userRepository.getUsers(
+      search,
+      filters,
+      pagination,
+    );
+
     const totalPages = pagination ? Math.ceil(total / pagination.limit) : 1;
-    
+
     return {
       data: users,
       meta: {
         total,
         page: pagination?.page ?? 1,
         limit: pagination?.limit ?? users.length,
-        totalPages
-      }
+        totalPages,
+      },
     };
   }
 
@@ -73,34 +83,41 @@ class UserService implements IUserService {
     return await this.userRepository.getUserById(id);
   }
 
-  public async updateUser(id: string, data: Partial<UserDTO>, modifierId: string): Promise<UserDTO | null> {
+  public async updateUser(
+    id: string,
+    data: Partial<UserDTO>,
+    modifierId: string,
+  ): Promise<UserDTO | null> {
     const user = await this.userRepository.getUserById(id);
 
     if (!user) {
-        return null;
+      return null;
     }
 
     const { fullname, role, password, divisiId, waNumber, email, nokar } = data;
 
     const updatedData: Partial<UserDTO> = {
-        ...(fullname && { fullname }),
-        ...(role && { role }),
-        ...(divisiId !== undefined && { divisiId: Number(divisiId) }),
-        ...(waNumber && { waNumber }),
-        ...(email && { email }),
-        ...(nokar && { nokar }),
-        modifiedBy: modifierId,
+      ...(fullname && { fullname }),
+      ...(role && { role }),
+      ...(divisiId !== undefined && { divisiId: Number(divisiId) }),
+      ...(waNumber && { waNumber }),
+      ...(email && { email }),
+      ...(nokar && { nokar }),
+      modifiedBy: modifierId,
     };
 
     // Hash password if provided
     if (password !== undefined) {
-        updatedData.password = await bcrypt.hash(password, 10);
+      updatedData.password = await bcrypt.hash(password, 10);
     }
 
     return await this.userRepository.updateUser(id, updatedData);
   }
 
-  public async deleteUser(id: string, deletedBy?: string): Promise<UserDTO | null> {
+  public async deleteUser(
+    id: string,
+    deletedBy?: string,
+  ): Promise<UserDTO | null> {
     return await this.userRepository.deleteUser(id, deletedBy);
   }
 }

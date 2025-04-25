@@ -129,34 +129,36 @@ describe("DivisionRepository", () => {
     it("should create a proper hierarchy from flat division list", async () => {
       // Arrange
       const mockFlatDivisions = [
-        { 
-          id: 1, 
-          divisi: "Engineering", 
-          parentId: null, 
-          _count: { children: 2 } 
+        {
+          id: 1,
+          divisi: "Engineering",
+          parentId: null,
+          _count: { children: 2 },
         },
-        { 
-          id: 2, 
-          divisi: "Software Development", 
-          parentId: 1, 
-          _count: { children: 1 } 
+        {
+          id: 2,
+          divisi: "Software Development",
+          parentId: 1,
+          _count: { children: 1 },
         },
-        { 
-          id: 3, 
-          divisi: "Frontend Development", 
-          parentId: 2, 
-          _count: { children: 0 } 
+        {
+          id: 3,
+          divisi: "Frontend Development",
+          parentId: 2,
+          _count: { children: 0 },
         },
-        { 
-          id: 4, 
-          divisi: "Hardware Engineering", 
-          parentId: 1, 
-          _count: { children: 0 } 
-        }
+        {
+          id: 4,
+          divisi: "Hardware Engineering",
+          parentId: 1,
+          _count: { children: 0 },
+        },
       ];
-  
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-  
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Expected hierarchical structure matching DivisionWithChildrenDTO
       const expectedHierarchy = [
         {
@@ -176,24 +178,24 @@ describe("DivisionRepository", () => {
                   divisi: "Frontend Development",
                   parentId: 2,
                   _count: { children: 0 },
-                  children: []
-                }
-              ]
+                  children: [],
+                },
+              ],
             },
             {
               id: 4,
               divisi: "Hardware Engineering",
               parentId: 1,
               _count: { children: 0 },
-              children: []
-            }
-          ]
-        }
+              children: [],
+            },
+          ],
+        },
       ];
-  
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-  
+
       // Assert
       expect(result).toEqual(expectedHierarchy);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
@@ -209,15 +211,22 @@ describe("DivisionRepository", () => {
     it("should initialize children array if it is undefined", async () => {
       // Arrange
       const mockFlatDivisions = [
-        { id: 1, divisi: "Division A", parentId: null, _count: { children: 1 } },
-        { id: 2, divisi: "Division B", parentId: 1, _count: { children: 0 } }
+        {
+          id: 1,
+          divisi: "Division A",
+          parentId: null,
+          _count: { children: 1 },
+        },
+        { id: 2, divisi: "Division B", parentId: 1, _count: { children: 0 } },
       ];
-    
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-    
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-    
+
       // Assert
       expect(result).toEqual([
         {
@@ -231,23 +240,35 @@ describe("DivisionRepository", () => {
               divisi: "Division B",
               parentId: 1,
               _count: { children: 0 },
-              children: []
-            }
-          ]
-        }
+              children: [],
+            },
+          ],
+        },
       ]);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
-  
+
     it("should handle divisions with missing parentId (should be treated as root)", async () => {
       // Arrange
       const mockFlatDivisions = [
-        { id: 1, divisi: "Division A", parentId: null, _count: { children: 0 } },
-        { id: 2, divisi: "Division B", parentId: null, _count: { children: 0 } }
+        {
+          id: 1,
+          divisi: "Division A",
+          parentId: null,
+          _count: { children: 0 },
+        },
+        {
+          id: 2,
+          divisi: "Division B",
+          parentId: null,
+          _count: { children: 0 },
+        },
       ];
-  
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-  
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Expected result - both should be root divisions
       const expectedHierarchy = [
         {
@@ -255,34 +276,41 @@ describe("DivisionRepository", () => {
           divisi: "Division A",
           parentId: null,
           _count: { children: 0 },
-          children: []
+          children: [],
         },
         {
           id: 2,
           divisi: "Division B",
           parentId: null,
           _count: { children: 0 },
-          children: []
-        }
+          children: [],
+        },
       ];
-  
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-  
+
       // Assert
       expect(result).toEqual(expectedHierarchy);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
-  
+
     it("should handle divisions with non-existent parent IDs", async () => {
       // Arrange
       const mockFlatDivisions = [
-        { id: 1, divisi: "Division A", parentId: null, _count: { children: 0 } },
-        { id: 2, divisi: "Division B", parentId: 999, _count: { children: 0 } } // Parent ID doesn't exist
+        {
+          id: 1,
+          divisi: "Division A",
+          parentId: null,
+          _count: { children: 0 },
+        },
+        { id: 2, divisi: "Division B", parentId: 999, _count: { children: 0 } }, // Parent ID doesn't exist
       ];
-  
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-  
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Expected result - only root division appears at top level
       const expectedHierarchy = [
         {
@@ -290,55 +318,59 @@ describe("DivisionRepository", () => {
           divisi: "Division A",
           parentId: null,
           _count: { children: 0 },
-          children: []
-        }
+          children: [],
+        },
       ];
-  
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-  
+
       // Assert
       expect(result).toEqual(expectedHierarchy);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
-  
+
     it("should handle circular references gracefully", async () => {
       // Arrange - Create a circular reference situation
       const mockFlatDivisions = [
         { id: 1, divisi: "Division A", parentId: 2, _count: { children: 0 } },
-        { id: 2, divisi: "Division B", parentId: 1, _count: { children: 0 } }
+        { id: 2, divisi: "Division B", parentId: 1, _count: { children: 0 } },
       ];
-  
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-  
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-  
+
       // Assert
       // Since both divisions point to each other as parents,
       // neither should appear in root divisions
       expect(result).toEqual([]);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
-  
+
     it("should handle empty divisions array", async () => {
       // Arrange
       const mockFlatDivisions: any[] = [];
-  
-      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(mockFlatDivisions);
-  
+
+      (prisma.listDivisi.findMany as jest.Mock).mockResolvedValue(
+        mockFlatDivisions,
+      );
+
       // Expected result
       const expectedHierarchy: any[] = [];
-  
+
       // Act
       const result = await divisionRepository.getDivisionsHierarchy();
-  
+
       // Assert
       expect(result).toEqual(expectedHierarchy);
       expect(prisma.listDivisi.findMany).toHaveBeenCalledTimes(1);
     });
   });
-  
+
   describe("getDivisionWithChildren", () => {
     it("should return a division with its children", async () => {
       // Arrange

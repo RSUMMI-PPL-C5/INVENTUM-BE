@@ -42,7 +42,7 @@ export const sparepartFilterQueryValidation = [
     .optional()
     .isISO8601()
     .withMessage("Modified date end must be a valid date in ISO8601 format"),
-    
+
   // // Pagination parameters
   // query("page")
   //   .optional()
@@ -53,7 +53,7 @@ export const sparepartFilterQueryValidation = [
   //   .optional()
   //   .isInt({ min: 1 })
   //   .withMessage("Limit must be a positive integer"),
-    
+
   // // Search parameter
   // query("search")
   //   .optional()

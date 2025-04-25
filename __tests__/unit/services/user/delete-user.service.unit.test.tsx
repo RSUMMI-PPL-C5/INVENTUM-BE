@@ -47,14 +47,21 @@ describe("UserService - deleteUser", () => {
 
     const result = await userService.deleteUser("nonexistent-id", "1");
 
-    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("nonexistent-id", "1");
+    expect(mockUserRepository.deleteUser).toHaveBeenCalledWith(
+      "nonexistent-id",
+      "1",
+    );
     expect(result).toBeNull();
   });
 
   it("should handle errors thrown by the repository", async () => {
-    mockUserRepository.deleteUser.mockRejectedValue(new Error("Database error"));
+    mockUserRepository.deleteUser.mockRejectedValue(
+      new Error("Database error"),
+    );
 
-    await expect(userService.deleteUser("1", "1")).rejects.toThrow("Database error");
+    await expect(userService.deleteUser("1", "1")).rejects.toThrow(
+      "Database error",
+    );
 
     expect(mockUserRepository.deleteUser).toHaveBeenCalledWith("1", "1");
   });

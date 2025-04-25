@@ -15,12 +15,14 @@ class DivisionService implements IDivisionService {
     if (data.parentId === null || data.parentId === undefined) {
       data.parentId = null;
     } else {
-      const parentExists = await this.divisionRepository.getDivisionById(data.parentId);
+      const parentExists = await this.divisionRepository.getDivisionById(
+        data.parentId,
+      );
       if (!parentExists) {
         throw new Error("Parent divisi not found");
       }
     }
-  
+
     return await this.divisionRepository.addDivision(data);
   }
 

@@ -208,7 +208,11 @@ describe("UserService - updateUser", () => {
   it("should return null if user not found", async () => {
     mockUserRepository.getUserById.mockResolvedValue(null);
 
-    const result = await userService.updateUser("1", { fullname: "Updated User One" }, "1");
+    const result = await userService.updateUser(
+      "1",
+      { fullname: "Updated User One" },
+      "1",
+    );
 
     expect(mockUserRepository.getUserById).toHaveBeenCalledWith("1");
     expect(result).toBeNull();
@@ -243,7 +247,7 @@ describe("UserService - updateUser", () => {
     (bcrypt.hash as jest.Mock).mockRejectedValue(new Error("Hashing failed"));
 
     await expect(userService.updateUser("1", updatedData, "1")).rejects.toThrow(
-      new Error("Hashing failed")
+      new Error("Hashing failed"),
     );
 
     expect(mockUserRepository.getUserById).toHaveBeenCalledWith("1");

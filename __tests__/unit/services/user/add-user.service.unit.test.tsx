@@ -50,7 +50,9 @@ describe("UserService - createUser", () => {
 
     const result = await userService.createUser(mockUserData);
 
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
+    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith(
+      "user1@example.com",
+    );
     expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
     expect(bcrypt.hash).toHaveBeenCalledWith("password1", 10);
     expect(uuidv4).toHaveBeenCalled();
@@ -117,10 +119,10 @@ describe("UserService - createUser", () => {
       createdBy: "admin",
       createdOn: new Date(),
       divisiId: 1,
-      modifiedBy: null, 
-      modifiedOn: null, 
+      modifiedBy: null,
+      modifiedOn: null,
       deletedBy: null,
-      deletedOn: null
+      deletedOn: null,
     };
 
     mockUserRepository.getUserByEmail.mockResolvedValue(mockExistingUser);
@@ -138,10 +140,12 @@ describe("UserService - createUser", () => {
     };
 
     await expect(userService.createUser(mockUserData)).rejects.toThrow(
-      new AppError("Email already in use", 400)
+      new AppError("Email already in use", 400),
     );
 
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("user1@example.com");
+    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith(
+      "user1@example.com",
+    );
     expect(mockUserRepository.getUserByUsername).not.toHaveBeenCalled();
     expect(mockUserRepository.createUser).not.toHaveBeenCalled();
   });
@@ -159,10 +163,10 @@ describe("UserService - createUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       divisiId: 1,
-      modifiedBy: null, 
-      modifiedOn: null, 
+      modifiedBy: null,
+      modifiedOn: null,
       deletedBy: null,
-      deletedOn: null
+      deletedOn: null,
     };
 
     mockUserRepository.getUserByEmail.mockResolvedValue(null);
@@ -181,10 +185,12 @@ describe("UserService - createUser", () => {
     };
 
     await expect(userService.createUser(mockUserData)).rejects.toThrow(
-      new AppError("Username already in use", 400)
+      new AppError("Username already in use", 400),
     );
 
-    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith("new@example.com");
+    expect(mockUserRepository.getUserByEmail).toHaveBeenCalledWith(
+      "new@example.com",
+    );
     expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
     expect(mockUserRepository.createUser).not.toHaveBeenCalled();
   });
@@ -202,10 +208,10 @@ describe("UserService - createUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       divisiId: 1,
-      modifiedBy: null, 
-      modifiedOn: null, 
+      modifiedBy: null,
+      modifiedOn: null,
       deletedBy: null,
-      deletedOn: null
+      deletedOn: null,
     };
 
     mockUserRepository.getUserByEmail.mockResolvedValue(null);
@@ -225,7 +231,7 @@ describe("UserService - createUser", () => {
     };
 
     await expect(userService.createUser(mockUserData)).rejects.toThrow(
-      new AppError("Nokar already in use", 400)
+      new AppError("Nokar already in use", 400),
     );
 
     expect(mockUserRepository.getUserByNokar).toHaveBeenCalledWith("123456");

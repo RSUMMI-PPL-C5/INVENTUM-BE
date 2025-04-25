@@ -16,30 +16,28 @@ export interface IMedicalEquipmentService {
   getMedicalEquipment(
     search?: string,
     filters?: MedicalEquipmentFilterOptions,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ): Promise<{
-    data: MedicalEquipmentDTO[],
+    data: MedicalEquipmentDTO[];
     meta: {
-      total: number,
-      page: number,
-      limit: number,
-      totalPages: number
-    }
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   }>;
 
-  getMedicalEquipmentById(
-    id: string,
-  ): Promise<MedicalEquipmentDTO | null>;
+  getMedicalEquipmentById(id: string): Promise<MedicalEquipmentDTO | null>;
 
   // Update
   updateMedicalEquipment(
     id: string,
     equipmentData: UpdateMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO | null>;
-  
+
   // Delete
   deleteMedicalEquipment(
     id: string,
-    deletedById?: string
+    deletedById?: string,
   ): Promise<MedicalEquipmentDTO | null>;
 }

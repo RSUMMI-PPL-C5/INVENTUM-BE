@@ -50,8 +50,8 @@ describe("Date Utils", () => {
     });
 
     it("should handle a date string with time and apply UTC+7 offset", () => {
-    const result = toJakartaDate("2025-04-20T10:00:00");
-    expect(result).toEqual(new Date("2025-04-20T17:00:00")); // UTC+7
+      const result = toJakartaDate("2025-04-20T10:00:00");
+      expect(result).toEqual(new Date("2025-04-20T17:00:00")); // UTC+7
     });
 
     it("should handle date crossing month boundaries", () => {

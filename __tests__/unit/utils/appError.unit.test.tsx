@@ -16,9 +16,9 @@ describe("AppError", () => {
   it("should capture the stack trace correctly", () => {
     const message = "Stack trace test";
     const statusCode = 500;
-  
+
     const error = new AppError(message, statusCode);
-  
+
     expect(error.stack).toBeDefined();
     expect(error.stack).toContain(message);
   });

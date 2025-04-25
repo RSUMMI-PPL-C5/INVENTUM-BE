@@ -10,7 +10,8 @@ describe("SparepartService - deleteSparepart", () => {
   let sparepartRepositoryMock: jest.Mocked<SparepartRepository>;
 
   beforeEach(() => {
-    sparepartRepositoryMock = new SparepartRepository() as jest.Mocked<SparepartRepository>;
+    sparepartRepositoryMock =
+      new SparepartRepository() as jest.Mocked<SparepartRepository>;
     sparepartService = new SparepartService();
     (sparepartService as any).sparepartRepository = sparepartRepositoryMock;
   });
@@ -30,7 +31,7 @@ describe("SparepartService - deleteSparepart", () => {
       deletedBy: null,
       deletedOn: null,
     };
-  
+
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
     sparepartRepositoryMock.deleteSparepart.mockResolvedValue({
       ...mockSparepart,
@@ -39,11 +40,16 @@ describe("SparepartService - deleteSparepart", () => {
       createdBy: "user123",
       modifiedOn: new Date(),
     });
-  
+
     const result = await sparepartService.deleteSparepart("mock-id", "user123");
-  
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("mock-id");
-    expect(sparepartRepositoryMock.deleteSparepart).toHaveBeenCalledWith("mock-id", "user123");
+
+    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
+      "mock-id",
+    );
+    expect(sparepartRepositoryMock.deleteSparepart).toHaveBeenCalledWith(
+      "mock-id",
+      "user123",
+    );
     expect(result).toEqual({
       ...mockSparepart,
       deletedOn: expect.any(Date),
@@ -52,18 +58,22 @@ describe("SparepartService - deleteSparepart", () => {
   });
 
   it("should throw an error if ID is invalid", async () => {
-    await expect(sparepartService.deleteSparepart("", "user123")).rejects.toThrow(
-      new AppError("Sparepart ID is required and must be a valid string", 400)
+    await expect(
+      sparepartService.deleteSparepart("", "user123"),
+    ).rejects.toThrow(
+      new AppError("Sparepart ID is required and must be a valid string", 400),
     );
   });
 
   it("should throw an error if sparepart is not found", async () => {
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(null);
 
-    await expect(sparepartService.deleteSparepart("non-existent-id", "user123")).rejects.toThrow(
-      new AppError("Sparepart not found", 404)
-    );
+    await expect(
+      sparepartService.deleteSparepart("non-existent-id", "user123"),
+    ).rejects.toThrow(new AppError("Sparepart not found", 404));
 
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("non-existent-id");
+    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
+      "non-existent-id",
+    );
   });
 });

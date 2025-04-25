@@ -12,9 +12,9 @@ export const addSparepartValidation = [
     .isISO8601()
     .toDate()
     .withMessage("Purchase date must be a valid date")
-    .custom(value => {
+    .custom((value) => {
       if (value && new Date(value) > new Date()) {
-        throw new Error('Purchase date cannot be in the future');
+        throw new Error("Purchase date cannot be in the future");
       }
       return true;
     }),
@@ -24,9 +24,9 @@ export const addSparepartValidation = [
     .isNumeric()
     .toFloat()
     .withMessage("Price must be a number")
-    .custom(value => {
+    .custom((value) => {
       if (value < 0) {
-        throw new Error('Price cannot be negative');
+        throw new Error("Price cannot be negative");
       }
       return true;
     }),
@@ -56,9 +56,9 @@ export const updateSparepartValidation = [
     .isISO8601()
     .toDate()
     .withMessage("Purchase date must be a valid date")
-    .custom(value => {
+    .custom((value) => {
       if (value && new Date(value) > new Date()) {
-        throw new Error('Purchase date cannot be in the future');
+        throw new Error("Purchase date cannot be in the future");
       }
       return true;
     }),
@@ -68,9 +68,9 @@ export const updateSparepartValidation = [
     .isNumeric()
     .toFloat()
     .withMessage("Price must be a number")
-    .custom(value => {
+    .custom((value) => {
       if (value < 0) {
-        throw new Error('Price cannot be negative');
+        throw new Error("Price cannot be negative");
       }
       return true;
     }),

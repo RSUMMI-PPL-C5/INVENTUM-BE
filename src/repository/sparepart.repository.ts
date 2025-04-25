@@ -21,15 +21,15 @@ class SparepartRepository {
         modifiedOn: jakartaTime,
       },
     });
-  
+
     return {
       ...newSparepart,
-    }
+    };
   }
 
   private buildWhereClause(
     search?: string,
-    filters?: SparepartFilterOptions
+    filters?: SparepartFilterOptions,
   ): any {
     const where: any = {
       deletedOn: null,
@@ -46,7 +46,7 @@ class SparepartRepository {
       if (filters.partsName) {
         where.partsName = { contains: filters.partsName };
       }
-      
+
       if (filters.toolLocation) {
         where.toolLocation = { contains: filters.toolLocation };
       }
@@ -60,17 +60,14 @@ class SparepartRepository {
     return where;
   }
 
-  private addPriceFilter(
-    where: any,
-    filters: SparepartFilterOptions
-  ): void {
+  private addPriceFilter(where: any, filters: SparepartFilterOptions): void {
     if (filters.priceMin || filters.priceMax) {
       where.price = {};
-      
+
       if (filters.priceMin) {
         where.price.gte = filters.priceMin;
       }
-      
+
       if (filters.priceMax) {
         where.price.lte = filters.priceMax;
       }
@@ -78,8 +75,8 @@ class SparepartRepository {
   }
 
   private addPurchaseDateFilter(
-    where: any, 
-    filters: SparepartFilterOptions
+    where: any,
+    filters: SparepartFilterOptions,
   ): void {
     if (filters.purchaseDateStart || filters.purchaseDateEnd) {
       where.purchaseDate = {};
@@ -94,7 +91,7 @@ class SparepartRepository {
 
   private addCreatedOnFilter(
     where: any,
-    filters: SparepartFilterOptions
+    filters: SparepartFilterOptions,
   ): void {
     if (filters.createdOnStart || filters.createdOnEnd) {
       where.createdOn = {};
@@ -109,7 +106,7 @@ class SparepartRepository {
 
   private addModifiedOnFilter(
     where: any,
-    filters: SparepartFilterOptions
+    filters: SparepartFilterOptions,
   ): void {
     if (filters.modifiedOnStart || filters.modifiedOnEnd) {
       where.modifiedOn = {};
@@ -125,11 +122,13 @@ class SparepartRepository {
   public async getSpareparts(
     search?: string,
     filters?: SparepartFilterOptions,
-    pagination?: PaginationOptions
-  ): Promise<{ spareparts: SparepartDTO[], total: number }> {
+    pagination?: PaginationOptions,
+  ): Promise<{ spareparts: SparepartDTO[]; total: number }> {
     const where = this.buildWhereClause(search, filters);
 
-    const skip = pagination ? (pagination.page - 1) * pagination.limit : undefined;
+    const skip = pagination
+      ? (pagination.page - 1) * pagination.limit
+      : undefined;
     const take = pagination ? pagination.limit : undefined;
 
     const [spareparts, total] = await Promise.all([
@@ -149,16 +148,14 @@ class SparepartRepository {
 
   public async getSparepartById(id: string): Promise<SparepartDTO | null> {
     return await this.prisma.spareparts.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
   }
 
-  public async getSparepartByName(
-    nameQuery: string,
-  ): Promise<Spareparts[]> {
+  public async getSparepartByName(nameQuery: string): Promise<Spareparts[]> {
     return await this.prisma.spareparts.findMany({
       where: {
         partsName: {
@@ -174,9 +171,9 @@ class SparepartRepository {
     data: Partial<SparepartsDTO>,
   ): Promise<SparepartsDTO | null> {
     const sparepart = await this.prisma.spareparts.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
 
@@ -191,11 +188,14 @@ class SparepartRepository {
     });
   }
 
-  public async deleteSparepart(id: string, deletedBy?: string): Promise<SparepartsDTO | null> {
+  public async deleteSparepart(
+    id: string,
+    deletedBy?: string,
+  ): Promise<SparepartsDTO | null> {
     const sparepart = await this.prisma.spareparts.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
 
@@ -203,7 +203,7 @@ class SparepartRepository {
 
     return await this.prisma.spareparts.update({
       where: { id },
-      data: { 
+      data: {
         deletedOn: getJakartaTime(),
         deletedBy: deletedBy,
       },

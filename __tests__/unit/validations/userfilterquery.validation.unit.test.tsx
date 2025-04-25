@@ -3,7 +3,6 @@ import { validationResult } from "express-validator";
 import { Request } from "express";
 
 const runValidation = async (req: Partial<Request>) => {
-
   for (const validator of userFilterQueryValidation) {
     await validator.run(req as Request);
   }
@@ -50,7 +49,7 @@ describe("User Filter Query Validation", () => {
     mockRequest.query = { role: "" };
     await runValidation(mockRequest);
     expect(mockRequest.query.role).toBeUndefined();
-});
+  });
 
   it("should pass with a valid divisiId as a number", async () => {
     mockRequest.query = { divisiId: "1" };

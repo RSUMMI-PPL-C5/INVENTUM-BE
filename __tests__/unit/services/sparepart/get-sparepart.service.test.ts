@@ -12,7 +12,8 @@ describe("SparepartService - Get Methods", () => {
   let sparepartRepositoryMock: jest.Mocked<SparepartRepository>;
 
   beforeEach(() => {
-    sparepartRepositoryMock = new SparepartRepository() as jest.Mocked<SparepartRepository>;
+    sparepartRepositoryMock =
+      new SparepartRepository() as jest.Mocked<SparepartRepository>;
     sparepartService = new SparepartService();
     (sparepartService as any).sparepartRepository = sparepartRepositoryMock;
   });
@@ -57,7 +58,11 @@ describe("SparepartService - Get Methods", () => {
 
       const result = await sparepartService.getSpareparts();
 
-      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(undefined, undefined, undefined);
+      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(result).toEqual({
         data: mockSpareparts,
         meta: {
@@ -95,7 +100,11 @@ describe("SparepartService - Get Methods", () => {
 
       const result = await sparepartService.getSpareparts(search);
 
-      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(search, undefined, undefined);
+      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(
+        search,
+        undefined,
+        undefined,
+      );
       expect(result).toEqual({
         data: mockSpareparts,
         meta: {
@@ -132,9 +141,17 @@ describe("SparepartService - Get Methods", () => {
         total: 1,
       });
 
-      const result = await sparepartService.getSpareparts(undefined, filters, pagination);
+      const result = await sparepartService.getSpareparts(
+        undefined,
+        filters,
+        pagination,
+      );
 
-      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(undefined, filters, pagination);
+      expect(sparepartRepositoryMock.getSpareparts).toHaveBeenCalledWith(
+        undefined,
+        filters,
+        pagination,
+      );
       expect(result).toEqual({
         data: mockSpareparts,
         meta: {
@@ -175,7 +192,10 @@ describe("SparepartService - Get Methods", () => {
 
     it("should throw an error if ID is invalid", async () => {
       await expect(sparepartService.getSparepartById("")).rejects.toThrow(
-        new AppError("Sparepart ID is required and must be a valid string", 400)
+        new AppError(
+          "Sparepart ID is required and must be a valid string",
+          400,
+        ),
       );
       expect(sparepartRepositoryMock.getSparepartById).not.toHaveBeenCalled();
     });
@@ -185,7 +205,9 @@ describe("SparepartService - Get Methods", () => {
 
       const result = await sparepartService.getSparepartById("non-existent-id");
 
-      expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("non-existent-id");
+      expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
+        "non-existent-id",
+      );
       expect(result).toBeNull();
     });
   });
@@ -194,20 +216,37 @@ describe("SparepartService - Get Methods", () => {
     it("should return spareparts matching the name query", async () => {
       const nameQuery = "Test Part";
       const mockSpareparts: SparepartDTO[] = [
-        { id: "1", partsName: "Test Part", price: 100, purchaseDate: null, toolLocation: null, toolDate: null, createdBy: "user123", createdOn: new Date(), modifiedBy: null, modifiedOn: new Date(), deletedBy: null, deletedOn: null },
+        {
+          id: "1",
+          partsName: "Test Part",
+          price: 100,
+          purchaseDate: null,
+          toolLocation: null,
+          toolDate: null,
+          createdBy: "user123",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          deletedBy: null,
+          deletedOn: null,
+        },
       ];
 
-      sparepartRepositoryMock.getSparepartByName.mockResolvedValue(mockSpareparts);
+      sparepartRepositoryMock.getSparepartByName.mockResolvedValue(
+        mockSpareparts,
+      );
 
       const result = await sparepartService.getSparepartByName(nameQuery);
 
-      expect(sparepartRepositoryMock.getSparepartByName).toHaveBeenCalledWith(nameQuery);
+      expect(sparepartRepositoryMock.getSparepartByName).toHaveBeenCalledWith(
+        nameQuery,
+      );
       expect(result).toEqual(mockSpareparts);
     });
 
     it("should throw an error if name query is invalid", async () => {
       await expect(sparepartService.getSparepartByName("")).rejects.toThrow(
-        new AppError("Name query is required and must be a valid string", 400)
+        new AppError("Name query is required and must be a valid string", 400),
       );
       expect(sparepartRepositoryMock.getSparepartByName).not.toHaveBeenCalled();
     });

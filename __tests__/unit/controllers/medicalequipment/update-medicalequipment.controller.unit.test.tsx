@@ -23,7 +23,8 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
     jest.clearAllMocks();
 
     // Create mock service
-    mockService = new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
+    mockService =
+      new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
 
     // Create controller instance with mocked service
     controller = new MedicalEquipmentController();
@@ -37,9 +38,9 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
       body: {
         name: "Updated Equipment",
         brandName: "Updated Brand",
-        modelName: "Updated Model"
+        modelName: "Updated Model",
       },
-      user: { userId: "user-456" }
+      user: { userId: "user-456" },
     };
 
     mockResponse = {
@@ -72,7 +73,7 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
       "test-id-123",
       {
         ...mockRequest.body,
-        modifiedBy: "user-456"
+        modifiedBy: "user-456",
       },
     );
     expect(mockResponse.status).toHaveBeenCalledWith(200);
@@ -106,13 +107,16 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
     mockService.updateMedicalEquipment.mockRejectedValue(appError);
 
     // Act
-    await controller.updateMedicalEquipment(mockRequest as Request, mockResponse as Response);
+    await controller.updateMedicalEquipment(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     // Assert
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith({
       status: "error",
-      message: "Equipment ID is invalid"
+      message: "Equipment ID is invalid",
     });
   });
 
@@ -121,7 +125,9 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
     const errorMessage = "Database connection failed";
 
     // Setup mock implementation to throw an error
-    mockService.updateMedicalEquipment.mockRejectedValue(new Error(errorMessage));
+    mockService.updateMedicalEquipment.mockRejectedValue(
+      new Error(errorMessage),
+    );
 
     // Call the controller method
     await controller.updateMedicalEquipment(
@@ -142,13 +148,16 @@ describe("MedicalEquipmentController - updateMedicalEquipment", () => {
     mockService.updateMedicalEquipment.mockRejectedValue("Unknown failure");
 
     // Act
-    await controller.updateMedicalEquipment(mockRequest as Request, mockResponse as Response);
+    await controller.updateMedicalEquipment(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     // Assert
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
       status: "error",
-      message: "An unknown error occurred"
+      message: "An unknown error occurred",
     });
   });
 });

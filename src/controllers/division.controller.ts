@@ -13,22 +13,29 @@ class DivisionController {
   public addDivision = async (req: Request, res: Response): Promise<void> => {
     try {
       const parentId = req.body.parentId;
-  
-      if (parentId !== undefined && parentId !== null && typeof parentId !== "number") {
+
+      if (
+        parentId !== undefined &&
+        parentId !== null &&
+        typeof parentId !== "number"
+      ) {
         res.status(400).json({ message: "Parent ID must be a number or null" });
         return;
       }
-  
+
       const divisionData = {
         divisi: req.body.divisi,
         parentId: parentId ?? null, // Jika undefined, set ke null
       };
-  
+
       const newDivision = await this.divisionService.addDivision(divisionData);
       res.status(201).json(newDivision);
     } catch (error) {
       console.error("Error in addDivision controller:", error);
-      if (error instanceof Error && error.message === "Parent divisi not found") {
+      if (
+        error instanceof Error &&
+        error.message === "Parent divisi not found"
+      ) {
         res.status(404).json({ message: error.message });
       } else {
         res.status(500).json({ message: (error as Error).message });

@@ -10,7 +10,8 @@ describe("SparepartService - updateSparepart", () => {
   let sparepartRepositoryMock: jest.Mocked<SparepartRepository>;
 
   beforeEach(() => {
-    sparepartRepositoryMock = new SparepartRepository() as jest.Mocked<SparepartRepository>;
+    sparepartRepositoryMock =
+      new SparepartRepository() as jest.Mocked<SparepartRepository>;
     sparepartService = new SparepartService();
     (sparepartService as any).sparepartRepository = sparepartRepositoryMock;
   });
@@ -64,10 +65,12 @@ describe("SparepartService - updateSparepart", () => {
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(null);
 
     await expect(
-      sparepartService.updateSparepart("999", { partsName: "Updated Part" })
+      sparepartService.updateSparepart("999", { partsName: "Updated Part" }),
     ).rejects.toThrow(new AppError("Sparepart not found", 404));
 
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("999");
+    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
+      "999",
+    );
     expect(sparepartRepositoryMock.updateSparepart).not.toHaveBeenCalled();
   });
 
@@ -75,7 +78,7 @@ describe("SparepartService - updateSparepart", () => {
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(baseSparepart);
 
     await expect(
-      sparepartService.updateSparepart("1", { partsName: "   " })
+      sparepartService.updateSparepart("1", { partsName: "   " }),
     ).rejects.toThrow(new AppError("Parts name cannot be empty", 400));
 
     expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("1");
@@ -84,8 +87,10 @@ describe("SparepartService - updateSparepart", () => {
 
   it("should throw an error if ID is invalid", async () => {
     await expect(
-      sparepartService.updateSparepart("", { partsName: "Updated Part" })
-    ).rejects.toThrow(new AppError("Sparepart ID is required and must be a valid string", 400));
+      sparepartService.updateSparepart("", { partsName: "Updated Part" }),
+    ).rejects.toThrow(
+      new AppError("Sparepart ID is required and must be a valid string", 400),
+    );
 
     expect(sparepartRepositoryMock.getSparepartById).not.toHaveBeenCalled();
     expect(sparepartRepositoryMock.updateSparepart).not.toHaveBeenCalled();

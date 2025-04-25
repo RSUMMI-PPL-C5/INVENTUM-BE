@@ -109,7 +109,9 @@ describe("AuthController", () => {
 
   describe("verifyToken", () => {
     it("should return 200 and user data if token is valid", () => {
-      const req = { user: { id: "123", username: "testuser" } } as unknown as Request;
+      const req = {
+        user: { id: "123", username: "testuser" },
+      } as unknown as Request;
       const res = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),

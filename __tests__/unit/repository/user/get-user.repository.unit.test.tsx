@@ -87,7 +87,9 @@ describe("User Repository - GET", () => {
         include: { divisi: true },
         orderBy: { id: "desc" },
       });
-      expect(mockPrisma.count).toHaveBeenCalledWith({ where: { deletedOn: null } });
+      expect(mockPrisma.count).toHaveBeenCalledWith({
+        where: { deletedOn: null },
+      });
       expect(result).toEqual({ users: mockUsers, total: 2 });
     });
 
@@ -123,7 +125,11 @@ describe("User Repository - GET", () => {
       (mockPrisma.findMany as jest.Mock).mockResolvedValue(mockUsers);
       (mockPrisma.count as jest.Mock).mockResolvedValue(2);
 
-      const result = await userRepository.getUsers(undefined, {}, { page: 1, limit: 10 });
+      const result = await userRepository.getUsers(
+        undefined,
+        {},
+        { page: 1, limit: 10 },
+      );
 
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: { deletedOn: null },
@@ -141,9 +147,9 @@ describe("User Repository - GET", () => {
       const search = "User";
       (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.count as jest.Mock).mockResolvedValue(0);
-  
+
       await userRepository.getUsers(search);
-  
+
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: {
           deletedOn: null,
@@ -159,14 +165,14 @@ describe("User Repository - GET", () => {
         orderBy: { id: "desc" },
       });
     });
-  
+
     it("should apply role and divisiId filters correctly", async () => {
       const filters = { role: ["ADMIN"], divisiId: [2] };
       (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.count as jest.Mock).mockResolvedValue(0);
-  
+
       await userRepository.getUsers(undefined, filters);
-  
+
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: {
           deletedOn: null,
@@ -179,17 +185,17 @@ describe("User Repository - GET", () => {
         orderBy: { id: "desc" },
       });
     });
-  
+
     it("should apply createdOnStart and createdOnEnd filters correctly", async () => {
       const filters = {
         createdOnStart: new Date("2023-01-01"), // Konversi ke Date
-        createdOnEnd: new Date("2023-12-31"),  // Konversi ke Date
+        createdOnEnd: new Date("2023-12-31"), // Konversi ke Date
       };
       (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.count as jest.Mock).mockResolvedValue(0);
-  
+
       await userRepository.getUsers(undefined, filters);
-  
+
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: {
           deletedOn: null,
@@ -204,17 +210,17 @@ describe("User Repository - GET", () => {
         orderBy: { id: "desc" },
       });
     });
-  
+
     it("should apply modifiedOnStart and modifiedOnEnd filters correctly", async () => {
       const filters = {
         modifiedOnStart: new Date("2023-01-01"), // Konversi ke Date
-        modifiedOnEnd: new Date("2023-12-31"),  // Konversi ke Date
+        modifiedOnEnd: new Date("2023-12-31"), // Konversi ke Date
       };
       (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.count as jest.Mock).mockResolvedValue(0);
-  
+
       await userRepository.getUsers(undefined, filters);
-  
+
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: {
           deletedOn: null,
@@ -229,16 +235,16 @@ describe("User Repository - GET", () => {
         orderBy: { id: "desc" },
       });
     });
-  
+
     it("should apply search, filters, and pagination together", async () => {
       const search = "User";
       const filters = { role: ["USER"], divisiId: [1] };
       const pagination = { page: 2, limit: 5 };
       (mockPrisma.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.count as jest.Mock).mockResolvedValue(0);
-  
+
       await userRepository.getUsers(search, filters, pagination);
-  
+
       expect(mockPrisma.findMany).toHaveBeenCalledWith({
         where: {
           deletedOn: null,
@@ -294,13 +300,13 @@ describe("User Repository - GET", () => {
     it("should set divisionName to null when user.divisi is null", async () => {
       const userWithNullDivisi = {
         ...mockUsers[0],
-        divisi: null
+        divisi: null,
       };
-      
+
       (mockPrisma.findFirst as jest.Mock).mockResolvedValue(userWithNullDivisi);
-  
+
       const result = await userRepository.getUserById("1");
-  
+
       expect(mockPrisma.findFirst).toHaveBeenCalledWith({
         where: {
           id: "1",
@@ -308,28 +314,28 @@ describe("User Repository - GET", () => {
         },
         include: { divisi: true },
       });
-      
+
       expect(result).toEqual({
         ...userWithNullDivisi,
         divisionName: null,
       });
       expect(result?.divisionName).toBeNull();
     });
-  
+
     it("should set divisionName to the divisi.divisi value when available", async () => {
       const userWithDivisi = {
         ...mockUsers[0],
         divisi: {
           id: 1,
           divisi: "Engineering",
-          parentId: null
-        }
+          parentId: null,
+        },
       };
-      
+
       (mockPrisma.findFirst as jest.Mock).mockResolvedValue(userWithDivisi);
-  
+
       const result = await userRepository.getUserById("1");
-  
+
       expect(mockPrisma.findFirst).toHaveBeenCalledWith({
         where: {
           id: "1",
@@ -337,7 +343,7 @@ describe("User Repository - GET", () => {
         },
         include: { divisi: true },
       });
-      
+
       expect(result).toEqual({
         ...userWithDivisi,
         divisionName: "Engineering",
@@ -364,7 +370,9 @@ describe("User Repository - GET", () => {
     it("should return null if email not found", async () => {
       (mockPrisma.findFirst as jest.Mock).mockResolvedValue(null);
 
-      const result = await userRepository.getUserByEmail("notfound@example.com");
+      const result = await userRepository.getUserByEmail(
+        "notfound@example.com",
+      );
 
       expect(result).toBeNull();
     });

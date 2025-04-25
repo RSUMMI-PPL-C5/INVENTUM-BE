@@ -1,6 +1,9 @@
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 import AppError from "../../../../src/utils/appError";
-import { AddMedicalEquipmentResponseDTO, UpdateMedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
+import {
+  AddMedicalEquipmentResponseDTO,
+  UpdateMedicalEquipmentDTO,
+} from "../../../../src/dto/medicalequipment.dto";
 
 describe("MedicalEquipmentService - updateMedicalEquipment", () => {
   let service: MedicalEquipmentService;
@@ -11,7 +14,7 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
 
     mockRepository = {
       findById: jest.fn(),
-      updateMedicalEquipment: jest.fn()
+      updateMedicalEquipment: jest.fn(),
     };
 
     service = new MedicalEquipmentService();
@@ -25,7 +28,7 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
       brandName: "Updated Brand",
       modelName: "Updated Model",
       status: "Maintenance",
-      modifiedBy: "user-123"
+      modifiedBy: "user-123",
     };
 
     const existingEquipment = {
@@ -41,18 +44,20 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
       inventorisId: "INV123",
       name: "Updated Equipment",
       brandName: "Updated Brand",
-      modelName: "Updated Model"
+      modelName: "Updated Model",
     };
 
     mockRepository.findById.mockResolvedValue(existingEquipment);
     mockRepository.updateMedicalEquipment.mockResolvedValue(updatedEquipment);
 
-
     const result = await service.updateMedicalEquipment(id, updateData);
 
     // Assertions
     expect(mockRepository.findById).toHaveBeenCalledWith(id);
-    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(id, updateData);
+    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(
+      id,
+      updateData,
+    );
     expect(result).toEqual(updatedEquipment);
   });
 
@@ -60,7 +65,7 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     const id = "test-id-123";
     const updateData: UpdateMedicalEquipmentDTO = {
       name: "Updated Equipment",
-      modifiedBy: "user-123"  
+      modifiedBy: "user-123",
     };
 
     const existingEquipment = {
@@ -76,17 +81,19 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
       inventorisId: "INV123",
       name: "Updated Equipment",
       brandName: "Original Brand",
-      modelName: "Original Model"
+      modelName: "Original Model",
     };
 
     mockRepository.findById.mockResolvedValue(existingEquipment);
     mockRepository.updateMedicalEquipment.mockResolvedValue(updatedEquipment);
 
-
     const result = await service.updateMedicalEquipment(id, updateData);
 
     // Assertions
-    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(id, updateData);
+    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(
+      id,
+      updateData,
+    );
     expect(result).toEqual(updatedEquipment);
   });
 
@@ -94,12 +101,14 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     const id = "";
     const updateData: UpdateMedicalEquipmentDTO = {
       name: "Updated Equipment",
-      modifiedBy: "user-123"  
+      modifiedBy: "user-123",
     };
 
     await expect(
       service.updateMedicalEquipment(id, updateData),
-    ).rejects.toThrow(new AppError("Equipment ID is required and must be a valid string", 400));
+    ).rejects.toThrow(
+      new AppError("Equipment ID is required and must be a valid string", 400),
+    );
 
     expect(mockRepository.findById).not.toHaveBeenCalled();
     expect(mockRepository.updateMedicalEquipment).not.toHaveBeenCalled();
@@ -109,19 +118,21 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     const id = "   ";
     const updateData: UpdateMedicalEquipmentDTO = {
       name: "Updated Equipment",
-      modifiedBy: "user-123"  
+      modifiedBy: "user-123",
     };
 
     await expect(
       service.updateMedicalEquipment(id, updateData),
-    ).rejects.toThrow(new AppError("Equipment ID is required and must be a valid string", 400));
+    ).rejects.toThrow(
+      new AppError("Equipment ID is required and must be a valid string", 400),
+    );
   });
 
   it("should throw error if equipment is not found", async () => {
     const id = "non-existent-id";
     const updateData: UpdateMedicalEquipmentDTO = {
       name: "Updated Equipment",
-      modifiedBy: "user-123"  
+      modifiedBy: "user-123",
     };
 
     mockRepository.findById.mockResolvedValue(null);
@@ -129,7 +140,6 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     await expect(
       service.updateMedicalEquipment(id, updateData),
     ).rejects.toThrow(new AppError("Medical equipment not found", 404));
-
 
     expect(mockRepository.findById).toHaveBeenCalledWith(id);
     expect(mockRepository.updateMedicalEquipment).not.toHaveBeenCalled();
@@ -139,7 +149,7 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     const id = "test-id-123";
     const updateData: UpdateMedicalEquipmentDTO = {
       name: "Updated Equipment",
-      modifiedBy: "user-123"  
+      modifiedBy: "user-123",
     };
 
     const existingEquipment = {
@@ -160,6 +170,9 @@ describe("MedicalEquipmentService - updateMedicalEquipment", () => {
     ).rejects.toThrow("Database update error");
 
     expect(mockRepository.findById).toHaveBeenCalledWith(id);
-    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(id, updateData);
+    expect(mockRepository.updateMedicalEquipment).toHaveBeenCalledWith(
+      id,
+      updateData,
+    );
   });
 });

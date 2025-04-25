@@ -44,15 +44,23 @@ describe("UserService - GET", () => {
       const mockFilters = { role: ["USER"] };
       const mockSearch = "User";
       const mockTotal = 1;
-    
+
       mockUserRepository.getUsers.mockResolvedValue({
         users: mockUsers,
         total: mockTotal,
       });
-    
-      const result = await userService.getUsers(mockSearch, mockFilters, mockPagination);
-    
-      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(mockSearch, mockFilters, mockPagination);
+
+      const result = await userService.getUsers(
+        mockSearch,
+        mockFilters,
+        mockPagination,
+      );
+
+      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(
+        mockSearch,
+        mockFilters,
+        mockPagination,
+      );
       expect(result).toEqual({
         data: mockUsers,
         meta: {
@@ -100,7 +108,11 @@ describe("UserService - GET", () => {
 
       const result = await userService.getUsers(mockSearch, mockFilters);
 
-      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(mockSearch, mockFilters, undefined);
+      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(
+        mockSearch,
+        mockFilters,
+        undefined,
+      );
       expect(result).toEqual({
         data: mockUsers,
         meta: {
@@ -124,7 +136,11 @@ describe("UserService - GET", () => {
 
       const result = await userService.getUsers(mockSearch, mockFilters);
 
-      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(mockSearch, mockFilters, undefined);
+      expect(mockUserRepository.getUsers).toHaveBeenCalledWith(
+        mockSearch,
+        mockFilters,
+        undefined,
+      );
       expect(result).toEqual({
         data: [],
         meta: {

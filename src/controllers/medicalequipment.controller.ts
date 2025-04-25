@@ -29,7 +29,7 @@ class MedicalEquipmentController {
         await this.medicalEquipmentService.addMedicalEquipment(equipmentData);
       res.status(201).json({
         status: "success",
-        data: newEquipment
+        data: newEquipment,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -40,7 +40,10 @@ class MedicalEquipmentController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
@@ -84,7 +87,10 @@ class MedicalEquipmentController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
@@ -97,22 +103,24 @@ class MedicalEquipmentController {
     try {
       // Get pagination options
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
-      
-      const paginationOptions: PaginationOptions = { 
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
+
+      const paginationOptions: PaginationOptions = {
         page: page > 0 ? page : 1,
-        limit: limit > 0 ? limit : 10
+        limit: limit > 0 ? limit : 10,
       };
-      
+
       const filters: MedicalEquipmentFilterOptions = req.query as any;
       const search = req.query.search as string | undefined;
-  
+
       const result = await this.medicalEquipmentService.getMedicalEquipment(
-        search, 
-        filters, 
-        paginationOptions
+        search,
+        filters,
+        paginationOptions,
       );
-  
+
       res.status(200).json(result);
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -125,7 +133,10 @@ class MedicalEquipmentController {
         res.status(500).json({
           status: "error",
           statusCode: 500,
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
@@ -140,18 +151,18 @@ class MedicalEquipmentController {
         await this.medicalEquipmentService.getMedicalEquipmentById(
           req.params.id,
         );
-      
+
       if (!medicalEquipment) {
         res.status(404).json({
           status: "error",
-          message: "Medical Equipment not found"
+          message: "Medical Equipment not found",
         });
         return;
       }
-      
+
       res.status(200).json({
         status: "success",
-        data: medicalEquipment
+        data: medicalEquipment,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -162,7 +173,10 @@ class MedicalEquipmentController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
@@ -170,27 +184,27 @@ class MedicalEquipmentController {
 
   public deleteMedicalEquipment = async (
     req: Request,
-    res: Response
+    res: Response,
   ): Promise<void> => {
     try {
       const deletedById = (req.user as any).userId;
-      
+
       const deleted = await this.medicalEquipmentService.deleteMedicalEquipment(
         req.params.id,
-        deletedById
+        deletedById,
       );
-      
+
       if (!deleted) {
         res.status(404).json({
           status: "error",
-          message: "Medical Equipment not found"
+          message: "Medical Equipment not found",
         });
         return;
       }
-      
+
       res.status(200).json({
         status: "success",
-        message: "Medical Equipment deleted successfully"
+        message: "Medical Equipment deleted successfully",
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -201,7 +215,10 @@ class MedicalEquipmentController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }

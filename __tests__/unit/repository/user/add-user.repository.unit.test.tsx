@@ -3,7 +3,9 @@ import { AddUserResponseDTO } from "../../../../src/dto/user.dto";
 
 // Mock the date utility - ensure the path matches your import exactly
 jest.mock("../../../../src/utils/date.utils", () => ({
-  getJakartaTime: jest.fn().mockReturnValue(new Date("2025-04-21T00:00:00.000Z")),
+  getJakartaTime: jest
+    .fn()
+    .mockReturnValue(new Date("2025-04-21T00:00:00.000Z")),
 }));
 
 // Mock Prisma Client
@@ -85,7 +87,9 @@ describe("User Repository - ADD", () => {
     const errorMessage = "User creation failed";
     (mockPrisma.create as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.createUser(userData)).rejects.toThrow(errorMessage);
+    await expect(userRepository.createUser(userData)).rejects.toThrow(
+      errorMessage,
+    );
     expect(mockPrisma.create).toHaveBeenCalledTimes(1);
   });
 

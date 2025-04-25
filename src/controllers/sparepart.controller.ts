@@ -19,11 +19,12 @@ class SparepartController {
         createdBy: (req.user as any).userId,
       };
 
-      const newSparepart = await this.sparepartService.addSparepart(sparepartData);
-      
+      const newSparepart =
+        await this.sparepartService.addSparepart(sparepartData);
+
       res.status(201).json({
         status: "success",
-        data: newSparepart
+        data: newSparepart,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -34,7 +35,10 @@ class SparepartController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
@@ -43,20 +47,22 @@ class SparepartController {
   public getSpareparts = async (req: Request, res: Response): Promise<void> => {
     try {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
-      
-      const paginationOptions: PaginationOptions = { 
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
+
+      const paginationOptions: PaginationOptions = {
         page: page > 0 ? page : 1,
-        limit: limit > 0 ? limit : 10
+        limit: limit > 0 ? limit : 10,
       };
-      
+
       const filters: SparepartFilterOptions = req.query as any;
       const search = req.query.search as string | undefined;
 
       const result = await this.sparepartService.getSpareparts(
-        search, 
-        filters, 
-        paginationOptions
+        search,
+        filters,
+        paginationOptions,
       );
 
       res.status(200).json(result);
@@ -71,27 +77,35 @@ class SparepartController {
         res.status(500).json({
           status: "error",
           statusCode: 500,
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
   };
 
-  public getSparepartById = async (req: Request, res: Response): Promise<void> => {
+  public getSparepartById = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const sparepart = await this.sparepartService.getSparepartById(req.params.id);
-      
+      const sparepart = await this.sparepartService.getSparepartById(
+        req.params.id,
+      );
+
       if (!sparepart) {
         res.status(404).json({
           status: "error",
-          message: "Sparepart not found"
+          message: "Sparepart not found",
         });
         return;
       }
-      
+
       res.status(200).json({
         status: "success",
-        data: sparepart
+        data: sparepart,
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -102,13 +116,19 @@ class SparepartController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
   };
 
-  public updateSparepart = async (req: Request, res: Response): Promise<void> => {
+  public updateSparepart = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
     try {
       const { id } = req.params;
       const sparepartData = {
@@ -116,7 +136,10 @@ class SparepartController {
         modifiedBy: (req.user as any).userId,
       };
 
-      const updatedSparepart = await this.sparepartService.updateSparepart(id, sparepartData);
+      const updatedSparepart = await this.sparepartService.updateSparepart(
+        id,
+        sparepartData,
+      );
 
       if (!updatedSparepart) {
         res.status(404).json({
@@ -139,32 +162,38 @@ class SparepartController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }
   };
 
-  public deleteSparepart = async (req: Request, res: Response): Promise<void> => {
+  public deleteSparepart = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
     try {
       const deletedById = (req.user as any).userId;
-      
+
       const deleted = await this.sparepartService.deleteSparepart(
         req.params.id,
-        deletedById
+        deletedById,
       );
-      
+
       if (!deleted) {
         res.status(404).json({
           status: "error",
-          message: "Sparepart not found"
+          message: "Sparepart not found",
         });
         return;
       }
-      
+
       res.status(200).json({
         status: "success",
-        message: "Sparepart deleted successfully"
+        message: "Sparepart deleted successfully",
       });
     } catch (error: unknown) {
       if (error instanceof AppError) {
@@ -175,7 +204,10 @@ class SparepartController {
       } else {
         res.status(500).json({
           status: "error",
-          message: error instanceof Error ? error.message : "An unknown error occurred",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
         });
       }
     }

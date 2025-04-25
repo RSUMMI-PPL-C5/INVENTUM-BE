@@ -30,7 +30,7 @@ describe("SparepartRepository - CREATE", () => {
     jest.clearAllMocks();
     mockPrisma = prisma as unknown as jest.Mocked<PrismaClient>;
     sparepartRepository = new SparepartRepository();
-    
+
     jest.spyOn(dateUtils, "getJakartaTime").mockReturnValue(mockJakartaTime);
   });
 
@@ -58,7 +58,9 @@ describe("SparepartRepository - CREATE", () => {
         id: "mock-id",
       };
 
-      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(mockCreatedSparepart);
+      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(
+        mockCreatedSparepart,
+      );
 
       const result = await sparepartRepository.createSparepart(sparepartInput);
 
@@ -82,7 +84,7 @@ describe("SparepartRepository - CREATE", () => {
 
       const expectedCreateInput = {
         ...inputWithTimestamps,
-        createdOn: mockJakartaTime, 
+        createdOn: mockJakartaTime,
         modifiedOn: mockJakartaTime,
       };
 
@@ -91,9 +93,12 @@ describe("SparepartRepository - CREATE", () => {
         id: "mock-id",
       };
 
-      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(mockResponse);
+      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(
+        mockResponse,
+      );
 
-      const result = await sparepartRepository.createSparepart(inputWithTimestamps);
+      const result =
+        await sparepartRepository.createSparepart(inputWithTimestamps);
 
       expect(mockPrisma.spareparts.create).toHaveBeenCalledWith({
         data: expectedCreateInput,
@@ -123,7 +128,9 @@ describe("SparepartRepository - CREATE", () => {
         toolDate: null,
       };
 
-      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(mockResponse);
+      (mockPrisma.spareparts.create as jest.Mock).mockResolvedValue(
+        mockResponse,
+      );
 
       const result = await sparepartRepository.createSparepart(minimalInput);
 
@@ -148,7 +155,7 @@ describe("SparepartRepository - CREATE", () => {
       await expect(
         sparepartRepository.createSparepart(sparepartInput),
       ).rejects.toThrow(errorMessage);
-      
+
       expect(mockPrisma.spareparts.create).toHaveBeenCalledWith({
         data: {
           ...sparepartInput,

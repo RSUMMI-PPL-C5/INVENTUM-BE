@@ -14,8 +14,12 @@ jest.mock("../../../../src/utils/date.utils", () => ({
   getJakartaTime: jest.fn(),
 }));
 
-const mockValidationResult = validationResult as jest.MockedFunction<typeof validationResult>;
-const mockGetJakartaTime = getJakartaTime as jest.MockedFunction<typeof getJakartaTime>;
+const mockValidationResult = validationResult as jest.MockedFunction<
+  typeof validationResult
+>;
+const mockGetJakartaTime = getJakartaTime as jest.MockedFunction<
+  typeof getJakartaTime
+>;
 
 describe("UserController - createUser", () => {
   let userController: UserController;
@@ -57,11 +61,14 @@ describe("UserController - createUser", () => {
     const mockNewUser = { id: 1, ...mockRequest.body };
     mockUserService.createUser.mockResolvedValue(mockNewUser);
 
-    await userController.createUser(mockRequest as Request, mockResponse as Response);
+    await userController.createUser(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockUserService.createUser).toHaveBeenCalledWith({
       ...mockRequest.body,
-      createdBy: 2
+      createdBy: 2,
     });
     expect(mockResponse.status).toHaveBeenCalledWith(201);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -74,7 +81,10 @@ describe("UserController - createUser", () => {
     const appError = new AppError("Email already exists", 409);
     mockUserService.createUser.mockRejectedValue(appError);
 
-    await userController.createUser(mockRequest as Request, mockResponse as Response);
+    await userController.createUser(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(409);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -87,7 +97,10 @@ describe("UserController - createUser", () => {
   it("should handle generic errors and return 500", async () => {
     mockUserService.createUser.mockRejectedValue(new Error("Database error"));
 
-    await userController.createUser(mockRequest as Request, mockResponse as Response);
+    await userController.createUser(
+      mockRequest as Request,
+      mockResponse as Response,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -99,7 +112,7 @@ describe("UserController - createUser", () => {
 
   it("should use data from request body and user ID", async () => {
     mockGetJakartaTime.mockReturnValue(new Date("2025-04-20T10:00:00Z"));
-    
+
     const customRequest = {
       body: {
         email: "custom@example.com",
@@ -118,16 +131,19 @@ describe("UserController - createUser", () => {
     const mockCustomUser = { id: "2", ...customRequest.body };
     mockUserService.createUser.mockResolvedValue(mockCustomUser);
 
-    await userController.createUser(customRequest as unknown as Request, mockResponse as Response);
+    await userController.createUser(
+      customRequest as unknown as Request,
+      mockResponse as Response,
+    );
 
     expect(mockUserService.createUser).toHaveBeenCalledWith({
       ...customRequest.body,
-      createdBy: 5
+      createdBy: 5,
     });
     expect(mockResponse.status).toHaveBeenCalledWith(201);
     expect(mockResponse.json).toHaveBeenCalledWith({
       status: "success",
-      data: mockCustomUser
+      data: mockCustomUser,
     });
   });
 });

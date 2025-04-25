@@ -27,25 +27,34 @@ jest.mock("../../../../src/controllers/medicalequipment.controller", () => {
 
 // Mock middleware with explicit any types and unused args as _
 jest.mock("../../../../src/middleware/verifyToken", () =>
-  jest.fn((_req: any, _res: any, next: any) => next())
+  jest.fn((_req: any, _res: any, next: any) => next()),
 );
 
 jest.mock("../../../../src/middleware/authorizeRole", () =>
-  jest.fn(() => (_req: any, _res: any, next: any) => next())
+  jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
 
 // Mock validation
-jest.mock("../../../../src/validations/medicalequipmentfilterquery.validation", () => ({
-  medicalEquipmentFilterQueryValidation: jest.fn((_req: any, _res: any, next: any) => next())
-}));
+jest.mock(
+  "../../../../src/validations/medicalequipmentfilterquery.validation",
+  () => ({
+    medicalEquipmentFilterQueryValidation: jest.fn(
+      (_req: any, _res: any, next: any) => next(),
+    ),
+  }),
+);
 
 jest.mock("../../../../src/validations/medicalequipment.validation", () => ({
-  addMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) => next()),
-  updateMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) => next())
+  addMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) =>
+    next(),
+  ),
+  updateMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) =>
+    next(),
+  ),
 }));
 
 jest.mock("../../../../src/middleware/validateRequest", () => ({
-  validateRequest: jest.fn((_req: any, _res: any, next: any) => next())
+  validateRequest: jest.fn((_req: any, _res: any, next: any) => next()),
 }));
 
 // Import the route after all mocks
@@ -60,7 +69,7 @@ describe("MedicalEquipment Routes", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.use).toHaveBeenCalledWith(
       expect.any(Function),
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -69,7 +78,7 @@ describe("MedicalEquipment Routes", () => {
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/",
       expect.any(Function),
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -79,16 +88,13 @@ describe("MedicalEquipment Routes", () => {
       "/",
       expect.any(Function),
       expect.any(Function),
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
   it("should register GET /:id route", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/:id",
-      expect.any(Function)
-    );
+    expect(mockRouter.get).toHaveBeenCalledWith("/:id", expect.any(Function));
   });
 
   it("should register PUT /:id route with validation", () => {
@@ -97,7 +103,7 @@ describe("MedicalEquipment Routes", () => {
       "/:id",
       expect.any(Function),
       expect.any(Function),
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -105,7 +111,7 @@ describe("MedicalEquipment Routes", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.delete).toHaveBeenCalledWith(
       "/:id",
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 });

@@ -1,6 +1,6 @@
 import { MedicalEquipment } from "@prisma/client";
 
-export interface MedicalEquipmentDTO extends MedicalEquipment { }
+export interface MedicalEquipmentDTO extends MedicalEquipment {}
 
 export interface AddMedicalEquipmentDTO {
   inventorisId: string;

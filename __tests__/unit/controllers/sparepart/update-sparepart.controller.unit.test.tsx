@@ -19,7 +19,8 @@ describe("SparepartController - updateSparepart", () => {
     jest.clearAllMocks();
 
     // Setup mock service
-    mockSparepartService = new SparepartService() as jest.Mocked<SparepartService>;
+    mockSparepartService =
+      new SparepartService() as jest.Mocked<SparepartService>;
     sparepartController = new SparepartController();
     (sparepartController as any).sparepartService = mockSparepartService;
 
@@ -60,11 +61,13 @@ describe("SparepartController - updateSparepart", () => {
     };
 
     mockRequest.body = mockUpdateData;
-    mockSparepartService.updateSparepart.mockResolvedValue(mockUpdatedSparepart);
+    mockSparepartService.updateSparepart.mockResolvedValue(
+      mockUpdatedSparepart,
+    );
 
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
@@ -84,7 +87,7 @@ describe("SparepartController - updateSparepart", () => {
 
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
@@ -102,11 +105,13 @@ describe("SparepartController - updateSparepart", () => {
     const errorMessage = "Service error";
     mockRequest.body = { partsName: "Updated Part", price: 150 };
 
-    mockSparepartService.updateSparepart.mockRejectedValue(new Error(errorMessage));
+    mockSparepartService.updateSparepart.mockRejectedValue(
+      new Error(errorMessage),
+    );
 
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
@@ -122,14 +127,14 @@ describe("SparepartController - updateSparepart", () => {
 
   it("should return 500 with 'An unknown error occurred' if an unknown error is thrown", async () => {
     mockRequest.body = { partsName: "Updated Part", price: 150 };
-  
+
     mockSparepartService.updateSparepart.mockRejectedValue("Unknown error");
-  
+
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
-  
+
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       partsName: "Updated Part",
       price: 150,
@@ -145,14 +150,14 @@ describe("SparepartController - updateSparepart", () => {
   it("should handle AppError correctly", async () => {
     const appError = new AppError("Custom error message", 400);
     mockRequest.body = { partsName: "Updated Part", price: 150 };
-  
+
     mockSparepartService.updateSparepart.mockRejectedValue(appError);
-  
+
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
-  
+
     expect(mockSparepartService.updateSparepart).toHaveBeenCalledWith("1", {
       partsName: "Updated Part",
       price: 150,
@@ -169,12 +174,12 @@ describe("SparepartController - updateSparepart", () => {
     mockRequest.user = undefined;
     mockRequest.body = { partsName: "Updated Part" };
     mockRequest.params = { id: "1" };
-    
+
     await sparepartController.updateSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
-    
+
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockSparepartService.updateSparepart).not.toHaveBeenCalled();
   });

@@ -6,15 +6,15 @@ export interface ISparepartService {
   getSpareparts(
     search?: string,
     filters?: SparepartFilterOptions,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ): Promise<{
-    data: SparepartDTO[],
+    data: SparepartDTO[];
     meta: {
-      total: number,
-      page: number,
-      limit: number,
-      totalPages: number
-    }
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   }>;
   getSparepartById(id: string): Promise<SparepartDTO | null>;
   addSparepart(userData: SparepartsDTO): Promise<SparepartsDTO>;

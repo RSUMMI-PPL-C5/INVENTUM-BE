@@ -25,12 +25,12 @@ describe("MedicalEquipmentService - Get Methods", () => {
       // Arrange
       const mockEquipments = [
         { id: "1", name: "Equipment 1", status: "Active" },
-        { id: "2", name: "Equipment 2", status: "Maintenance" }
+        { id: "2", name: "Equipment 2", status: "Maintenance" },
       ];
-      
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 2
+        total: 2,
       });
 
       // Act
@@ -38,9 +38,9 @@ describe("MedicalEquipmentService - Get Methods", () => {
 
       // Assert
       expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
-        undefined, 
-        undefined, 
-        undefined
+        undefined,
+        undefined,
+        undefined,
       );
       expect(result).toEqual({
         data: mockEquipments,
@@ -48,8 +48,8 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 2,
           page: 1,
           limit: 2,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       });
     });
 
@@ -57,12 +57,12 @@ describe("MedicalEquipmentService - Get Methods", () => {
       // Arrange
       const search = "test";
       const mockEquipments = [
-        { id: "1", name: "Test Equipment", status: "Active" }
+        { id: "1", name: "Test Equipment", status: "Active" },
       ];
-      
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 1
+        total: 1,
       });
 
       // Act
@@ -70,9 +70,9 @@ describe("MedicalEquipmentService - Get Methods", () => {
 
       // Assert
       expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
-        search, 
-        undefined, 
-        undefined
+        search,
+        undefined,
+        undefined,
       );
       expect(result).toEqual({
         data: mockEquipments,
@@ -80,25 +80,25 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 1,
           page: 1,
           limit: 1,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       });
     });
 
     it("should apply filters", async () => {
       // Arrange
       const filters: MedicalEquipmentFilterOptions = {
-        status: ["Active"]
+        status: ["Active"],
       };
-      
+
       const mockEquipments = [
         { id: "1", name: "Equipment 1", status: "Active" },
-        { id: "3", name: "Equipment 3", status: "Active" }
+        { id: "3", name: "Equipment 3", status: "Active" },
       ];
-      
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 2
+        total: 2,
       });
 
       // Act
@@ -106,9 +106,9 @@ describe("MedicalEquipmentService - Get Methods", () => {
 
       // Assert
       expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
-        undefined, 
-        filters, 
-        undefined
+        undefined,
+        filters,
+        undefined,
       );
       expect(result.data).toEqual(mockEquipments);
       expect(result.meta.total).toBe(2);
@@ -118,27 +118,33 @@ describe("MedicalEquipmentService - Get Methods", () => {
       // Arrange
       const pagination: PaginationOptions = {
         page: 2,
-        limit: 10
+        limit: 10,
       };
-      
-      const mockEquipments = Array(10).fill(null).map((_, i) => ({ 
-        id: `${i + 11}`, 
-        name: `Equipment ${i + 11}` 
-      }));
-      
+
+      const mockEquipments = Array(10)
+        .fill(null)
+        .map((_, i) => ({
+          id: `${i + 11}`,
+          name: `Equipment ${i + 11}`,
+        }));
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 25
+        total: 25,
       });
 
       // Act
-      const result = await service.getMedicalEquipment(undefined, undefined, pagination);
+      const result = await service.getMedicalEquipment(
+        undefined,
+        undefined,
+        pagination,
+      );
 
       // Assert
       expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
-        undefined, 
-        undefined, 
-        pagination
+        undefined,
+        undefined,
+        pagination,
       );
       expect(result).toEqual({
         data: mockEquipments,
@@ -146,8 +152,8 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 25,
           page: 2,
           limit: 10,
-          totalPages: 3  // Ceil(25/10) = 3
-        }
+          totalPages: 3, // Ceil(25/10) = 3
+        },
       });
     });
 
@@ -159,26 +165,30 @@ describe("MedicalEquipmentService - Get Methods", () => {
       };
       const pagination: PaginationOptions = {
         page: 1,
-        limit: 5
+        limit: 5,
       };
-      
+
       const mockEquipments = [
-        { id: "1", name: "Test Equipment 1", status: "Active" }
+        { id: "1", name: "Test Equipment 1", status: "Active" },
       ];
-      
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 1
+        total: 1,
       });
 
       // Act
-      const result = await service.getMedicalEquipment(search, filters, pagination);
+      const result = await service.getMedicalEquipment(
+        search,
+        filters,
+        pagination,
+      );
 
       // Assert
       expect(mockRepository.getMedicalEquipment).toHaveBeenCalledWith(
-        search, 
-        filters, 
-        pagination
+        search,
+        filters,
+        pagination,
       );
       expect(result).toEqual({
         data: mockEquipments,
@@ -186,8 +196,8 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 1,
           page: 1,
           limit: 5,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       });
     });
 
@@ -195,7 +205,7 @@ describe("MedicalEquipmentService - Get Methods", () => {
       // Arrange
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: [],
-        total: 0
+        total: 0,
       });
 
       // Act
@@ -208,8 +218,8 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 0,
           page: 1,
           limit: 0,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       });
     });
 
@@ -219,28 +229,36 @@ describe("MedicalEquipmentService - Get Methods", () => {
       mockRepository.getMedicalEquipment.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(service.getMedicalEquipment()).rejects.toThrow("Database error");
+      await expect(service.getMedicalEquipment()).rejects.toThrow(
+        "Database error",
+      );
     });
 
     it("should handle last page with fewer items than limit", async () => {
       // Arrange
       const pagination: PaginationOptions = {
         page: 3,
-        limit: 10
+        limit: 10,
       };
-      
-      const mockEquipments = Array(5).fill(null).map((_, i) => ({ 
-        id: `${i + 21}`, 
-        name: `Equipment ${i + 21}` 
-      }));
-      
+
+      const mockEquipments = Array(5)
+        .fill(null)
+        .map((_, i) => ({
+          id: `${i + 21}`,
+          name: `Equipment ${i + 21}`,
+        }));
+
       mockRepository.getMedicalEquipment.mockResolvedValue({
         equipments: mockEquipments,
-        total: 25
+        total: 25,
       });
 
       // Act
-      const result = await service.getMedicalEquipment(undefined, undefined, pagination);
+      const result = await service.getMedicalEquipment(
+        undefined,
+        undefined,
+        pagination,
+      );
 
       // Assert
       expect(result).toEqual({
@@ -249,8 +267,8 @@ describe("MedicalEquipmentService - Get Methods", () => {
           total: 25,
           page: 3,
           limit: 10,
-          totalPages: 3
-        }
+          totalPages: 3,
+        },
       });
     });
   });
@@ -259,10 +277,10 @@ describe("MedicalEquipmentService - Get Methods", () => {
     it("should return equipment when found by ID", async () => {
       // Arrange
       const id = "valid-id";
-      const mockEquipment: MedicalEquipmentDTO = { 
+      const mockEquipment: MedicalEquipmentDTO = {
         id,
-        name: "Test Equipment", 
-        inventorisId: "INV001", 
+        name: "Test Equipment",
+        inventorisId: "INV001",
         brandName: "Brand A",
         modelName: "Model X",
         purchaseDate: new Date("2022-01-01"),
@@ -276,7 +294,7 @@ describe("MedicalEquipmentService - Get Methods", () => {
         deletedOn: null,
         deletedBy: null,
       };
-      
+
       mockRepository.getMedicalEquipmentById.mockResolvedValue(mockEquipment);
 
       // Act
@@ -303,7 +321,10 @@ describe("MedicalEquipmentService - Get Methods", () => {
     it("should throw error when id is empty", async () => {
       // Act & Assert
       await expect(service.getMedicalEquipmentById("")).rejects.toThrow(
-        new AppError("Equipment ID is required and must be a valid string", 400)
+        new AppError(
+          "Equipment ID is required and must be a valid string",
+          400,
+        ),
       );
       expect(mockRepository.getMedicalEquipmentById).not.toHaveBeenCalled();
     });
@@ -311,7 +332,10 @@ describe("MedicalEquipmentService - Get Methods", () => {
     it("should throw error when id is whitespace", async () => {
       // Act & Assert
       await expect(service.getMedicalEquipmentById("   ")).rejects.toThrow(
-        new AppError("Equipment ID is required and must be a valid string", 400)
+        new AppError(
+          "Equipment ID is required and must be a valid string",
+          400,
+        ),
       );
       expect(mockRepository.getMedicalEquipmentById).not.toHaveBeenCalled();
     });
@@ -323,7 +347,9 @@ describe("MedicalEquipmentService - Get Methods", () => {
       mockRepository.getMedicalEquipmentById.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(service.getMedicalEquipmentById(id)).rejects.toThrow("Database error");
+      await expect(service.getMedicalEquipmentById(id)).rejects.toThrow(
+        "Database error",
+      );
       expect(mockRepository.getMedicalEquipmentById).toHaveBeenCalledWith(id);
     });
   });

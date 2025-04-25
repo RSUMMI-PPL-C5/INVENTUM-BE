@@ -1,28 +1,28 @@
-import MedicalEquipmentRepository from '../../../../src/repository/medicalequipment.repository';
-import { getJakartaTime } from '../../../../src/utils/date.utils';
+import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
+import { getJakartaTime } from "../../../../src/utils/date.utils";
 
 // Mock Prisma
-jest.mock('@prisma/client', () => {
+jest.mock("@prisma/client", () => {
   const mockPrismaClient = {
     medicalEquipment: {
       findFirst: jest.fn(),
-      update: jest.fn()
-    }
+      update: jest.fn(),
+    },
   };
   return {
-    PrismaClient: jest.fn(() => mockPrismaClient)
+    PrismaClient: jest.fn(() => mockPrismaClient),
   };
 });
 
 // Mock getJakartaTime
-jest.mock('../../../../src/utils/date.utils', () => ({
-  getJakartaTime: jest.fn()
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn(),
 }));
 
-describe('MedicalEquipmentRepository - deleteMedicalEquipment', () => {
+describe("MedicalEquipmentRepository - deleteMedicalEquipment", () => {
   let medicalEquipmentRepository: MedicalEquipmentRepository;
   let mockPrisma: any;
-  const mockCurrentDate = new Date('2025-04-21T10:00:00Z');
+  const mockCurrentDate = new Date("2025-04-21T10:00:00Z");
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,100 +31,105 @@ describe('MedicalEquipmentRepository - deleteMedicalEquipment', () => {
     (getJakartaTime as jest.Mock).mockReturnValue(mockCurrentDate);
   });
 
-  it('should successfully delete a medical equipment', async () => {
+  it("should successfully delete a medical equipment", async () => {
     // Arrange
-    const equipmentId = 'test-equipment-id';
-    const deletedById = 'user-123';
-    
+    const equipmentId = "test-equipment-id";
+    const deletedById = "user-123";
+
     const mockEquipment = {
       id: equipmentId,
-      name: 'Test Equipment',
-      inventorisId: 'INV001',
-      status: 'Active',
-      deletedOn: null
+      name: "Test Equipment",
+      inventorisId: "INV001",
+      status: "Active",
+      deletedOn: null,
     };
-    
+
     mockPrisma.medicalEquipment.findFirst.mockResolvedValue(mockEquipment);
     mockPrisma.medicalEquipment.update.mockResolvedValue({
       ...mockEquipment,
       deletedOn: mockCurrentDate,
-      deletedBy: deletedById
+      deletedBy: deletedById,
     });
 
     // Act
-    const result = await medicalEquipmentRepository.deleteMedicalEquipment(equipmentId, deletedById);
+    const result = await medicalEquipmentRepository.deleteMedicalEquipment(
+      equipmentId,
+      deletedById,
+    );
 
     // Assert
     expect(mockPrisma.medicalEquipment.findFirst).toHaveBeenCalledWith({
-      where: { id: equipmentId, deletedOn: null }
+      where: { id: equipmentId, deletedOn: null },
     });
-    
+
     expect(mockPrisma.medicalEquipment.update).toHaveBeenCalledWith({
       where: { id: equipmentId },
-      data: { 
+      data: {
         deletedOn: mockCurrentDate,
-        deletedBy: deletedById
-      }
+        deletedBy: deletedById,
+      },
     });
-    
+
     expect(result).toEqual({
       ...mockEquipment,
       deletedOn: mockCurrentDate,
-      deletedBy: deletedById
+      deletedBy: deletedById,
     });
   });
 
-  it('should return null if equipment not found', async () => {
+  it("should return null if equipment not found", async () => {
     // Arrange
-    const equipmentId = 'non-existent-id';
+    const equipmentId = "non-existent-id";
     mockPrisma.medicalEquipment.findFirst.mockResolvedValue(null);
 
     // Act
-    const result = await medicalEquipmentRepository.deleteMedicalEquipment(equipmentId);
+    const result =
+      await medicalEquipmentRepository.deleteMedicalEquipment(equipmentId);
 
     // Assert
     expect(mockPrisma.medicalEquipment.findFirst).toHaveBeenCalledWith({
-      where: { id: equipmentId, deletedOn: null }
+      where: { id: equipmentId, deletedOn: null },
     });
     expect(mockPrisma.medicalEquipment.update).not.toHaveBeenCalled();
     expect(result).toBeNull();
   });
 
-  it('should delete without deletedBy if not provided', async () => {
+  it("should delete without deletedBy if not provided", async () => {
     // Arrange
-    const equipmentId = 'test-equipment-id';
-    
+    const equipmentId = "test-equipment-id";
+
     const mockEquipment = {
       id: equipmentId,
-      name: 'Test Equipment',
-      inventorisId: 'INV001',
-      status: 'Active',
-      deletedOn: null
+      name: "Test Equipment",
+      inventorisId: "INV001",
+      status: "Active",
+      deletedOn: null,
     };
-    
+
     mockPrisma.medicalEquipment.findFirst.mockResolvedValue(mockEquipment);
     mockPrisma.medicalEquipment.update.mockResolvedValue({
       ...mockEquipment,
       deletedOn: mockCurrentDate,
-      deletedBy: undefined
+      deletedBy: undefined,
     });
 
     // Act
-    const result = await medicalEquipmentRepository.deleteMedicalEquipment(equipmentId);
+    const result =
+      await medicalEquipmentRepository.deleteMedicalEquipment(equipmentId);
 
     // Assert
     expect(mockPrisma.medicalEquipment.update).toHaveBeenCalledWith({
       where: { id: equipmentId },
-      data: { 
+      data: {
         deletedOn: mockCurrentDate,
-        deletedBy: undefined
-      }
+        deletedBy: undefined,
+      },
     });
-    
+
     expect(result).toEqual({
       ...mockEquipment,
       deletedOn: mockCurrentDate,
-      deletedBy: undefined
+      deletedBy: undefined,
     });
   });
 });

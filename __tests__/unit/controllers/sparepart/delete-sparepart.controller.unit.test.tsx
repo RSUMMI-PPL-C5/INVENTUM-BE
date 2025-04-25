@@ -19,7 +19,8 @@ describe("SparepartController - deleteSparepart", () => {
     jest.clearAllMocks();
 
     // Setup mock service
-    mockSparepartService = new SparepartService() as jest.Mocked<SparepartService>;
+    mockSparepartService =
+      new SparepartService() as jest.Mocked<SparepartService>;
     sparepartController = new SparepartController();
     (sparepartController as any).sparepartService = mockSparepartService;
 
@@ -53,14 +54,19 @@ describe("SparepartController - deleteSparepart", () => {
       deletedOn: new Date(),
     };
 
-    mockSparepartService.deleteSparepart.mockResolvedValue(mockDeletedSparepart);
+    mockSparepartService.deleteSparepart.mockResolvedValue(
+      mockDeletedSparepart,
+    );
 
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("1", "user123");
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "1",
+      "user123",
+    );
     expect(statusMock).toHaveBeenCalledWith(200);
     expect(jsonMock).toHaveBeenCalledWith({
       status: "success",
@@ -73,10 +79,13 @@ describe("SparepartController - deleteSparepart", () => {
 
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("1", "user123");
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "1",
+      "user123",
+    );
     expect(statusMock).toHaveBeenCalledWith(404);
     expect(jsonMock).toHaveBeenCalledWith({
       status: "error",
@@ -86,14 +95,19 @@ describe("SparepartController - deleteSparepart", () => {
 
   it("should return 500 if service throws an error", async () => {
     const errorMessage = "Service error";
-    mockSparepartService.deleteSparepart.mockRejectedValue(new Error(errorMessage));
+    mockSparepartService.deleteSparepart.mockRejectedValue(
+      new Error(errorMessage),
+    );
 
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("1", "user123");
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "1",
+      "user123",
+    );
     expect(statusMock).toHaveBeenCalledWith(500);
     expect(jsonMock).toHaveBeenCalledWith({
       status: "error",
@@ -118,25 +132,33 @@ describe("SparepartController - deleteSparepart", () => {
     };
 
     mockRequest.params = { id: "custom-id-123" };
-    mockSparepartService.deleteSparepart.mockResolvedValue(mockDeletedSparepart);
+    mockSparepartService.deleteSparepart.mockResolvedValue(
+      mockDeletedSparepart,
+    );
 
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
 
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("custom-id-123", "user123");
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "custom-id-123",
+      "user123",
+    );
   });
 
   it("should return 500 with 'An unknown error occurred' if an unknown error is thrown", async () => {
     mockSparepartService.deleteSparepart.mockRejectedValue("Unknown error");
-  
+
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
-  
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("1", "user123");
+
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "1",
+      "user123",
+    );
     expect(statusMock).toHaveBeenCalledWith(500);
     expect(jsonMock).toHaveBeenCalledWith({
       status: "error",
@@ -147,13 +169,16 @@ describe("SparepartController - deleteSparepart", () => {
   it("should handle AppError correctly", async () => {
     const appError = new AppError("Custom error message", 400);
     mockSparepartService.deleteSparepart.mockRejectedValue(appError);
-  
+
     await sparepartController.deleteSparepart(
       mockRequest as Request,
-      mockResponse as Response
+      mockResponse as Response,
     );
-  
-    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith("1", "user123");
+
+    expect(mockSparepartService.deleteSparepart).toHaveBeenCalledWith(
+      "1",
+      "user123",
+    );
     expect(statusMock).toHaveBeenCalledWith(400);
     expect(jsonMock).toHaveBeenCalledWith({
       status: "error",

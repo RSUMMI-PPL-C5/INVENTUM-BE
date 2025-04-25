@@ -98,7 +98,9 @@ describe("User Repository - UPDATE", () => {
     const errorMessage = "Update failed";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.updateUser("1", updateData)).rejects.toThrow(errorMessage);
+    await expect(userRepository.updateUser("1", updateData)).rejects.toThrow(
+      errorMessage,
+    );
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: { id: "1" },
       data: {
@@ -113,7 +115,9 @@ describe("User Repository - UPDATE", () => {
     const errorMessage = "No data provided for update";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.updateUser("1", {})).rejects.toThrow(errorMessage);
+    await expect(userRepository.updateUser("1", {})).rejects.toThrow(
+      errorMessage,
+    );
     expect(mockPrisma.update).toHaveBeenCalledWith({
       where: { id: "1" },
       data: {

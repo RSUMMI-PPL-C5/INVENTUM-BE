@@ -38,7 +38,9 @@ describe("SparepartService - addSparepart", () => {
 
     const mockCreatedSparepart = { ...mockSparepartData, id: "generated-uuid" };
     (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
-    sparepartRepositoryMock.createSparepart.mockResolvedValue(mockCreatedSparepart);
+    sparepartRepositoryMock.createSparepart.mockResolvedValue(
+      mockCreatedSparepart,
+    );
 
     const result = await sparepartService.addSparepart(mockSparepartData);
 
@@ -66,8 +68,10 @@ describe("SparepartService - addSparepart", () => {
       createdBy: "user123",
     };
 
-    await expect(sparepartService.addSparepart(invalidData as SparepartDTO)).rejects.toThrow(
-      new AppError("Parts name is required and must be a valid string", 400)
+    await expect(
+      sparepartService.addSparepart(invalidData as SparepartDTO),
+    ).rejects.toThrow(
+      new AppError("Parts name is required and must be a valid string", 400),
     );
   });
 
@@ -88,7 +92,7 @@ describe("SparepartService - addSparepart", () => {
     };
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
-      new AppError("Parts name is required and must be a valid string", 400)
+      new AppError("Parts name is required and must be a valid string", 400),
     );
   });
 });

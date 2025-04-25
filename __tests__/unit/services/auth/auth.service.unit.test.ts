@@ -45,7 +45,9 @@ describe("AuthService", () => {
 
       const result = await authService.validateUser("user1", "password");
 
-      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith(
+        "user1",
+      );
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(result).toEqual({
         id: "1",
@@ -68,11 +70,13 @@ describe("AuthService", () => {
     it("should throw an AppError if user is not found", async () => {
       mockUserRepository.getUserByUsername.mockResolvedValue(null);
 
-      await expect(authService.validateUser("user1", "password")).rejects.toThrow(
-        new AppError("User not found", 404)
-      );
+      await expect(
+        authService.validateUser("user1", "password"),
+      ).rejects.toThrow(new AppError("User not found", 404));
 
-      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith(
+        "user1",
+      );
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
@@ -98,12 +102,17 @@ describe("AuthService", () => {
       mockUserRepository.getUserByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(authService.validateUser("user1", "wrongPassword")).rejects.toThrow(
-        new AppError("Invalid username or password", 401)
-      );
+      await expect(
+        authService.validateUser("user1", "wrongPassword"),
+      ).rejects.toThrow(new AppError("Invalid username or password", 401));
 
-      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
-      expect(bcrypt.compare).toHaveBeenCalledWith("wrongPassword", "hashedPassword");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith(
+        "user1",
+      );
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        "wrongPassword",
+        "hashedPassword",
+      );
     });
   });
 
@@ -137,12 +146,14 @@ describe("AuthService", () => {
 
       const result = await authService.login("user1", "password");
 
-      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith(
+        "user1",
+      );
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(jwt.sign).toHaveBeenCalledWith(
         { userId: "1", role: "User" },
         "mockSecretKey",
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
       expect(result).toEqual({
         id: "1",
@@ -188,10 +199,12 @@ describe("AuthService", () => {
       delete process.env.JWT_SECRET_KEY;
 
       await expect(authService.login("user1", "password")).rejects.toThrow(
-        new AppError("JWT_SECRET_KEY is not set", 500)
+        new AppError("JWT_SECRET_KEY is not set", 500),
       );
 
-      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith("user1");
+      expect(mockUserRepository.getUserByUsername).toHaveBeenCalledWith(
+        "user1",
+      );
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(jwt.sign).not.toHaveBeenCalled();
     });

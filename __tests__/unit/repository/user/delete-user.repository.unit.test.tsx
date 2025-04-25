@@ -90,7 +90,9 @@ describe("User Repository - DELETE", () => {
     const errorMessage = "Update failed";
     (mockPrisma.update as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    await expect(userRepository.deleteUser("1", "admin")).rejects.toThrow(errorMessage);
+    await expect(userRepository.deleteUser("1", "admin")).rejects.toThrow(
+      errorMessage,
+    );
     expect(mockPrisma.update).toHaveBeenCalledTimes(1);
   });
 

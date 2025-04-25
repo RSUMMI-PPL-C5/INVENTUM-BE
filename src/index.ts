@@ -36,7 +36,7 @@ app.use(
       styleSrc: ["'self'"],
       imgSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
-      fontSrc: ["'self'"], 
+      fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
@@ -44,21 +44,21 @@ app.use(
       formAction: ["'self'"],
       baseUri: ["'self'"],
     },
-  })
+  }),
 );
 
 // Header setup for security
 app.use((req, res, next) => {
   // Cross-Origin Protection untuk mitigasi Spectre
-  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+
   // Permissions Policy
   res.setHeader(
-    'Permissions-Policy', 
-    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
+    "Permissions-Policy",
+    "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
   );
-  
+
   next();
 });
 
@@ -73,7 +73,7 @@ const whitelist: string[] = [];
 const PROD = process.env.PROD_CLIENT_URL;
 
 if (PROD) {
-    whitelist.push(PROD);
+  whitelist.push(PROD);
 }
 
 const corsOptions: cors.CorsOptions = {
@@ -97,7 +97,7 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 });
 
 app.get("/", (req, res) => {
-    res.send("PPL C-5 DEPLOYED!!!");
+  res.send("PPL C-5 DEPLOYED!!!");
 });
 
 app.use("/auth", authRoutes);
@@ -109,7 +109,7 @@ app.use("/medical-equipment", medicalequipmentRoutes);
 app.use((req, res, next) => {
   res.status(404).send({
     status: "error",
-    message: "Route not found"
+    message: "Route not found",
   });
 });
 
@@ -121,8 +121,8 @@ app.use(customErrorHandler);
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
-    console.log(`Server listening on port: ${PORT}`);
-    console.log(`CORS enabled for origins: ${whitelist.join(", ")}`);
+  console.log(`Server listening on port: ${PORT}`);
+  console.log(`CORS enabled for origins: ${whitelist.join(", ")}`);
 });
 
 export default server;

@@ -11,7 +11,8 @@ describe("DivisionService - ADD", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDivisionRepository = new DivisionRepository() as jest.Mocked<DivisionRepository>;
+    mockDivisionRepository =
+      new DivisionRepository() as jest.Mocked<DivisionRepository>;
     divisionService = new DivisionService();
     (divisionService as any).divisionRepository = mockDivisionRepository;
   });
@@ -34,7 +35,9 @@ describe("DivisionService - ADD", () => {
       parentId: 1,
     };
 
-    mockDivisionRepository.getDivisionById.mockResolvedValue(mockParentDivision);
+    mockDivisionRepository.getDivisionById.mockResolvedValue(
+      mockParentDivision,
+    );
     mockDivisionRepository.addDivision.mockResolvedValue(mockNewDivision);
 
     const result = await divisionService.addDivision(addData);
@@ -75,7 +78,7 @@ describe("DivisionService - ADD", () => {
     mockDivisionRepository.getDivisionById.mockResolvedValue(null);
 
     await expect(divisionService.addDivision(addData)).rejects.toThrow(
-      "Parent divisi not found"
+      "Parent divisi not found",
     );
     expect(mockDivisionRepository.getDivisionById).toHaveBeenCalledWith(99);
   });
@@ -87,11 +90,11 @@ describe("DivisionService - ADD", () => {
     };
 
     mockDivisionRepository.getDivisionById.mockRejectedValue(
-      new Error("Database error")
+      new Error("Database error"),
     );
 
     await expect(divisionService.addDivision(addData)).rejects.toThrow(
-      "Database error"
+      "Database error",
     );
     expect(mockDivisionRepository.getDivisionById).toHaveBeenCalledWith(1);
   });

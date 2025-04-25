@@ -45,7 +45,7 @@ class MedicalEquipmentRepository {
 
   private buildWhereClause(
     search?: string,
-    filters?: MedicalEquipmentFilterOptions
+    filters?: MedicalEquipmentFilterOptions,
   ): any {
     const where: any = {
       deletedOn: null, // Filter to exclude soft deleted records
@@ -73,8 +73,8 @@ class MedicalEquipmentRepository {
   }
 
   private addPurchaseDateFilter(
-    where: any, 
-    filters: MedicalEquipmentFilterOptions
+    where: any,
+    filters: MedicalEquipmentFilterOptions,
   ): void {
     if (filters.purchaseDateStart || filters.purchaseDateEnd) {
       where.purchaseDate = {};
@@ -89,7 +89,7 @@ class MedicalEquipmentRepository {
 
   private addCreatedOnFilter(
     where: any,
-    filters: MedicalEquipmentFilterOptions
+    filters: MedicalEquipmentFilterOptions,
   ): void {
     if (filters.createdOnStart || filters.createdOnEnd) {
       where.createdOn = {};
@@ -104,7 +104,7 @@ class MedicalEquipmentRepository {
 
   private addModifiedOnFilter(
     where: any,
-    filters: MedicalEquipmentFilterOptions
+    filters: MedicalEquipmentFilterOptions,
   ): void {
     if (filters.modifiedOnStart || filters.modifiedOnEnd) {
       where.modifiedOn = {};
@@ -120,11 +120,13 @@ class MedicalEquipmentRepository {
   public async getMedicalEquipment(
     search?: string,
     filters?: MedicalEquipmentFilterOptions,
-    pagination?: PaginationOptions
-  ): Promise<{ equipments: MedicalEquipmentDTO[], total: number }> {
+    pagination?: PaginationOptions,
+  ): Promise<{ equipments: MedicalEquipmentDTO[]; total: number }> {
     const where = this.buildWhereClause(search, filters);
 
-    const skip = pagination ? (pagination.page - 1) * pagination.limit : undefined;
+    const skip = pagination
+      ? (pagination.page - 1) * pagination.limit
+      : undefined;
     const take = pagination ? pagination.limit : undefined;
 
     const [equipments, total] = await Promise.all([
@@ -146,9 +148,9 @@ class MedicalEquipmentRepository {
     inventorisId: string,
   ): Promise<AddMedicalEquipmentResponseDTO | null> {
     const equipment = await this.prisma.medicalEquipment.findUnique({
-      where: { 
+      where: {
         inventorisId,
-        deletedOn: null 
+        deletedOn: null,
       },
       select: {
         id: true,
@@ -172,9 +174,9 @@ class MedicalEquipmentRepository {
     id: string,
   ): Promise<AddMedicalEquipmentResponseDTO | null> {
     const equipment = await this.prisma.medicalEquipment.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
       select: {
         id: true,
@@ -198,9 +200,9 @@ class MedicalEquipmentRepository {
     id: string,
   ): Promise<MedicalEquipmentDTO | null> {
     return await this.prisma.medicalEquipment.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
   }
@@ -223,9 +225,9 @@ class MedicalEquipmentRepository {
     data: Partial<MedicalEquipmentDTO>,
   ): Promise<AddMedicalEquipmentResponseDTO | null> {
     const equipment = await this.prisma.medicalEquipment.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
 
@@ -255,11 +257,14 @@ class MedicalEquipmentRepository {
     };
   }
 
-  public async deleteMedicalEquipment(id: string, deletedBy?: string): Promise<MedicalEquipmentDTO | null> {
+  public async deleteMedicalEquipment(
+    id: string,
+    deletedBy?: string,
+  ): Promise<MedicalEquipmentDTO | null> {
     const equipment = await this.prisma.medicalEquipment.findFirst({
-      where: { 
+      where: {
         id,
-        deletedOn: null 
+        deletedOn: null,
       },
     });
 
@@ -267,7 +272,7 @@ class MedicalEquipmentRepository {
 
     return await this.prisma.medicalEquipment.update({
       where: { id },
-      data: { 
+      data: {
         deletedOn: getJakartaTime(),
         deletedBy: deletedBy,
       },

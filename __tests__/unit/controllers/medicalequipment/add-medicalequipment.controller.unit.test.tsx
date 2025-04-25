@@ -20,16 +20,17 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
   let res: Partial<Response>;
 
   beforeEach(() => {
-    mockService = new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
+    mockService =
+      new MedicalEquipmentService() as jest.Mocked<MedicalEquipmentService>;
     medicalEquipmentController = new MedicalEquipmentController();
     (medicalEquipmentController as any).medicalEquipmentService = mockService;
 
     // Setup request with mock user
-    req = { 
+    req = {
       body: {},
-      user: { userId: "user-123" }
+      user: { userId: "user-123" },
     };
-    
+
     // Setup response with mock methods
     res = {
       status: jest.fn().mockReturnThis(),
@@ -47,7 +48,7 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
       inventorisId: "INV-001",
       name: "X-Ray Machine",
       brandName: "MedCorp",
-      modelName: "XR-2000"
+      modelName: "XR-2000",
     };
 
     const expectedResponseData: AddMedicalEquipmentResponseDTO = {
@@ -55,23 +56,26 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
       inventorisId: "INV-001",
       name: "X-Ray Machine",
       brandName: "MedCorp",
-      modelName: "XR-2000"
+      modelName: "XR-2000",
     };
 
     mockService.addMedicalEquipment.mockResolvedValue(expectedResponseData);
 
     // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+    await medicalEquipmentController.addMedicalEquipment(
+      req as Request,
+      res as Response,
+    );
 
     // Assert
     expect(mockService.addMedicalEquipment).toHaveBeenCalledWith({
       ...req.body,
-      createdBy: "user-123"
+      createdBy: "user-123",
     });
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       status: "success",
-      data: expectedResponseData
+      data: expectedResponseData,
     });
   });
 
@@ -86,13 +90,16 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
     mockService.addMedicalEquipment.mockRejectedValue(appError);
 
     // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+    await medicalEquipmentController.addMedicalEquipment(
+      req as Request,
+      res as Response,
+    );
 
     // Assert
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
       status: "error",
-      message: "Inventoris ID already in use"
+      message: "Inventoris ID already in use",
     });
   });
 
@@ -103,16 +110,21 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
       name: "ECG Machine",
     };
 
-    mockService.addMedicalEquipment.mockRejectedValue(new Error("Database error"));
+    mockService.addMedicalEquipment.mockRejectedValue(
+      new Error("Database error"),
+    );
 
     // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+    await medicalEquipmentController.addMedicalEquipment(
+      req as Request,
+      res as Response,
+    );
 
     // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       status: "error",
-      message: "Database error"
+      message: "Database error",
     });
   });
 
@@ -126,13 +138,16 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
     mockService.addMedicalEquipment.mockRejectedValue("Not an Error object");
 
     // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+    await medicalEquipmentController.addMedicalEquipment(
+      req as Request,
+      res as Response,
+    );
 
     // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       status: "error",
-      message: "An unknown error occurred"
+      message: "An unknown error occurred",
     });
   });
 
@@ -143,31 +158,34 @@ describe("MedicalEquipmentController - addMedicalEquipment", () => {
       inventorisId: "INV-DATE",
       name: "Calendar Equipment",
       purchasePrice: "1000.50",
-      purchaseDate: purchaseDate
+      purchaseDate: purchaseDate,
     };
 
     const expectedResponse = {
       id: "mocked-id",
       inventorisId: "INV-DATE",
-      name: "Calendar Equipment"
+      name: "Calendar Equipment",
     };
 
     mockService.addMedicalEquipment.mockResolvedValue(expectedResponse);
 
     // Act
-    await medicalEquipmentController.addMedicalEquipment(req as Request, res as Response);
+    await medicalEquipmentController.addMedicalEquipment(
+      req as Request,
+      res as Response,
+    );
 
     // Assert
     // The controller shouldn't be doing conversions in this implementation,
     // but we're validating the service was called with the raw body data plus user ID
     expect(mockService.addMedicalEquipment).toHaveBeenCalledWith({
       ...req.body,
-      createdBy: "user-123"
+      createdBy: "user-123",
     });
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       status: "success",
-      data: expectedResponse
+      data: expectedResponse,
     });
   });
 });
