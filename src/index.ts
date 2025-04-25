@@ -43,6 +43,7 @@ app.use(
       frameAncestors: ["'self'"],
       formAction: ["'self'"],
       baseUri: ["'self'"],
+      blockAllMixedContent: []
     },
   }),
 );
