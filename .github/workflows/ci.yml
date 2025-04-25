@@ -9,74 +9,41 @@ on:
 jobs:
   sonarqube:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Specify your Node.js version
+          cache: 'npm'
+          
       - name: Install dependencies
-        run: npm install
-
+        run: npm ci # Using 'npm ci' instead of 'npm install' for more reliable CI builds
+        
+      - name: Run linting
+        run: npm run lint # Add this if you have linting configured
+        
       - name: Run Jest tests with coverage
         run: npm run test -- --coverage
-
-      - name: Run SonarQube analysis
-        run: |
-          npx sonarqube-scanner \
-            -Dsonar.projectKey=INVENTUM-BE-KEY \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=src \
-            -Dsonar.tests=__tests__ \
-            -Dsonar.verbose=true \
-            -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts \
-            -Dsonar.exclusions=src/configs/**, src/**/__tests__/**
-
-      # - name: Check SonarQube Quality Gate
-      #   id: quality-gate
-      #   run: |
-      #     # Tunggu beberapa detik agar analisis selesai
-      #     sleep 30
-    
-      #     # Ambil nama branch dari environment variable GITHUB_REF
-      #     BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
-    
-      #     # Debugging: Tampilkan nama branch
-      #     echo "Branch Name: $BRANCH_NAME"
-    
-      #     # Ambil status Quality Gate dari SonarQube berdasarkan branch
-      #     RESPONSE=$(curl -s "http://117.102.83.235:9090/api/qualitygates/project_status?projectKey=InventoryManagement-BE&branch=$BRANCH_NAME")
-    
-      #     # Debugging: Tampilkan respons untuk memastikan formatnya benar
-      #     echo "SonarQube Response: $RESPONSE"
-    
-      #     # Validasi apakah respons adalah JSON
-      #     if ! echo "$RESPONSE" | jq empty; then
-      #       echo "Error: Response is not valid JSON"
-      #       exit 1
-      #     fi
-    
-      #     # Parse status Quality Gate
-      #     STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status')
-    
-      #     # Simpan status ke output untuk digunakan di langkah berikutnya
-      #     echo "::set-output name=status::$STATUS"
-    
-      #     # Gagal jika status Quality Gate bukan "OK"
-      #     if [ "$STATUS" != "OK" ]; then
-      #       echo "Quality Gate failed: $STATUS"
-      #       exit 1
-      #     fi
-          
-      # - name: Publish Quality Gate Status
-      #   if: always()
-      #   run: |
-      #     if [ "${{ steps.quality-gate.outputs.status }}" == "OK" ]; then
-      #       echo "Quality Gate passed ✅"
-      #     else
-      #       echo "Quality Gate failed ❌"
-      #     fi
+        
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=INVENTUM-BE-KEY
+            -Dsonar.projectName=INVENTUM-BE
+            -Dsonar.sources=src
+            -Dsonar.tests=__tests__
+            -Dsonar.verbose=true
+            -Dsonar.test.inclusions=__tests__/**/*.test.tsx,__tests__/**/*.test.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,**/node_modules/**,**/coverage/**
+            -Dsonar.exclusions=src/configs/**, src/**/__tests__/**,**/node_modules/**,**/docs/**
+            -Dsonar.qualitygate.wait=true

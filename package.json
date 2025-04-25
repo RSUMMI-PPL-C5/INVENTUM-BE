@@ -10,7 +10,8 @@
     "sonar": "sonar-scanner",
     "prepare": "husky",
     "test:unit": "jest --coverage --detectOpenHandles unit",
-    "test:integration": "jest --coverage --detectOpenHandles integration"
+    "test:integration": "jest --coverage --detectOpenHandles integration",
+    "lint": "prettier --check 'src/**/*.{js,ts}'"
   },
   "keywords": [],
   "author": "",
