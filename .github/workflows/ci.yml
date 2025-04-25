@@ -47,3 +47,4 @@ jobs:
             -Dsonar.coverage.exclusions=**/*.test.tsx,**/*.test.ts,**/node_modules/**,**/coverage/**
             -Dsonar.exclusions=src/configs/**,src/**/__tests__/**,**/node_modules/**,**/docs/**
             -Dsonar.qualitygate.wait=true
+            -Dsonar.scanner.skipSystemTruststore=true
