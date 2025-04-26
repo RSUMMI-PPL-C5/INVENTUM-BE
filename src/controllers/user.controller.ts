@@ -1,8 +1,7 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import UserService from "../services/user.service";
-import { UserFilterOptions } from "../filters/interface/user.filter.interface";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
-import AppError from "../utils/appError";
+import { UserFilterOptions } from "../interfaces/user.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 import { AddUserDTO } from "../dto/user.dto";
 
 class UserController {
@@ -12,7 +11,11 @@ class UserController {
     this.userService = new UserService();
   }
 
-  public createUser = async (req: Request, res: Response): Promise<void> => {
+  public createUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const userData: AddUserDTO = {
         ...req.body,
@@ -26,23 +29,15 @@ class UserController {
         data: result,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message: (error as any).message,
-        });
-      }
+      next(error);
     }
   };
 
-  public getUsers = async (req: Request, res: Response): Promise<void> => {
+  public getUsers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit
@@ -65,23 +60,15 @@ class UserController {
 
       res.status(200).json(result);
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message: (error as any).message,
-        });
-      }
+      next(error);
     }
   };
 
-  public getUserById = async (req: Request, res: Response): Promise<void> => {
+  public getUserById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const user = await this.userService.getUserById(req.params.id);
 
@@ -92,23 +79,15 @@ class UserController {
 
       res.status(200).json(user);
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message: (error as any).message,
-        });
-      }
+      next(error);
     }
   };
 
-  public updateUser = async (req: Request, res: Response): Promise<void> => {
+  public updateUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const userId = (req.user as any).userId;
 
@@ -130,23 +109,15 @@ class UserController {
         data: user,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message: (error as Error).message,
-        });
-      }
+      next(error);
     }
   };
 
-  public deleteUser = async (req: Request, res: Response): Promise<void> => {
+  public deleteUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const userId = req.params.id;
       const deletedBy = (req.user as any).userId;
@@ -158,7 +129,7 @@ class UserController {
       }
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
+      next(error);
     }
   };
 }

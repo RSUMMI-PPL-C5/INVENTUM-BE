@@ -4,8 +4,8 @@ import {
   UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
 } from "../../dto/medicalequipment.dto";
-import { MedicalEquipmentFilterOptions } from "../../filters/interface/medicalequipment.filter.interface";
-import { PaginationOptions } from "../../filters/interface/pagination.interface";
+import { MedicalEquipmentFilterOptions } from "../../interfaces/medicalequipment.filter.interface";
+import { PaginationOptions } from "../../interfaces/pagination.interface";
 
 export interface IMedicalEquipmentService {
   // Create

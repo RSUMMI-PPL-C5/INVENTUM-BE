@@ -1,144 +1,55 @@
-import { Request, Response } from "express";
-import DivisionService from "../../../../src/services/division.service";
 import DivisionController from "../../../../src/controllers/division.controller";
+import DivisionService from "../../../../src/services/division.service";
+import { Request, Response, NextFunction } from "express";
 
 jest.mock("../../../../src/services/division.service");
 
-describe("DivisiController - ADD", () => {
+describe("DivisionController - addDivision", () => {
   let divisionController: DivisionController;
-  let mockRequest: Partial<Request>;
-  let mockResponse: Partial<Response>;
-  let mockDivisionService: jest.Mocked<DivisionService>;
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+  let next: NextFunction;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-
-    mockDivisionService = new DivisionService() as jest.Mocked<DivisionService>;
-    (DivisionService as jest.Mock).mockImplementation(
-      () => mockDivisionService,
-    );
-
     divisionController = new DivisionController();
+    req = { body: {} };
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    next = jest.fn();
   });
 
-  test("POST /divisi - should add divisi", async () => {
-    mockRequest = {
-      body: {
-        divisi: "Divisi 1",
-        parentId: 1,
-      },
-    };
+  it("should return 400 if parentId is invalid", async () => {
+    req.body = { parentId: "invalid" };
 
-    mockDivisionService.addDivision.mockResolvedValue({
-      id: 1,
-      divisi: "Divisi 1",
-      parentId: 1,
-    });
+    await divisionController.addDivision(req as Request, res as Response, next);
 
-    await divisionController.addDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      id: 1,
-      divisi: "Divisi 1",
-      parentId: 1,
-    });
-  });
-
-  test("POST /divisi - should make parent null if parentId not provided", async () => {
-    mockRequest = {
-      body: {
-        divisi: "Divisi 1",
-        parentId: undefined,
-      },
-    };
-
-    mockDivisionService.addDivision.mockResolvedValue({
-      id: 1,
-      divisi: "Divisi 1",
-      parentId: null,
-    });
-
-    await divisionController.addDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockResponse.status).toHaveBeenCalledWith(201);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      id: 1,
-      divisi: "Divisi 1",
-      parentId: null,
-    });
-  });
-
-  test("POST /divisi - should return 400 if parentId is not a number", async () => {
-    mockRequest = {
-      body: {
-        divisi: "Divisi 1",
-        parentId: "ABC",
-      },
-    };
-
-    await divisionController.addDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
       message: "Parent ID must be a number or null",
     });
   });
 
-  test("POST /divisi - should return 404 if parent divisi not found", async () => {
-    mockRequest = {
-      body: {
-        divisi: "Divisi 1",
-        parentId: 1,
-      },
-    };
+  it("should create division successfully", async () => {
+    req.body = { divisi: "HR", parentId: null };
+    const mockDivision = { id: 1, divisi: "HR", parentId: null };
 
-    mockDivisionService.addDivision.mockRejectedValue(
-      new Error("Parent divisi not found"),
+    (DivisionService.prototype.addDivision as jest.Mock).mockResolvedValue(
+      mockDivision,
     );
 
-    await divisionController.addDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    await divisionController.addDivision(req as Request, res as Response, next);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(404);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "Parent divisi not found",
-    });
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(mockDivision);
   });
 
-  test("POST /divisi - should return 500 if error", async () => {
-    mockRequest = {
-      body: {
-        divisi: "Divisi 1",
-        parentId: 1,
-      },
-    };
-
-    const errorMessage = "Database error";
-    mockDivisionService.addDivision.mockRejectedValue(new Error(errorMessage));
-
-    await divisionController.addDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+  it("should call next(error) on exception", async () => {
+    (DivisionService.prototype.addDivision as jest.Mock).mockRejectedValue(
+      new Error("Failed"),
     );
 
-    expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
+    await divisionController.addDivision(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
   });
 });

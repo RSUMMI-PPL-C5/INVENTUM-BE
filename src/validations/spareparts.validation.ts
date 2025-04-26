@@ -1,6 +1,7 @@
 import { body } from "express-validator";
+import { query } from "express-validator";
 
-export const addSparepartValidation = [
+const addSparepartValidation = [
   body("partsName")
     .isString()
     .trim()
@@ -43,7 +44,7 @@ export const addSparepartValidation = [
     .withMessage("Tool date must be a valid date"),
 ];
 
-export const updateSparepartValidation = [
+const updateSparepartValidation = [
   body("partsName")
     .optional()
     .isString()
@@ -86,3 +87,53 @@ export const updateSparepartValidation = [
     .isString()
     .withMessage("Tool date must be a valid date"),
 ];
+
+const sparepartFilterQueryValidation = [
+  query("purchaseDateStart")
+    .optional()
+    .isISO8601()
+    .withMessage("Purchase date start must be a valid date in ISO8601 format"),
+
+  query("purchaseDateEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("Purchase date end must be a valid date in ISO8601 format"),
+
+  query("priceMin")
+    .optional()
+    .isNumeric()
+    .toFloat()
+    .withMessage("Minimum price must be a number"),
+
+  query("priceMax")
+    .optional()
+    .isNumeric()
+    .toFloat()
+    .withMessage("Maximum price must be a number"),
+
+  query("createdOnStart")
+    .optional()
+    .isISO8601()
+    .withMessage("Created date start must be a valid date in ISO8601 format"),
+
+  query("createdOnEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("Created date end must be a valid date in ISO8601 format"),
+
+  query("modifiedOnStart")
+    .optional()
+    .isISO8601()
+    .withMessage("Modified date start must be a valid date in ISO8601 format"),
+
+  query("modifiedOnEnd")
+    .optional()
+    .isISO8601()
+    .withMessage("Modified date end must be a valid date in ISO8601 format"),
+];
+
+export {
+  addSparepartValidation,
+  updateSparepartValidation,
+  sparepartFilterQueryValidation,
+};

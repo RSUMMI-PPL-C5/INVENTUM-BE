@@ -1,12 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import MedicalEquipmentService from "../services/medicalequipment.service";
 import {
   AddMedicalEquipmentDTO,
   UpdateMedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
-import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
-import AppError from "../utils/appError";
+import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 
 class MedicalEquipmentController {
   private readonly medicalEquipmentService: MedicalEquipmentService;
@@ -18,6 +17,7 @@ class MedicalEquipmentController {
   public addMedicalEquipment = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const equipmentData: AddMedicalEquipmentDTO = {
@@ -31,27 +31,15 @@ class MedicalEquipmentController {
         status: "success",
         data: newEquipment,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public updateMedicalEquipment = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { id } = req.params;
@@ -78,30 +66,17 @@ class MedicalEquipmentController {
         status: "success",
         data: updatedEquipment,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public getMedicalEquipment = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
-      // Get pagination options
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit
         ? parseInt(req.query.limit as string, 10)
@@ -122,29 +97,15 @@ class MedicalEquipmentController {
       );
 
       res.status(200).json(result);
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public getMedicalEquipmentById = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const medicalEquipment =
@@ -164,27 +125,15 @@ class MedicalEquipmentController {
         status: "success",
         data: medicalEquipment,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public deleteMedicalEquipment = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const deletedById = (req.user as any).userId;
@@ -206,21 +155,8 @@ class MedicalEquipmentController {
         status: "success",
         message: "Medical Equipment deleted successfully",
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 }

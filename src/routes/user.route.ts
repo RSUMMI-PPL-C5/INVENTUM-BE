@@ -1,28 +1,26 @@
 import { Router } from "express";
 import UserController from "../controllers/user.controller";
 import verifyToken from "../middleware/verifyToken";
-import { userFilterQueryValidation } from "../validations/userfilterquery.validation";
 import {
   addUserValidation,
   updateUserValidation,
+  userFilterQueryValidation,
 } from "../validations/user.validation";
 import authorizeRoles from "../middleware/authorizeRole";
 import { validateRequest } from "../middleware/validateRequest";
 
 const router = Router();
-const userController = new UserController();
+const controller = new UserController();
 
+// Global middleware
 router.use(verifyToken, authorizeRoles("Admin"));
 
-router.get("/", userFilterQueryValidation, userController.getUsers);
-router.post("/", addUserValidation, validateRequest, userController.createUser);
-router.get("/:id", userController.getUserById);
-router.put(
-  "/:id",
-  updateUserValidation,
-  validateRequest,
-  userController.updateUser,
-);
-router.delete("/:id", userController.deleteUser);
+// Routes
+router
+  .get("/", userFilterQueryValidation, controller.getUsers)
+  .get("/:id", controller.getUserById)
+  .post("/", addUserValidation, validateRequest, controller.createUser)
+  .put("/:id", updateUserValidation, validateRequest, controller.updateUser)
+  .delete("/:id", controller.deleteUser);
 
 export default router;

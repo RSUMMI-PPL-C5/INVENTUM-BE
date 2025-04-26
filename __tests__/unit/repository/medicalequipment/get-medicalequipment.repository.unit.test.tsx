@@ -1,6 +1,6 @@
 import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
-import { MedicalEquipmentFilterOptions } from "../../../../src/filters/interface/medicalequipment.filter.interface";
-import { PaginationOptions } from "../../../../src/filters/interface/pagination.interface";
+import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medicalequipment.filter.interface";
+import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
 
 // Mock Prisma
 jest.mock("@prisma/client", () => {
