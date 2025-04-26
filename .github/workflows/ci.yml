@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - "*"
-      - "chore/*" # must be deleted later
+    
 
 jobs:
   sonarqube:
