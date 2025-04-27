@@ -5,8 +5,8 @@ import {
 } from "../dto/medicalequipment.dto";
 import prisma from "../configs/db.config";
 import { getJakartaTime } from "../utils/date.utils";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
-import { MedicalEquipmentFilterOptions } from "../filters/interface/medicalequipment.filter.interface";
+import { PaginationOptions } from "../interface/pagination.interface";
+import { MedicalEquipmentFilterOptions } from "../interface/medicalequipment.filter.interface";
 
 class MedicalEquipmentRepository {
   private readonly prisma: PrismaClient;

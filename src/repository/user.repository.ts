@@ -2,8 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { UserDTO, AddUserResponseDTO } from "../dto/user.dto";
 import { getJakartaTime } from "../utils/date.utils";
 import prisma from "../configs/db.config";
-import { UserFilterOptions } from "../filters/interface/user.filter.interface";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
+import { UserFilterOptions } from "../interface/user.filter.interface";
+import { PaginationOptions } from "../interface/pagination.interface";
 
 class UserRepository {
   private readonly prisma: PrismaClient;

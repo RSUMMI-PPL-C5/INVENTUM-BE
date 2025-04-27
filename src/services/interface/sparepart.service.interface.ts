@@ -1,6 +1,6 @@
 import { SparepartDTO, SparepartsDTO } from "../../dto/sparepart.dto";
-import { PaginationOptions } from "../../filters/interface/pagination.interface";
-import { SparepartFilterOptions } from "../../filters/interface/spareparts.filter.interface";
+import { PaginationOptions } from "../../interface/pagination.interface";
+import { SparepartFilterOptions } from "../../interface/spareparts.filter.interface";
 
 export interface ISparepartService {
   getSpareparts(

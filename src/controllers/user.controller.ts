@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import UserService from "../services/user.service";
-import { UserFilterOptions } from "../filters/interface/user.filter.interface";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
+import { UserFilterOptions } from "../interface/user.filter.interface";
+import { PaginationOptions } from "../interface/pagination.interface";
 import AppError from "../utils/appError";
 import { AddUserDTO } from "../dto/user.dto";
 

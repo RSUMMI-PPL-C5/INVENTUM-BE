@@ -1,7 +1,7 @@
 import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
 import AppError from "../../../../src/utils/appError";
-import { MedicalEquipmentFilterOptions } from "../../../../src/filters/interface/medicalequipment.filter.interface";
-import { PaginationOptions } from "../../../../src/filters/interface/pagination.interface";
+import { MedicalEquipmentFilterOptions } from "../../../../src/interface/medicalequipment.filter.interface";
+import { PaginationOptions } from "../../../../src/interface/pagination.interface";
 import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
 
 describe("MedicalEquipmentService - Get Methods", () => {
