@@ -120,4 +120,62 @@ describe("RequestRepository", () => {
       expect(mockPrisma.request.findMany).toHaveBeenCalled();
     });
   });
+
+  describe("getAllRequestMaintenance", () => {
+    it("should get all maintenance requests successfully", async () => {
+      // Arrange
+      const mockRequests = [
+        {
+          id: "request-1",
+          userId: "user-1",
+          medicalEquipment: "Equipment 1",
+          submissionDate: new Date(),
+          status: "Pending",
+          requestType: "MAINTENANCE",
+        },
+        {
+          id: "request-2",
+          userId: "user-2",
+          medicalEquipment: "Equipment 2",
+          submissionDate: new Date(),
+          status: "Completed",
+          requestType: "MAINTENANCE",
+        },
+      ];
+
+      mockPrisma.request.findMany.mockResolvedValue(mockRequests);
+
+      // Act
+      const result = await repository.getAllRequestMaintenance();
+
+      // Assert
+      expect(mockPrisma.request.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            requestType: "MAINTENANCE",
+          },
+        }),
+      );
+      expect(result).toEqual(mockRequests);
+    });
+
+    it("should handle errors when fetching maintenance requests", async () => {
+      // Arrange
+      mockPrisma.request.findMany.mockRejectedValue(
+        new Error("Database error"),
+      );
+
+      // Act & Assert
+      await expect(repository.getAllRequestMaintenance()).rejects.toThrow(
+        AppError,
+      );
+      expect(mockPrisma.request.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            requestType: "MAINTENANCE",
+          },
+        }),
+      );
+    });
+  });
 });
