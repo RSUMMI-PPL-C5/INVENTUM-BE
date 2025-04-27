@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
-import { RequestResponseDTO } from "../dto/request.dto";
+import { RequestResponseDTO, RequestDTO } from "../dto/request.dto";
 import AppError from "../utils/appError";
 
 export class RequestRepository {
@@ -44,6 +44,48 @@ export class RequestRepository {
     } catch (error) {
       console.error("Error fetching request by ID:", error);
       throw new AppError(`Failed to fetch request with ID ${id}`, 500);
+    }
+  }
+
+  async getAllRequestMaintenance(): Promise<RequestDTO[]> {
+    try {
+      const requests = await this.prisma.request.findMany({
+        where: {
+          requestType: "MAINTENANCE",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullname: true,
+              username: true,
+            },
+          },
+          comments: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  fullname: true,
+                  username: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+          notifications: true,
+        },
+        orderBy: {
+          submissionDate: "desc",
+        },
+      });
+
+      return requests;
+    } catch (error) {
+      console.error("Error fetching maintenance requests:", error);
+      throw new AppError("Failed to fetch maintenance requests", 500);
     }
   }
 
