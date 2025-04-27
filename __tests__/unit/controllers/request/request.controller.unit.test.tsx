@@ -385,4 +385,101 @@ describe("RequestController", () => {
       });
     });
   });
+
+  describe("getAllRequestCalibration", () => {
+    it("should get all calibration requests successfully", async () => {
+      // Setup mock data
+      const mockData = [
+        {
+          id: "request-1",
+          medicalEquipment: "Equipment 1",
+          requestType: "CALIBRATION",
+        },
+        {
+          id: "request-2",
+          medicalEquipment: "Equipment 2",
+          requestType: "CALIBRATION",
+        },
+      ];
+
+      // Mock service response
+      mockRequestService.getAllRequestCalibration.mockResolvedValue(
+        mockData as any,
+      );
+
+      // Call method
+      await requestController.getAllRequestCalibration(
+        mockRequest as Request,
+        mockResponse as Response,
+      );
+
+      // Assertions
+      expect(mockRequestService.getAllRequestCalibration).toHaveBeenCalled();
+      expect(statusSpy).toHaveBeenCalledWith(200);
+      expect(jsonSpy).toHaveBeenCalledWith({
+        success: true,
+        message: "Calibration requests retrieved successfully",
+        data: mockData,
+      });
+    });
+
+    it("should handle AppError exceptions", async () => {
+      // Mock service to throw AppError
+      const appError = new AppError("Failed to get calibration requests", 503);
+      mockRequestService.getAllRequestCalibration.mockRejectedValue(appError);
+
+      // Call method
+      await requestController.getAllRequestCalibration(
+        mockRequest as Request,
+        mockResponse as Response,
+      );
+
+      // Assertions
+      expect(statusSpy).toHaveBeenCalledWith(503);
+      expect(jsonSpy).toHaveBeenCalledWith({
+        success: false,
+        message: "Failed to get calibration requests",
+      });
+    });
+
+    it("should handle generic errors", async () => {
+      // Mock service to throw generic Error
+      mockRequestService.getAllRequestCalibration.mockRejectedValue(
+        new Error("Service error"),
+      );
+
+      // Call method
+      await requestController.getAllRequestCalibration(
+        mockRequest as Request,
+        mockResponse as Response,
+      );
+
+      // Assertions
+      expect(statusSpy).toHaveBeenCalledWith(500);
+      expect(jsonSpy).toHaveBeenCalledWith({
+        success: false,
+        message: "Service error",
+      });
+    });
+
+    it("should handle non-Error rejections", async () => {
+      // Mock service to reject with a string (not an Error object)
+      mockRequestService.getAllRequestCalibration.mockRejectedValue(
+        "Not an error object",
+      );
+
+      // Call method
+      await requestController.getAllRequestCalibration(
+        mockRequest as Request,
+        mockResponse as Response,
+      );
+
+      // Assertions
+      expect(statusSpy).toHaveBeenCalledWith(500);
+      expect(jsonSpy).toHaveBeenCalledWith({
+        success: false,
+        message: "Failed to get calibration requests",
+      });
+    });
+  });
 });
