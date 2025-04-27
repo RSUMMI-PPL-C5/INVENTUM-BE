@@ -65,6 +65,24 @@ export class RequestRepository {
     }
   }
 
+  async getAllRequestCalibration(): Promise<RequestDTO[]> {
+    try {
+      const requests = await this.prisma.request.findMany({
+        where: {
+          requestType: "CALIBRATION",
+        },
+        orderBy: {
+          submissionDate: "desc",
+        },
+      });
+
+      return requests;
+    } catch (error) {
+      console.error("Error fetching maintenance requests:", error);
+      throw new AppError("Failed to fetch maintenance requests", 500);
+    }
+  }
+
   async getAllRequests(): Promise<RequestResponseDTO[]> {
     try {
       const requests = await this.prisma.request.findMany({
