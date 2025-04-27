@@ -59,6 +59,8 @@ model MedicalEquipment {
   deletedOn         DateTime?
   spareparts        EquipmentSpareparts[]
   relocationHistory RelocationHistory[]
+  maintenanceHistories MaintenanceHistory[]
+  calibrationHistories CalibrationHistory[]
 }
 
 model RelocationHistory {
@@ -142,7 +144,45 @@ model Request {
   comments         Comment[]
   user             User         @relation(fields: [userId], references: [id])
   requestType      RequestType  @default(MAINTENANCE)
+  maintenanceHistories MaintenanceHistory[]
+  calibrationHistories CalibrationHistory[]
   @@index([userId], map: "Request_userId_fkey")
+}
+
+model MaintenanceHistory {
+  id                 String           @id @unique
+  requestId          String
+  medicalEquipmentId String
+  actionPerformed    String           @db.Text
+  technician         String           
+  partsReplaced      String?          @db.Text
+  result             String           // Success, Partial, Failed
+  completedOn        DateTime
+  createdBy          String
+  createdOn          DateTime         @default(now())
+  request            Request          @relation(fields: [requestId], references: [id])
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([requestId])
+  @@index([medicalEquipmentId])
+}
+
+model CalibrationHistory {
+  id                  String           @id @unique
+  requestId           String
+  medicalEquipmentId  String
+  calibrationMethod   String
+  calibrationResults  String           @db.Text
+  technician          String           
+  calibrationDate     DateTime
+  nextCalibrationDue  DateTime?
+  createdBy           String
+  createdOn           DateTime         @default(now())
+  request             Request          @relation(fields: [requestId], references: [id])
+  medicalEquipment    MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([requestId])
+  @@index([medicalEquipmentId])
 }
 
 model Notifikasi {
