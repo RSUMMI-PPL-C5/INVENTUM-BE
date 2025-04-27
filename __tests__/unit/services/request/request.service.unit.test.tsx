@@ -354,4 +354,97 @@ describe("RequestService", () => {
       expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
     });
   });
+
+  describe("getAllRequestCalibration", () => {
+    it("should successfully get all calibration requests", async () => {
+      // Mock data
+      const mockRequests: any[] = [
+        {
+          id: "request-1",
+          medicalEquipment: "Equipment 1",
+          requestType: "CALIBRATION",
+        },
+        {
+          id: "request-2",
+          medicalEquipment: "Equipment 2",
+          requestType: "CALIBRATION",
+        },
+      ];
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestCalibration();
+
+      // Assertions
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+      expect(result).toBe(mockRequests);
+    });
+
+    it("should properly handle AppError instances by passing them through", async () => {
+      // Create an AppError instance
+      const appError = new AppError(
+        "Custom error message for getAllRequestCalibration",
+        418,
+      );
+
+      // Mock repository method to reject with the AppError
+      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
+        appError,
+      );
+
+      // Assertions - should pass through the original AppError
+      await expect(requestService.getAllRequestCalibration()).rejects.toEqual(
+        appError,
+      );
+
+      // Ensure the statusCode is preserved
+      try {
+        await requestService.getAllRequestCalibration();
+      } catch (error) {
+        expect(error).toBeInstanceOf(AppError);
+        expect((error as AppError).statusCode).toBe(418);
+      }
+    });
+
+    it("should handle repository errors", async () => {
+      // Mock repository error
+      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
+        new Error("Repository error"),
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestCalibration()).rejects.toThrow();
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+    });
+
+    it("should handle non-Error rejections from repository", async () => {
+      // Mock repository rejecting with a string (not an Error object)
+      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
+        "Some string error",
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestCalibration()).rejects.toThrow(
+        "Failed to get calibration requests",
+      );
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+    });
+
+    it("should handle undefined rejections from repository", async () => {
+      // Mock repository rejecting with undefined
+      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
+        undefined,
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestCalibration()).rejects.toThrow(
+        "Failed to get calibration requests: Unknown error",
+      );
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+    });
+  });
 });
