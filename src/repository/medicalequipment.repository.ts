@@ -2,7 +2,7 @@ import { PrismaClient, MedicalEquipment } from "@prisma/client";
 import {
   AddMedicalEquipmentResponseDTO,
   MedicalEquipmentDTO,
-} from "../dto/medicalequipment.dto";
+} from "../dto/medical-equipment.dto";
 import prisma from "../configs/db.config";
 import { getJakartaTime } from "../utils/date.utils";
 import { PaginationOptions } from "../interfaces/pagination.interface";

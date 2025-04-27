@@ -3,7 +3,7 @@ import AppError from "../../../../src/utils/appError";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
-} from "../../../../src/dto/medicalequipment.dto";
+} from "../../../../src/dto/medical-equipment.dto";
 
 // Mock uuid
 jest.mock("uuid", () => ({

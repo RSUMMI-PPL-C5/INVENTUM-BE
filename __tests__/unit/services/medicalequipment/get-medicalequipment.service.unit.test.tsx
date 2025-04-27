@@ -2,7 +2,7 @@ import MedicalEquipmentService from "../../../../src/services/medicalequipment.s
 import AppError from "../../../../src/utils/appError";
 import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medicalequipment.filter.interface";
 import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
-import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
+import { MedicalEquipmentDTO } from "../../../../src/dto/medical-equipment.dto";
 
 describe("MedicalEquipmentService - Get Methods", () => {
   let service: MedicalEquipmentService;

@@ -5,7 +5,7 @@ import {
   AddMedicalEquipmentResponseDTO,
   UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
-} from "../dto/medicalequipment.dto";
+} from "../dto/medical-equipment.dto";
 import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import MedicalEquipmentRepository from "../repository/medicalequipment.repository";
