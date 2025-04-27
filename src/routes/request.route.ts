@@ -15,6 +15,13 @@ router.get(
   requestController.getAllRequestMaintenance,
 );
 
+// Get all calibration requests
+router.get(
+  "/calibration",
+  verifyToken,
+  requestController.getAllRequestCalibration,
+);
+
 // Get request by ID
 router.get("/:id", verifyToken, requestController.getRequestById);
 
