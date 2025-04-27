@@ -66,6 +66,21 @@ export class RequestService implements IRequestService {
       );
     }
   }
+
+  async getAllRequestCalibration(): Promise<RequestDTO[]> {
+    try {
+      const requests = await this.requestRepository.getAllRequestCalibration();
+      return requests;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error in getAllRequestCalibration service:", error);
+      throw new Error(
+        `Failed to get calibration requests: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
 }
 
 export default RequestService;
