@@ -53,30 +53,6 @@ export class RequestRepository {
         where: {
           requestType: "MAINTENANCE",
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullname: true,
-              username: true,
-            },
-          },
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  fullname: true,
-                  username: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-          notifications: true,
-        },
         orderBy: {
           submissionDate: "desc",
         },
