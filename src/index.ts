@@ -22,6 +22,7 @@ import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
 import commentRoutes from "./routes/comment.route";
+import requestRoutes from "./routes/request.route";
 const app = express();
 
 app.disable("x-powered-by");
@@ -107,6 +108,7 @@ app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
 app.use("/medical-equipment", medicalequipmentRoutes);
 app.use("/comment", commentRoutes);
+app.use("/request", requestRoutes);
 
 app.use((req, res, next) => {
   res.status(404).send({
