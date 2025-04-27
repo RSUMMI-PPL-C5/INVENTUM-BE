@@ -5,11 +5,17 @@
 /* sonar.coverage.exclusions */
 /* coverage-disable */
 
+// Load environment variables
 import "dotenv/config";
+
+// Initialize Sentry
+const { Sentry, setupSentry, errorHandler } = require("../sentry/instrument");
+
+setupSentry();
+
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { Sentry, setupSentry, errorHandler } from "../sentry/instrument";
 
 // Import routes
 import userRoutes from "./routes/user.route";
@@ -18,8 +24,6 @@ import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
 
-// Initialize Sentry
-setupSentry();
 const app = express();
 
 // Basic security settings
@@ -48,7 +52,7 @@ app.use(
   }),
 );
 
-// Additional security headers
+// Additional securities
 app.use((req, res, next) => {
   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
@@ -58,6 +62,11 @@ app.use((req, res, next) => {
   );
   next();
 });
+app.use(helmet.xssFilter());
+app.use(helmet.noSniff());
+app.use(helmet.ieNoOpen());
+app.use(helmet.frameguard({ action: "deny" }));
+app.use(helmet.hsts());
 
 // CORS configuration
 const whitelist = process.env.PROD_CLIENT_URL

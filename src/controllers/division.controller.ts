@@ -31,7 +31,7 @@ class DivisionController {
 
       const divisionData = {
         divisi: req.body.divisi,
-        parentId: parentId ?? null, // If undefined, set to null
+        parentId: parentId ?? null,
       };
 
       const newDivision = await this.divisionService.addDivision(divisionData);

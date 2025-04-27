@@ -29,6 +29,102 @@ describe("SparepartController - getSpareparts", () => {
     expect(res.json).toHaveBeenCalledWith(mockResult);
   });
 
+  it("should use default pagination values when no query params provided", async () => {
+    req.query = {};
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      undefined,
+      {},
+      { page: 1, limit: 10 },
+    );
+  });
+
+  it("should use provided pagination values", async () => {
+    req.query = { page: "2", limit: "20" };
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      undefined,
+      { page: "2", limit: "20" },
+      { page: 2, limit: 20 },
+    );
+  });
+
+  it("should use fallback values for negative pagination params", async () => {
+    req.query = { page: "-1", limit: "-5" };
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      undefined,
+      { page: "-1", limit: "-5" },
+      { page: 1, limit: 10 },
+    );
+  });
+
+  it("should use default values for non-numeric pagination params", async () => {
+    req.query = { page: "abc", limit: "xyz" };
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      undefined,
+      { page: "abc", limit: "xyz" },
+      { page: 1, limit: 10 },
+    );
+  });
+
+  it("should pass search parameter to service", async () => {
+    req.query = { search: "motor" };
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      "motor", // search term
+      { search: "motor" },
+      { page: 1, limit: 10 },
+    );
+  });
+
+  it("should pass filter parameters to service", async () => {
+    req.query = { category: "electronics", status: "available" };
+    const mockResult = { data: [], total: 0 };
+    (SparepartService.prototype.getSpareparts as jest.Mock).mockResolvedValue(
+      mockResult,
+    );
+
+    await controller.getSpareparts(req as Request, res as Response, next);
+
+    expect(SparepartService.prototype.getSpareparts).toHaveBeenCalledWith(
+      undefined,
+      { category: "electronics", status: "available" },
+      { page: 1, limit: 10 },
+    );
+  });
+
   it("should call next(error) on exception", async () => {
     (SparepartService.prototype.getSpareparts as jest.Mock).mockRejectedValue(
       new Error("Failed"),

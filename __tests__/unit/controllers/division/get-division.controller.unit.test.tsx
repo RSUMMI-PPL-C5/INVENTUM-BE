@@ -169,9 +169,12 @@ describe("DivisionController - getDivisions", () => {
     });
 
     it("should call next(error) on exception", async () => {
+      req.params = { id: "1" };
+      const error = new Error("Failed");
+
       (
         DivisionService.prototype.getDivisionById as jest.Mock
-      ).mockRejectedValue(new Error("Failed"));
+      ).mockRejectedValue(error);
 
       await divisionController.getDivisionById(
         req as Request,
@@ -179,7 +182,7 @@ describe("DivisionController - getDivisions", () => {
         next,
       );
 
-      expect(next).toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(error);
     });
   });
 });

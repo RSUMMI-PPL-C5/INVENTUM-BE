@@ -1,5 +1,4 @@
-import { body } from "express-validator";
-import { query } from "express-validator";
+import { body, query } from "express-validator";
 import { toJakartaDate } from "../utils/date.utils";
 
 const addMedicalEquipmentValidation = [

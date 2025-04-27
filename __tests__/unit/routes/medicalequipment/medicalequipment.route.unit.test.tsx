@@ -34,22 +34,15 @@ jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
 
-// Mock validation
-jest.mock(
-  "../../../../src/validations/medicalequipmentfilterquery.validation",
-  () => ({
-    medicalEquipmentFilterQueryValidation: jest.fn(
-      (_req: any, _res: any, next: any) => next(),
-    ),
-  }),
-);
-
 jest.mock("../../../../src/validations/medicalequipment.validation", () => ({
   addMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) =>
     next(),
   ),
   updateMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) =>
     next(),
+  ),
+  medicalEquipmentFilterQueryValidation: jest.fn(
+    (_req: any, _res: any, next: any) => next(),
   ),
 }));
 

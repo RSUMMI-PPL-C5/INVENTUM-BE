@@ -91,8 +91,12 @@ describe("DivisionController - updateDivision", () => {
   });
 
   it("should call next(error) on exception", async () => {
+    req.params = { id: "1" };
+    req.body = { divisi: "Finance" };
+
+    const error = new Error("Failed");
     (DivisionService.prototype.updateDivision as jest.Mock).mockRejectedValue(
-      new Error("Failed"),
+      error,
     );
 
     await divisionController.updateDivision(
@@ -101,6 +105,6 @@ describe("DivisionController - updateDivision", () => {
       next,
     );
 
-    expect(next).toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(error);
   });
 });

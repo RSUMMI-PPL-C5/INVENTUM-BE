@@ -74,8 +74,11 @@ describe("DivisionController - deleteDivision", () => {
   });
 
   it("should call next(error) on exception", async () => {
+    req.params = { id: "1" };
+    const error = new Error("Failed");
+
     (DivisionService.prototype.deleteDivision as jest.Mock).mockRejectedValue(
-      new Error("Failed"),
+      error,
     );
 
     await divisionController.deleteDivision(
@@ -84,6 +87,6 @@ describe("DivisionController - deleteDivision", () => {
       next,
     );
 
-    expect(next).toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(error);
   });
 });

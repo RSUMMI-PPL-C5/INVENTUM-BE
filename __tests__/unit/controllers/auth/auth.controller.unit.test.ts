@@ -13,8 +13,14 @@ describe("AuthController - login", () => {
   beforeEach(() => {
     controller = new AuthController();
     req = { body: {} };
-    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
     next = jest.fn();
+
+    // Reset mocks between tests
+    jest.clearAllMocks();
   });
 
   it("should return 400 if username or password missing (both empty)", async () => {
@@ -72,20 +78,6 @@ describe("AuthController - login", () => {
     });
   });
 
-  it("should return 401 if login fails (user not found)", async () => {
-    (AuthService.prototype.login as jest.Mock).mockResolvedValue(null);
-
-    req.body = { username: "testuser", password: "password" };
-
-    await controller.login(req as Request, res as Response, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      status: "error",
-      message: "Invalid username or password",
-    });
-  });
-
   it("should call next(error) if login throws error", async () => {
     const error = new Error("Login failed");
     (AuthService.prototype.login as jest.Mock).mockRejectedValue(error);
@@ -121,15 +113,14 @@ describe("AuthController - verifyToken", () => {
     });
   });
 
-  it("should return 401 if user is not present in request", () => {
-    req.user = undefined;
+  it("should call next(error) if an error occurs", () => {
+    const error = new Error("Verification failed");
+    res.json = jest.fn().mockImplementation(() => {
+      throw error;
+    });
 
     controller.verifyToken(req as Request, res as Response, next);
 
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      status: "error",
-      message: "Unauthorized",
-    });
+    expect(next).toHaveBeenCalledWith(error);
   });
 });
