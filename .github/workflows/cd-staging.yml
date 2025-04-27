@@ -1,0 +1,28 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - staging
+      - chore/Deployment
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+    
+      - name: Install dependencies
+        run: npm ci 
+    
+      - name: Run Deployment Script
+        run: bash scripts/deploy-staging.sh
+        env:
+            NODE_ENV: staging

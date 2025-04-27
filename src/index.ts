@@ -24,6 +24,12 @@ import medicalequipmentRoutes from "./routes/medicalequipment.route";
 
 const app = express();
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production";
+const isStaging = NODE_ENV === "staging";
+
+console.log(`Environment: ${NODE_ENV}`);
+
 app.disable("x-powered-by");
 
 // Gunakan konfigurasi Helmet yang lebih spesifik
@@ -72,9 +78,13 @@ app.use(helmet.hsts()); // HTTP Strict Transport Security
 const whitelist: string[] = [];
 
 const PROD = process.env.PROD_CLIENT_URL;
-
 if (PROD) {
   whitelist.push(PROD);
+}
+
+const STAGING = process.env.STAGING_CLIENT_URL;
+if (STAGING && isStaging) {
+  whitelist.push(STAGING);
 }
 
 const corsOptions: cors.CorsOptions = {
