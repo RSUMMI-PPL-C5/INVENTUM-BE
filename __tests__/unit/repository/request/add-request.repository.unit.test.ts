@@ -18,7 +18,7 @@ jest.mock("@prisma/client", () => {
 });
 
 // Mock getJakartaTime
-jest.mock("../../../src/utils/date.utils", () => ({
+jest.mock("../../../../src/utils/date.utils", () => ({
   getJakartaTime: jest.fn(),
 }));
 

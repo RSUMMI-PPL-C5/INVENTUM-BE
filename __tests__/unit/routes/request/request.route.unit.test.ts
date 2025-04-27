@@ -12,7 +12,7 @@ jest.mock("express", () => {
 });
 
 // Mock controller
-jest.mock("../../../src/controllers/request.controller", () => {
+jest.mock("../../../../src/controllers/request.controller", () => {
   return jest.fn().mockImplementation(() => ({
     createMaintenanceRequest: jest.fn(),
     createCalibrationRequest: jest.fn(),
@@ -20,20 +20,20 @@ jest.mock("../../../src/controllers/request.controller", () => {
 });
 
 // Mock middleware with explicit any types and unused args as _
-jest.mock("../../../src/middleware/verifyToken", () =>
+jest.mock("../../../../src/middleware/verifyToken", () =>
   jest.fn((_req: any, _res: any, next: any) => next()),
 );
 
-jest.mock("../../../src/validations/request.validation", () => ({
+jest.mock("../../../../src/validations/request.validation", () => ({
   createRequestValidation: jest.fn((_req: any, _res: any, next: any) => next()),
 }));
 
-jest.mock("../../../src/middleware/validateRequest", () => ({
+jest.mock("../../../../src/middleware/validateRequest", () => ({
   validateRequest: jest.fn((_req: any, _res: any, next: any) => next()),
 }));
 
 // Import the route after all mocks
-import "../../../src/routes/request.route";
+import "../../../../src/routes/request.route";
 
 describe("Request Routes", () => {
   it("should create router with Router()", () => {

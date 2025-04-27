@@ -2,7 +2,7 @@ import RequestController from "../../../../src/controllers/request.controller";
 import RequestService from "../../../../src/services/request.service";
 import { Request, Response, NextFunction } from "express";
 
-jest.mock("../../../src/services/request.service");
+jest.mock("../../../../src/services/request.service");
 
 describe("RequestController", () => {
   let controller: RequestController;

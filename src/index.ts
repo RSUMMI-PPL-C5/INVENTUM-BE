@@ -23,6 +23,7 @@ import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
+import requestRoutes from "./routes/request.route";
 
 const app = express();
 
@@ -103,6 +104,7 @@ app.use("/user", userRoutes);
 app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
 app.use("/medical-equipment", medicalequipmentRoutes);
+app.use("/request", requestRoutes);
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);

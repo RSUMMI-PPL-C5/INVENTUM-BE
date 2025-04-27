@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
 
-jest.mock("../../../src/repository/request.repository");
+jest.mock("../../../../src/repository/request.repository");
 jest.mock("uuid");
 
 describe("RequestService", () => {
@@ -28,7 +28,7 @@ describe("RequestService", () => {
         complaint: "Equipment not working properly",
         submissionDate: new Date(),
         createdBy: "USER123",
-        requestType: "MAINTENANCE",
+        requestType: "MAINTENANCE" as const,
       };
 
       const mockCreatedRequest = {
@@ -57,7 +57,7 @@ describe("RequestService", () => {
         complaint: "Equipment needs calibration",
         submissionDate: new Date(),
         createdBy: "USER123",
-        requestType: "CALIBRATION",
+        requestType: "CALIBRATION" as const,
       };
 
       const mockCreatedRequest = {
@@ -86,7 +86,7 @@ describe("RequestService", () => {
         complaint: "Equipment not working properly",
         submissionDate: new Date(),
         createdBy: "USER123",
-        requestType: "MAINTENANCE",
+        requestType: "MAINTENANCE" as const,
       };
 
       mockRequestRepository.createRequest.mockRejectedValue(
