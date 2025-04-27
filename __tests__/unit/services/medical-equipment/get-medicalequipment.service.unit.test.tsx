@@ -1,6 +1,6 @@
-import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
+import MedicalEquipmentService from "../../../../src/services/medical-equipment.service";
 import AppError from "../../../../src/utils/appError";
-import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medicalequipment.filter.interface";
+import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medical-equipment.filter.interface";
 import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
 import { MedicalEquipmentDTO } from "../../../../src/dto/medical-equipment.dto";
 

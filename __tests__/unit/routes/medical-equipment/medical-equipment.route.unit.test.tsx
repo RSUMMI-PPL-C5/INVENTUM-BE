@@ -15,7 +15,7 @@ jest.mock("express", () => {
 });
 
 // Mock controller
-jest.mock("../../../../src/controllers/medicalequipment.controller", () => {
+jest.mock("../../../../src/controllers/medical-equipment.controller", () => {
   return jest.fn().mockImplementation(() => ({
     getMedicalEquipment: jest.fn(),
     addMedicalEquipment: jest.fn(),
@@ -34,7 +34,7 @@ jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
 
-jest.mock("../../../../src/validations/medicalequipment.validation", () => ({
+jest.mock("../../../../src/validations/medical-equipment.validation", () => ({
   addMedicalEquipmentValidation: jest.fn((_req: any, _res: any, next: any) =>
     next(),
   ),
@@ -51,7 +51,7 @@ jest.mock("../../../../src/middleware/validateRequest", () => ({
 }));
 
 // Import the route after all mocks
-import "../../../../src/routes/medicalequipment.route";
+import "../../../../src/routes/medical-equipment.route";
 
 describe("MedicalEquipment Routes", () => {
   it("should create router with Router()", () => {

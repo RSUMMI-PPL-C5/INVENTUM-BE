@@ -1,5 +1,5 @@
-import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
-import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medicalequipment.filter.interface";
+import MedicalEquipmentRepository from "../../../../src/repository/medical-equipment.repository";
+import { MedicalEquipmentFilterOptions } from "../../../../src/interfaces/medical-equipment.filter.interface";
 import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
 
 // Mock Prisma

@@ -4,7 +4,7 @@ import {
   addMedicalEquipmentValidation,
   updateMedicalEquipmentValidation,
   medicalEquipmentFilterQueryValidation,
-} from "../../../src/validations/medicalequipment.validation";
+} from "../../../src/validations/medical-equipment.validation";
 import * as dateUtils from "../../../src/utils/date.utils";
 
 // Helper function to get the field name from a validation error

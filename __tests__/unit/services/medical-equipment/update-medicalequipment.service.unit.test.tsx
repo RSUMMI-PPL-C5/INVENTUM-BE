@@ -1,4 +1,4 @@
-import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
+import MedicalEquipmentService from "../../../../src/services/medical-equipment.service";
 import AppError from "../../../../src/utils/appError";
 import {
   AddMedicalEquipmentResponseDTO,
