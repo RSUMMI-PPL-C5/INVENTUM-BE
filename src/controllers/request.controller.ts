@@ -74,6 +74,42 @@ export class RequestController {
       });
     }
   };
+
+  // Add this to your request.controller.ts file
+
+  getAllRequestMaintenance = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const maintenanceRequests =
+        await this.requestService.getAllRequestMaintenance();
+
+      res.status(200).json({
+        success: true,
+        message: "Maintenance requests retrieved successfully",
+        data: maintenanceRequests,
+      });
+    } catch (error) {
+      console.error("Error in get maintenance requests controller:", error);
+
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to get maintenance requests",
+      });
+    }
+  };
 }
 
 export default RequestController;
