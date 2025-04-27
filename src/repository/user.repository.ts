@@ -142,6 +142,9 @@ class UserRepository {
         email,
         deletedOn: null,
       },
+      include: {
+        divisi: true,
+      },
     });
   }
 
@@ -151,6 +154,9 @@ class UserRepository {
         username,
         deletedOn: null,
       },
+      include: {
+        divisi: true,
+      },
     });
   }
 
@@ -159,6 +165,9 @@ class UserRepository {
       where: {
         nokar,
         deletedOn: null,
+      },
+      include: {
+        divisi: true,
       },
     });
   }

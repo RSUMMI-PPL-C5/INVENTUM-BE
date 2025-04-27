@@ -363,6 +363,7 @@ describe("User Repository - GET", () => {
           email: "user1@example.com",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });
@@ -395,6 +396,7 @@ describe("User Repository - GET", () => {
           username: "user1",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });
@@ -425,6 +427,7 @@ describe("User Repository - GET", () => {
           nokar: "12345",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });
