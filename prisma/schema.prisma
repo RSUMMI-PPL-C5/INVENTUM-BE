@@ -155,7 +155,6 @@ model MaintenanceHistory {
   medicalEquipmentId String
   actionPerformed    String           @db.Text
   technician         String           
-  partsReplaced      String?          @db.Text
   result             String           // Success, Partial, Failed
   completedOn        DateTime
   createdBy          String
@@ -171,10 +170,11 @@ model CalibrationHistory {
   id                  String           @id @unique
   requestId           String
   medicalEquipmentId  String
-  calibrationMethod   String
-  calibrationResults  String           @db.Text
+  actionPerformed     String           @db.Text
   technician          String           
+  result              String           // Success, Partial, Failed
   calibrationDate     DateTime
+  calibrationMethod   String
   nextCalibrationDue  DateTime?
   createdBy           String
   createdOn           DateTime         @default(now())
