@@ -21,6 +21,7 @@ jest.mock("../../../../src/controllers/request.controller", () => {
       getRequestById: jest.fn(),
       getAllRequests: jest.fn(),
       getAllRequestMaintenance: jest.fn(),
+      getAllRequestCalibration: jest.fn(),
     })),
   };
 });
@@ -60,6 +61,15 @@ describe("Request Routes", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/maintenance",
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
+
+  it("should register GET /calibration route with verifyToken middleware", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/calibration",
       expect.any(Function),
       expect.any(Function),
     );
