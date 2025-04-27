@@ -178,4 +178,62 @@ describe("RequestRepository", () => {
       );
     });
   });
+
+  describe("getAllRequestCalibration", () => {
+    it("should get all calibration requests successfully", async () => {
+      // Arrange
+      const mockRequests = [
+        {
+          id: "request-3",
+          userId: "user-3",
+          medicalEquipment: "Equipment 3",
+          submissionDate: new Date(),
+          status: "Pending",
+          requestType: "CALIBRATION",
+        },
+        {
+          id: "request-4",
+          userId: "user-4",
+          medicalEquipment: "Equipment 4",
+          submissionDate: new Date(),
+          status: "Completed",
+          requestType: "CALIBRATION",
+        },
+      ];
+
+      mockPrisma.request.findMany.mockResolvedValue(mockRequests);
+
+      // Act
+      const result = await repository.getAllRequestCalibration();
+
+      // Assert
+      expect(mockPrisma.request.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            requestType: "CALIBRATION",
+          },
+        }),
+      );
+      expect(result).toEqual(mockRequests);
+    });
+
+    it("should handle errors when fetching calibration requests", async () => {
+      // Arrange
+      mockPrisma.request.findMany.mockRejectedValue(
+        new Error("Database error"),
+      );
+
+      // Act & Assert
+      await expect(repository.getAllRequestCalibration()).rejects.toThrow(
+        AppError,
+      );
+      expect(mockPrisma.request.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            requestType: "CALIBRATION",
+          },
+        }),
+      );
+    });
+  });
 });
