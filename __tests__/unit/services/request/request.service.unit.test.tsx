@@ -261,4 +261,97 @@ describe("RequestService", () => {
       expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
     });
   });
+
+  describe("getAllRequestMaintenance", () => {
+    it("should successfully get all maintenance requests", async () => {
+      // Mock data
+      const mockRequests: any[] = [
+        {
+          id: "request-1",
+          medicalEquipment: "Equipment 1",
+          requestType: "MAINTENANCE",
+        },
+        {
+          id: "request-2",
+          medicalEquipment: "Equipment 2",
+          requestType: "MAINTENANCE",
+        },
+      ];
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestMaintenance();
+
+      // Assertions
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+      expect(result).toBe(mockRequests);
+    });
+
+    it("should properly handle AppError instances by passing them through", async () => {
+      // Create an AppError instance
+      const appError = new AppError(
+        "Custom error message for getAllRequestMaintenance",
+        418,
+      );
+
+      // Mock repository method to reject with the AppError
+      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
+        appError,
+      );
+
+      // Assertions - should pass through the original AppError
+      await expect(requestService.getAllRequestMaintenance()).rejects.toEqual(
+        appError,
+      );
+
+      // Ensure the statusCode is preserved
+      try {
+        await requestService.getAllRequestMaintenance();
+      } catch (error) {
+        expect(error).toBeInstanceOf(AppError);
+        expect((error as AppError).statusCode).toBe(418);
+      }
+    });
+
+    it("should handle repository errors", async () => {
+      // Mock repository error
+      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
+        new Error("Repository error"),
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow();
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+    });
+
+    it("should handle non-Error rejections from repository", async () => {
+      // Mock repository rejecting with a string (not an Error object)
+      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
+        "Some string error",
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow(
+        "Failed to get maintenance requests",
+      );
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+    });
+
+    it("should handle undefined rejections from repository", async () => {
+      // Mock repository rejecting with undefined
+      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
+        undefined,
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow(
+        "Failed to get maintenance requests: Unknown error",
+      );
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+    });
+  });
 });
