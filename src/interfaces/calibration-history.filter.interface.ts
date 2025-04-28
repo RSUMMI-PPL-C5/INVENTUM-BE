@@ -5,4 +5,6 @@ export interface CalibrationHistoryFilterOptions {
   calibrationDateEnd?: Date;
   calibrationMethod?: string;
   nextCalibrationDueBefore?: Date;
+  createdOnStart?: Date;
+  createdOnEnd?: Date;
 }
