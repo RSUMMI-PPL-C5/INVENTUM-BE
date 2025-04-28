@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-import { IMedicalEquipmentService } from "./interface/medicalequipment.service.interface";
+import { IMedicalEquipmentService } from "./interface/medical-equipment.service.interface";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
   UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
 } from "../dto/medical-equipment.dto";
-import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
+import { MedicalEquipmentFilterOptions } from "../interfaces/medical-equipment.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
-import MedicalEquipmentRepository from "../repository/medicalequipment.repository";
+import MedicalEquipmentRepository from "../repository/medical-equipment.repository";
 
 class MedicalEquipmentService implements IMedicalEquipmentService {
   private readonly medicalEquipmentRepository: MedicalEquipmentRepository;

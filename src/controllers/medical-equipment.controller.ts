@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import MedicalEquipmentService from "../services/medicalequipment.service";
+import MedicalEquipmentService from "../services/medical-equipment.service";
 import {
   AddMedicalEquipmentDTO,
   UpdateMedicalEquipmentDTO,
 } from "../dto/medical-equipment.dto";
-import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
+import { MedicalEquipmentFilterOptions } from "../interfaces/medical-equipment.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 
 class MedicalEquipmentController {
