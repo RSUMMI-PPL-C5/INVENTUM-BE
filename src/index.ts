@@ -26,7 +26,6 @@ import requestRoutes from "./routes/request.route";
 import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
 
-
 const app = express();
 
 // Basic security settings
