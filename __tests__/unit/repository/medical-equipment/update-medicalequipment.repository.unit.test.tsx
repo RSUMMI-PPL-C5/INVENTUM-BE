@@ -1,4 +1,4 @@
-import MedicalEquipmentRepository from "../../../../src/repository/medicalequipment.repository";
+import MedicalEquipmentRepository from "../../../../src/repository/medical-equipment.repository";
 import { getJakartaTime } from "../../../../src/utils/date.utils";
 
 // Mock Prisma

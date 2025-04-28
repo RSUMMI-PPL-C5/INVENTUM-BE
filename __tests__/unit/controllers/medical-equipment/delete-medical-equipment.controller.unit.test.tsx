@@ -1,8 +1,8 @@
-import MedicalEquipmentController from "../../../../src/controllers/medicalequipment.controller";
-import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
+import MedicalEquipmentController from "../../../../src/controllers/medical-equipment.controller";
+import MedicalEquipmentService from "../../../../src/services/medical-equipment.service";
 import { Request, Response, NextFunction } from "express";
 
-jest.mock("../../../../src/services/medicalequipment.service");
+jest.mock("../../../../src/services/medical-equipment.service");
 
 describe("MedicalEquipmentController - deleteMedicalEquipment", () => {
   let controller: MedicalEquipmentController;
