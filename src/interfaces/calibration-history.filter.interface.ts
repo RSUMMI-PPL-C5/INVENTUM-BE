@@ -1,9 +1,8 @@
 export interface CalibrationHistoryFilterOptions {
   medicalEquipmentId?: string;
   result?: string;
-  technician?: string;
-  calibrationDateStart?: string;
-  calibrationDateEnd?: string;
+  calibrationDateStart?: Date;
+  calibrationDateEnd?: Date;
   calibrationMethod?: string;
-  nextCalibrationDueBefore?: string;
+  nextCalibrationDueBefore?: Date;
 }
