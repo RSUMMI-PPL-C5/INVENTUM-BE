@@ -21,8 +21,11 @@ import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import medicalequipmentRoutes from "./routes/medicalequipment.route";
+import { setupMetrics } from "./middleware/metric";
 
 const app = express();
+
+setupMetrics(app);
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";
