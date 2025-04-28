@@ -22,8 +22,10 @@ import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
-import medicalequipmentRoutes from "./routes/medicalequipment.route";
 import requestRoutes from "./routes/request.route";
+import medicalequipmentRoutes from "./routes/medical-equipment.route";
+import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
+
 
 const app = express();
 
@@ -105,6 +107,7 @@ app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
 app.use("/medical-equipment", medicalequipmentRoutes);
 app.use("/request", requestRoutes);
+app.use("/medical-equipment", maintenanceHistoryRoutes);
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);
