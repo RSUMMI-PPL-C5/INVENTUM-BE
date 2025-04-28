@@ -37,7 +37,11 @@ class AuthService implements IAuthService {
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role, divisi: user.divisi },
+      {
+        userId: user.id,
+        fullname: user.fullname,
+        role: user.role,
+      },
       secretKey,
       {
         expiresIn: "7d",
