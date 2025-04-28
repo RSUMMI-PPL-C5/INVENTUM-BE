@@ -1,11 +1,11 @@
 import { Router } from "express";
-import MedicalEquipmentController from "../controllers/medicalequipment.controller";
+import MedicalEquipmentController from "../controllers/medical-equipment.controller";
 import verifyToken from "../middleware/verifyToken";
 import {
   addMedicalEquipmentValidation,
   updateMedicalEquipmentValidation,
   medicalEquipmentFilterQueryValidation,
-} from "../validations/medicalequipment.validation";
+} from "../validations/medical-equipment.validation";
 import { validateRequest } from "../middleware/validateRequest";
 import authorizeRoles from "../middleware/authorizeRole";
 
