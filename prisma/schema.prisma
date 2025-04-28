@@ -97,7 +97,7 @@ model Spareparts {
 
 model PartsHistory {
   id                 String           @id @unique
-  equipmentId        String
+  medicalEquipmentId String
   sparepartId        String
   actionPerformed    String           @db.Text
   technician         String           
@@ -105,10 +105,10 @@ model PartsHistory {
   replacementDate    DateTime
   createdBy          String
   createdOn          DateTime         @default(now())
-  equipment          MedicalEquipment @relation(fields: [equipmentId], references: [id])
+  equipment          MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
   sparepart          Spareparts       @relation(fields: [sparepartId], references: [id])
 
-  @@index([equipmentId])
+  @@index([medicalEquipmentId])
   @@index([sparepartId])
 }
 
