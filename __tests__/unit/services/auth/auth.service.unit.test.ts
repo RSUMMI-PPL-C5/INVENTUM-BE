@@ -151,7 +151,7 @@ describe("AuthService", () => {
       );
       expect(bcrypt.compare).toHaveBeenCalledWith("password", "hashedPassword");
       expect(jwt.sign).toHaveBeenCalledWith(
-        { userId: "1", role: "User" },
+        { userId: "1", role: "User", fullname: "User One" },
         "mockSecretKey",
         { expiresIn: "7d" },
       );
