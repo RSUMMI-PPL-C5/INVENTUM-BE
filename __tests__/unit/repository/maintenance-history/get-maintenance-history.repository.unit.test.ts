@@ -51,7 +51,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       where: { medicalEquipmentId: defaultEquipmentId },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
 
@@ -98,7 +97,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
 
@@ -142,7 +140,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       where: { medicalEquipmentId: defaultEquipmentId },
       skip: 10, // (page-1) * limit
       take: 10,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
 
@@ -174,7 +171,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -201,7 +197,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -229,7 +224,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -257,7 +251,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -287,7 +280,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -315,7 +307,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -343,7 +334,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -373,7 +363,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -413,7 +402,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
@@ -464,7 +452,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
 
@@ -495,7 +482,6 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
       },
       skip: undefined,
       take: undefined,
-      include: { medicalEquipment: true },
       orderBy: { maintenanceDate: "desc" },
     });
   });
