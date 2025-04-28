@@ -1,5 +1,5 @@
 export interface PartsHistoryFilterOptions {
-  equipmentId?: string;
+  equipmentId: string;
   sparepartId?: string;
   result?: string;
   replacementDateStart?: Date;

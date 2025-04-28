@@ -1,5 +1,5 @@
 export interface MaintenanceHistoryFilterOptions {
-  medicalEquipmentId: string;
+  medicalEquipmentId?: string;
   result?: string;
   maintenanceDateStart?: Date;
   maintenanceDateEnd?: Date;
