@@ -4,4 +4,6 @@ export interface PartsHistoryFilterOptions {
   result?: string;
   replacementDateStart?: Date;
   replacementDateEnd?: Date;
+  createdOnStart?: Date;
+  createdOnEnd?: Date;
 }

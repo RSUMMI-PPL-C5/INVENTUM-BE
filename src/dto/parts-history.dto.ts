@@ -3,7 +3,7 @@ import { SparepartDTO } from "./sparepart.dto";
 
 export interface PartsHistoryDTO {
   id: string;
-  equipmentId: string;
+  medicalEquipmentId: string;
   sparepartId: string;
   actionPerformed: string;
   technician: string;
@@ -19,7 +19,7 @@ export interface PartsHistoryDetailDTO extends PartsHistoryDTO {
 }
 
 export interface CreatePartsHistoryDTO {
-  equipmentId: string;
+  medicalEquipmentId: string;
   sparepartId: string;
   actionPerformed: string;
   technician: string;
