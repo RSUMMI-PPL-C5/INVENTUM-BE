@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import SparepartRepository from "../../../../src/repository/sparepart.repository";
-import { SparepartFilterOptions } from "../../../../src/filters/interface/spareparts.filter.interface";
-import { PaginationOptions } from "../../../../src/filters/interface/pagination.interface";
+import { SparepartFilterOptions } from "../../../../src/interfaces/spareparts.filter.interface";
+import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
 import prisma from "../../../../src/configs/db.config";
 
 // Mock the Prisma client

@@ -1,7 +1,6 @@
 import { IDivisionService } from "./interface/division.service.interface";
 import { DivisionDTO, DivisionWithChildrenDTO } from "../dto/division.dto";
 import DivisionRepository from "../repository/division.repository";
-import AppError from "../utils/appError";
 import { Prisma } from "@prisma/client";
 
 class DivisionService implements IDivisionService {
@@ -46,7 +45,7 @@ class DivisionService implements IDivisionService {
   ): Promise<DivisionDTO> {
     const existingDivision = await this.divisionRepository.getDivisionById(id);
     if (!existingDivision) {
-      throw new AppError(`Division with ID ${id} not found`, 404);
+      throw new Error(`Division with ID ${id} not found`);
     }
 
     // Validate parentId if provided
@@ -76,7 +75,7 @@ class DivisionService implements IDivisionService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      throw new AppError(`Failed to update division: ${errorMessage}`, 500);
+      throw new Error(`Failed to update division: ${errorMessage}`);
     }
   }
 
@@ -88,22 +87,18 @@ class DivisionService implements IDivisionService {
       const parentExists =
         await this.divisionRepository.getDivisionById(parentId);
       if (!parentExists) {
-        throw new AppError(
-          `Parent division with ID ${parentId} not found`,
-          404,
-        );
+        throw new Error(`Parent division with ID ${parentId} not found`);
       }
       if (parentId === id) {
-        throw new AppError("Division cannot be its own parent", 400);
+        throw new Error("Division cannot be its own parent");
       }
       const hasCycle = await this.divisionRepository.hasCircularReference(
         parentId,
         id,
       );
       if (hasCycle) {
-        throw new AppError(
+        throw new Error(
           "Cannot set a descendant as parent (would create a cycle)",
-          400,
         );
       }
     }

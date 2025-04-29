@@ -4,17 +4,19 @@ import verifyToken from "../middleware/verifyToken";
 import authorizeRoles from "../middleware/authorizeRole";
 
 const router = Router();
-const divisionController = new DivisionController();
+const controller = new DivisionController();
 
+// Global middleware
 router.use(verifyToken, authorizeRoles("Admin"));
 
-// Public routes for displaying divisions
-router.post("/", divisionController.addDivision);
-router.get("/", divisionController.getDivisionsTree);
-router.get("/all", divisionController.getAllDivisions);
-router.get("/with-user-count", divisionController.getDivisionsWithUserCount);
-router.get("/:id", divisionController.getDivisionById);
-router.put("/:id", divisionController.updateDivision);
-router.delete("/:id", divisionController.deleteDivision);
+// Routes
+router
+  .post("/", controller.addDivision)
+  .get("/", controller.getDivisionsTree)
+  .get("/all", controller.getAllDivisions)
+  .get("/with-user-count", controller.getDivisionsWithUserCount)
+  .get("/:id", controller.getDivisionById)
+  .put("/:id", controller.updateDivision)
+  .delete("/:id", controller.deleteDivision);
 
 export default router;

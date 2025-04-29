@@ -2,8 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { UserDTO, AddUserResponseDTO } from "../dto/user.dto";
 import { getJakartaTime } from "../utils/date.utils";
 import prisma from "../configs/db.config";
-import { UserFilterOptions } from "../filters/interface/user.filter.interface";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
+import { UserFilterOptions } from "../interfaces/user.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 
 class UserRepository {
   private readonly prisma: PrismaClient;
@@ -142,6 +142,9 @@ class UserRepository {
         email,
         deletedOn: null,
       },
+      include: {
+        divisi: true,
+      },
     });
   }
 
@@ -151,6 +154,9 @@ class UserRepository {
         username,
         deletedOn: null,
       },
+      include: {
+        divisi: true,
+      },
     });
   }
 
@@ -159,6 +165,9 @@ class UserRepository {
       where: {
         nokar,
         deletedOn: null,
+      },
+      include: {
+        divisi: true,
       },
     });
   }
