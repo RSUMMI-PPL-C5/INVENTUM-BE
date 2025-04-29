@@ -101,6 +101,8 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
 };
 
+app.use(cors(corsOptions));
+
 // Request parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
