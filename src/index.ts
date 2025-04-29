@@ -20,7 +20,7 @@ import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
-import medicalequipmentRoutes from "./routes/medicalequipment.route";
+import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import commentRoutes from "./routes/comment.route";
 import requestRoutes from "./routes/request.route";
 const app = express();

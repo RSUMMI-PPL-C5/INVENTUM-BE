@@ -1,5 +1,5 @@
-import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
-import { MedicalEquipmentDTO } from "../../../../src/dto/medicalequipment.dto";
+import MedicalEquipmentService from "../../../../src/services/medical-equipment.service";
+import { MedicalEquipmentDTO } from "../../../../src/dto/medical-equipment.dto";
 import AppError from "../../../../src/utils/appError";
 
 describe("MedicalEquipmentService - deleteMedicalEquipment", () => {

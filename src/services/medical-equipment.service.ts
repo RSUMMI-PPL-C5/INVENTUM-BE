@@ -1,15 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-import { IMedicalEquipmentService } from "./interface/medicalequipment.service.interface";
+import { IMedicalEquipmentService } from "./interface/medical-equipment.service.interface";
 import {
   AddMedicalEquipmentDTO,
   AddMedicalEquipmentResponseDTO,
   UpdateMedicalEquipmentDTO,
   MedicalEquipmentDTO,
-} from "../dto/medicalequipment.dto";
-import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
+} from "../dto/medical-equipment.dto";
+import { MedicalEquipmentFilterOptions } from "../interfaces/medical-equipment.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
-import MedicalEquipmentRepository from "../repository/medicalequipment.repository";
-import AppError from "../utils/appError";
+import MedicalEquipmentRepository from "../repository/medical-equipment.repository";
 
 class MedicalEquipmentService implements IMedicalEquipmentService {
   private readonly medicalEquipmentRepository: MedicalEquipmentRepository;
@@ -26,10 +25,7 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
       typeof equipmentData.inventorisId !== "string" ||
       equipmentData.inventorisId.trim() === ""
     ) {
-      throw new AppError(
-        "inventorisId is required and must be a valid string",
-        400,
-      );
+      throw new Error("inventorisId is required and must be a valid string");
     }
 
     const existingEquipment =
@@ -37,7 +33,7 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
         equipmentData.inventorisId,
       );
     if (existingEquipment) {
-      throw new AppError("Inventoris ID already in use", 400);
+      throw new Error("Inventoris ID already in use");
     }
 
     const createData = {
@@ -79,10 +75,7 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     id: string,
   ): Promise<MedicalEquipmentDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Equipment ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Equipment ID is required and must be a valid string");
     }
 
     return await this.medicalEquipmentRepository.getMedicalEquipmentById(id);
@@ -93,15 +86,12 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     equipmentData: UpdateMedicalEquipmentDTO,
   ): Promise<AddMedicalEquipmentResponseDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Equipment ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Equipment ID is required and must be a valid string");
     }
 
     const equipment = await this.medicalEquipmentRepository.findById(id);
     if (!equipment) {
-      throw new AppError("Medical equipment not found", 404);
+      throw new Error("Medical equipment not found");
     }
 
     const updateData = {
@@ -119,15 +109,12 @@ class MedicalEquipmentService implements IMedicalEquipmentService {
     deletedById?: string,
   ): Promise<MedicalEquipmentDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Equipment ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Equipment ID is required and must be a valid string");
     }
 
     const equipment = await this.medicalEquipmentRepository.findById(id);
     if (!equipment) {
-      throw new AppError("Medical equipment not found", 404);
+      throw new Error("Medical equipment not found");
     }
 
     const deletedBy = deletedById;

@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from "uuid";
 import { SparepartDTO, SparepartsDTO } from "../dto/sparepart.dto";
 import { ISparepartService } from "./interface/sparepart.service.interface";
 import SparepartRepository from "../repository/sparepart.repository";
-import AppError from "../utils/appError";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
 
@@ -19,10 +18,7 @@ class SparepartService implements ISparepartService {
       typeof data.partsName !== "string" ||
       data.partsName.trim() === ""
     ) {
-      throw new AppError(
-        "Parts name is required and must be a valid string",
-        400,
-      );
+      throw new Error("Parts name is required and must be a valid string");
     }
 
     const { id, ...restData } = data;
@@ -60,10 +56,7 @@ class SparepartService implements ISparepartService {
 
   public async getSparepartById(id: string): Promise<SparepartDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Sparepart ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Sparepart ID is required and must be a valid string");
     }
 
     return await this.sparepartRepository.getSparepartById(id);
@@ -71,10 +64,7 @@ class SparepartService implements ISparepartService {
 
   public async getSparepartByName(nameQuery: string): Promise<SparepartDTO[]> {
     if (!nameQuery || typeof nameQuery !== "string") {
-      throw new AppError(
-        "Name query is required and must be a valid string",
-        400,
-      );
+      throw new Error("Name query is required and must be a valid string");
     }
 
     return await this.sparepartRepository.getSparepartByName(nameQuery);
@@ -85,19 +75,16 @@ class SparepartService implements ISparepartService {
     data: Partial<SparepartsDTO>,
   ): Promise<SparepartsDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Sparepart ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Sparepart ID is required and must be a valid string");
     }
 
     const sparepart = await this.sparepartRepository.getSparepartById(id);
     if (!sparepart) {
-      throw new AppError("Sparepart not found", 404);
+      throw new Error("Sparepart not found");
     }
 
     if (data.partsName !== undefined && data.partsName.trim() === "") {
-      throw new AppError("Parts name cannot be empty", 400);
+      throw new Error("Parts name cannot be empty");
     }
 
     const {
@@ -117,15 +104,12 @@ class SparepartService implements ISparepartService {
     deletedById?: string,
   ): Promise<SparepartsDTO | null> {
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new AppError(
-        "Sparepart ID is required and must be a valid string",
-        400,
-      );
+      throw new Error("Sparepart ID is required and must be a valid string");
     }
 
     const sparepart = await this.sparepartRepository.getSparepartById(id);
     if (!sparepart) {
-      throw new AppError("Sparepart not found", 404);
+      throw new Error("Sparepart not found");
     }
 
     return await this.sparepartRepository.deleteSparepart(id, deletedById);

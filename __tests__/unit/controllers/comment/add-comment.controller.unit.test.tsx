@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { CommentController } from "../../../../src/controllers/comment.controller";
 import { CommentService } from "../../../../src/services/comment.service";
-import {
-  CreateCommentDto,
-  CommentResponseDto,
-} from "../../../../src/dto/comment.dto";
+import { CommentResponseDto } from "../../../../src/dto/comment.dto";
 
 // Mock dependencies
 jest.mock("../../../../src/services/comment.service");

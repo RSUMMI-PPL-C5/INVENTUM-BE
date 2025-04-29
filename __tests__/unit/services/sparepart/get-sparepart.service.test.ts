@@ -117,7 +117,9 @@ describe("SparepartService - Get Methods", () => {
     });
 
     it("should apply filters and pagination", async () => {
-      const filters: SparepartFilterOptions = { toolLocation: "Warehouse A" };
+      const filters: SparepartFilterOptions = {
+        toolLocation: "Warehouse A",
+      };
       const pagination: PaginationOptions = { page: 1, limit: 10 };
       const mockSpareparts = [
         {

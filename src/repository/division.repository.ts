@@ -1,6 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { DivisionDTO, DivisionWithChildrenDTO } from "../dto/division.dto";
-import AppError from "../utils/appError";
 import prisma from "../configs/db.config";
 
 class DivisionRepository {
@@ -126,21 +125,20 @@ class DivisionRepository {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // P2025: Record not found
         if (error.code === "P2025") {
-          throw new AppError(`Division with ID ${id} not found`, 404);
+          throw new Error(`Division with ID ${id} not found`);
         }
         // P2002: Unique constraint violation
         if (error.code === "P2002") {
-          throw new AppError(`Division with this name already exists`, 400);
+          throw new Error(`Division with this name already exists`);
         }
         // P2003: Foreign key constraint violation
         if (error.code === "P2003") {
-          throw new AppError(`Invalid parent division ID`, 400);
+          throw new Error(`Invalid parent division ID`);
         }
       }
 
-      throw new AppError(
+      throw new Error(
         `Failed to update division with ID ${id}: ${errorMessage}`,
-        500,
       );
     }
   }
@@ -218,9 +216,8 @@ class DivisionRepository {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      throw new AppError(
+      throw new Error(
         `Failed to delete division with ID ${id}: ${errorMessage}`,
-        500,
       );
     }
   }

@@ -5,7 +5,6 @@ import { PaginationOptions } from "../interfaces/pagination.interface";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import UserRepository from "../repository/user.repository";
-import AppError from "../utils/appError";
 
 class UserService implements IUserService {
   private readonly userRepository: UserRepository;
@@ -19,14 +18,14 @@ class UserService implements IUserService {
       userData.email,
     );
     if (emailExists) {
-      throw new AppError("Email already in use", 400);
+      throw new Error("Email already in use");
     }
 
     const usernameExists = await this.userRepository.getUserByUsername(
       userData.username,
     );
     if (usernameExists) {
-      throw new AppError("Username already in use", 400);
+      throw new Error("Username already in use");
     }
 
     if (userData.nokar && userData.nokar !== "") {
@@ -34,7 +33,7 @@ class UserService implements IUserService {
         userData.nokar,
       );
       if (nokarExists) {
-        throw new AppError("Nokar already in use", 400);
+        throw new Error("Nokar already in use");
       }
     }
 

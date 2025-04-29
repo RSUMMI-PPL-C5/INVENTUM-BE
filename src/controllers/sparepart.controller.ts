@@ -1,9 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import SparepartService from "../services/sparepart.service";
 import { SparepartDTO } from "../dto/sparepart.dto";
 import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
-import AppError from "../utils/appError";
 
 class SparepartController {
   private readonly sparepartService: SparepartService;
@@ -12,7 +11,11 @@ class SparepartController {
     this.sparepartService = new SparepartService();
   }
 
-  public addSparepart = async (req: Request, res: Response): Promise<void> => {
+  public addSparepart = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const sparepartData: SparepartDTO = {
         ...req.body,
@@ -26,25 +29,16 @@ class SparepartController {
         status: "success",
         data: newSparepart,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
-  public getSpareparts = async (req: Request, res: Response): Promise<void> => {
+  public getSpareparts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit
@@ -66,29 +60,15 @@ class SparepartController {
       );
 
       res.status(200).json(result);
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          statusCode: error.statusCode,
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          statusCode: 500,
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public getSparepartById = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const sparepart = await this.sparepartService.getSparepartById(
@@ -107,27 +87,15 @@ class SparepartController {
         status: "success",
         data: sparepart,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public updateSparepart = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { id } = req.params;
@@ -153,27 +121,15 @@ class SparepartController {
         status: "success",
         data: updatedSparepart,
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 
   public deleteSparepart = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const deletedById = (req.user as any).userId;
@@ -195,21 +151,8 @@ class SparepartController {
         status: "success",
         message: "Sparepart deleted successfully",
       });
-    } catch (error: unknown) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          status: "error",
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({
-          status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
-      }
+    } catch (error) {
+      next(error);
     }
   };
 }

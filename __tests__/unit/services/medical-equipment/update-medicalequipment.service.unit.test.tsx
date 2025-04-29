@@ -1,9 +1,9 @@
-import MedicalEquipmentService from "../../../../src/services/medicalequipment.service";
+import MedicalEquipmentService from "../../../../src/services/medical-equipment.service";
 import AppError from "../../../../src/utils/appError";
 import {
   AddMedicalEquipmentResponseDTO,
   UpdateMedicalEquipmentDTO,
-} from "../../../../src/dto/medicalequipment.dto";
+} from "../../../../src/dto/medical-equipment.dto";
 
 describe("MedicalEquipmentService - updateMedicalEquipment", () => {
   let service: MedicalEquipmentService;
