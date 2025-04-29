@@ -10,6 +10,13 @@ const controller = new RequestController();
 // Middleware
 router.use(verifyToken);
 
+// Get all requests
+router.get("/all", controller.getAllRequests);
+
+// Get request by ID
+router.get("/:id", controller.getRequestById);
+
+// Create maintenance request
 router.post(
   "/maintenance",
   createRequestValidation,
@@ -17,6 +24,7 @@ router.post(
   controller.createMaintenanceRequest,
 );
 
+// Create calibration request
 router.post(
   "/calibration",
   createRequestValidation,
