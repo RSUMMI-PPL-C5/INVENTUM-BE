@@ -65,7 +65,13 @@ export class RequestService implements IRequestService {
 
       return result;
     } catch (error) {
-      throw error;
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error in createRequest service:", error);
+      throw new Error(
+        `Failed to create request: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 }
