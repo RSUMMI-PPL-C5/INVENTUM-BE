@@ -22,6 +22,7 @@ import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
+import requestRoutes from "./routes/request.route";
 import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
 import calibrationHistoryRoutes from "./routes/calibration-history.routes";
@@ -105,6 +106,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
+app.use("/request", requestRoutes);
 app.use("/medical-equipment", [
   medicalequipmentRoutes,
   maintenanceHistoryRoutes,
