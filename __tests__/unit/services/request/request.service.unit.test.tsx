@@ -1,6 +1,12 @@
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
 import AppError from "../../../../src/utils/appError";
+import { v4 as uuidv4 } from "uuid";
+
+// Mock uuid
+jest.mock("uuid", () => ({
+  v4: jest.fn().mockReturnValue("mocked-uuid"),
+}));
 
 // Mock the repository
 jest.mock("../../../../src/repository/request.repository");

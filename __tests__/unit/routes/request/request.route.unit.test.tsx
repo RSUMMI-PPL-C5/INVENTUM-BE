@@ -7,6 +7,7 @@ jest.mock("express", () => {
     post: jest.fn().mockReturnThis(),
     put: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
+    use: jest.fn().mockReturnThis(), // Add use method for middleware
   };
   return {
     Router: jest.fn(() => mockRouter),
@@ -27,50 +28,44 @@ jest.mock("../../../../src/controllers/request.controller", () => {
 });
 
 // Mock middleware
-jest.mock("../../../../src/middleware/verifyToken", () =>
-  jest.fn((_req: any, _res: any, next: any) => next()),
-);
+jest.mock("../../../../src/middleware/verifyToken", () => jest.fn());
 
 // Import the route after all mocks are defined
 import "../../../../src/routes/request.route";
 
 describe("Request Routes", () => {
+  let mockRouter: any;
+
+  beforeEach(() => {
+    mockRouter = (Router as jest.Mock).mock.results[0].value;
+  });
+
   it("should create router with Router()", () => {
     expect(Router).toHaveBeenCalled();
   });
 
-  it("should register GET /all route with verifyToken middleware", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/all",
-      expect.any(Function),
-      expect.any(Function),
-    );
+  it("should apply verifyToken middleware globally", () => {
+    expect(mockRouter.use).toHaveBeenCalledWith(expect.any(Function));
   });
 
-  it("should register GET /:id route with verifyToken middleware", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/:id",
-      expect.any(Function),
-      expect.any(Function),
-    );
+  it("should register GET /all route", () => {
+    expect(mockRouter.get).toHaveBeenCalledWith("/all", expect.any(Function));
   });
 
-  it("should register GET /maintenance route with verifyToken middleware", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+  it("should register GET /:id route", () => {
+    expect(mockRouter.get).toHaveBeenCalledWith("/:id", expect.any(Function));
+  });
+
+  it("should register GET /maintenance route", () => {
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/maintenance",
       expect.any(Function),
-      expect.any(Function),
     );
   });
 
-  it("should register GET /calibration route with verifyToken middleware", () => {
-    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+  it("should register GET /calibration route", () => {
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/calibration",
-      expect.any(Function),
       expect.any(Function),
     );
   });

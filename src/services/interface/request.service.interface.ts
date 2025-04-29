@@ -4,4 +4,5 @@ export interface IRequestService {
   getRequestById(id: string): Promise<RequestResponseDTO>;
   getAllRequests(): Promise<RequestResponseDTO[]>;
   getAllRequestMaintenance(): Promise<RequestDTO[]>;
+  getAllRequestCalibration(): Promise<RequestDTO[]>;
 }
