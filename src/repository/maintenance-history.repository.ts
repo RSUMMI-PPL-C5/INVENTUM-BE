@@ -116,9 +116,6 @@ class MaintenanceHistoryRepository {
         where,
         skip,
         take,
-        include: {
-          medicalEquipment: true,
-        },
         orderBy: {
           maintenanceDate: "desc",
         },

@@ -25,6 +25,8 @@ import divisionRoutes from "./routes/division.route";
 import requestRoutes from "./routes/request.route";
 import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
+import calibrationHistoryRoutes from "./routes/calibration-history.routes";
+import partsHistoryRoutes from "./routes/parts-history.routes";
 
 const app = express();
 
@@ -104,9 +106,13 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/spareparts", sparepartRoutes);
 app.use("/divisi", divisionRoutes);
-app.use("/medical-equipment", medicalequipmentRoutes);
 app.use("/request", requestRoutes);
-app.use("/medical-equipment", maintenanceHistoryRoutes);
+app.use("/medical-equipment", [
+  medicalequipmentRoutes,
+  maintenanceHistoryRoutes,
+  calibrationHistoryRoutes,
+  partsHistoryRoutes,
+]);
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);

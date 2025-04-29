@@ -18,13 +18,11 @@ router.use(verifyToken, authorizeRoles("Admin", "Fasum", "User"));
 router
   .get(
     "/:equipmentId/maintenance-history",
-    verifyToken,
     maintenanceHistoryFilterQueryValidation,
     maintenanceController.getMaintenanceHistoriesByEquipmentId,
   )
   .post(
     "/:equipmentId/maintenance-history",
-    verifyToken,
     createMaintenanceHistoryValidation,
     validateRequest,
     maintenanceController.createMaintenanceHistory,
