@@ -1,4 +1,5 @@
-import { RequestResponseDTO } from "../dto/request.dto";
+import { v4 as uuidv4 } from "uuid";
+import { CreateRequestDTO, RequestResponseDTO } from "../dto/request.dto";
 import RequestRepository from "../repository/request.repository";
 import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
@@ -49,6 +50,22 @@ export class RequestService implements IRequestService {
       throw new Error(
         `Failed to get requests: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
+    }
+  }
+
+  public async createRequest(
+    requestData: CreateRequestDTO,
+  ): Promise<RequestResponseDTO> {
+    try {
+      const result = await this.requestRepository.createRequest({
+        id: uuidv4(),
+        ...requestData,
+        status: "Pending",
+      });
+
+      return result;
+    } catch (error) {
+      throw error;
     }
   }
 }

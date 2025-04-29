@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
-import { RequestResponseDTO } from "../dto/request.dto";
+import { RequestDTO, RequestResponseDTO } from "../dto/request.dto";
 import AppError from "../utils/appError";
+import { getJakartaTime } from "../utils/date.utils";
 
 export class RequestRepository {
   private readonly prisma: PrismaClient;
@@ -84,6 +85,17 @@ export class RequestRepository {
       console.error("Error fetching all requests:", error);
       throw new AppError("Failed to fetch all requests", 500);
     }
+  }
+
+  public async createRequest(requestData: any): Promise<any> {
+    const jakartaTime = getJakartaTime();
+    return await this.prisma.request.create({
+      data: {
+        ...requestData,
+        createdOn: jakartaTime,
+        modifiedOn: jakartaTime,
+      },
+    });
   }
 }
 

@@ -43,3 +43,12 @@ export class RequestResponseDTO extends RequestDTO {
     isRead: boolean;
   }>;
 }
+
+export interface CreateRequestDTO {
+  userId: string;
+  medicalEquipment: string;
+  complaint?: string;
+  submissionDate: Date;
+  createdBy: string;
+  requestType: "MAINTENANCE" | "CALIBRATION";
+}
