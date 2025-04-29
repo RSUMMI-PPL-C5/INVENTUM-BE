@@ -11,6 +11,6 @@ module.exports = {
     "**/*.test.tsx",
   ],
   testPathIgnorePatterns: [],
-  coveragePathIgnorePatterns: [],
+  coveragePathIgnorePatterns: ["/sentry/"],
   coverageReporters: ["lcov", "text", "clover"],
 };

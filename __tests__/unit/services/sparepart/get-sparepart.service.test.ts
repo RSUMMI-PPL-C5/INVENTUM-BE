@@ -2,8 +2,8 @@ import SparepartService from "../../../../src/services/sparepart.service";
 import SparepartRepository from "../../../../src/repository/sparepart.repository";
 import AppError from "../../../../src/utils/appError";
 import { SparepartDTO } from "../../../../src/dto/sparepart.dto";
-import { PaginationOptions } from "../../../../src/filters/interface/pagination.interface";
-import { SparepartFilterOptions } from "../../../../src/filters/interface/spareparts.filter.interface";
+import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
+import { SparepartFilterOptions } from "../../../../src/interfaces/spareparts.filter.interface";
 
 jest.mock("../../../../src/repository/sparepart.repository");
 
@@ -117,7 +117,9 @@ describe("SparepartService - Get Methods", () => {
     });
 
     it("should apply filters and pagination", async () => {
-      const filters: SparepartFilterOptions = { toolLocation: "Warehouse A" };
+      const filters: SparepartFilterOptions = {
+        toolLocation: "Warehouse A",
+      };
       const pagination: PaginationOptions = { page: 1, limit: 10 };
       const mockSpareparts = [
         {

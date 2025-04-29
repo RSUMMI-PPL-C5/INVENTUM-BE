@@ -4,9 +4,11 @@ import verifyToken from "../middleware/verifyToken";
 import { loginLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
-const authController = new AuthController();
+const controller = new AuthController();
 
-router.post("/", loginLimiter, authController.login);
-router.get("/check", verifyToken, authController.verifyToken);
+// Routes
+router
+  .post("/", loginLimiter, controller.login)
+  .get("/check", verifyToken, controller.verifyToken);
 
 export default router;
