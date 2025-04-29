@@ -25,7 +25,7 @@ jobs:
           
           # Start DB if not running
           if ! docker ps | grep -q inventum-mysql-staging; then
-            docker-compose -f docker-compose.staging.yml up -d db
+            docker compose -f docker-compose.staging.yml up -d db
             echo "Waiting for MySQL to initialize..."
             sleep 15
           fi
@@ -41,8 +41,8 @@ jobs:
         working-directory: /home/noov/inventum/staging
         run: |
           # Stop and remove only the backend container if it exists
-          docker-compose -f docker-compose.staging.yml stop backend || true
-          docker-compose -f docker-compose.staging.yml rm -f backend || true
+          docker compose -f docker-compose.staging.yml stop backend || true
+          docker compose -f docker-compose.staging.yml rm -f backend || true
           
           # Start the backend container
-          docker-compose -f docker-compose.staging.yml up -d backend
+          docker compose -f docker-compose.staging.yml up -d backend
