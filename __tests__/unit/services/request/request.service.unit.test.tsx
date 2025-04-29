@@ -1,6 +1,12 @@
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
 import AppError from "../../../../src/utils/appError";
+import { v4 as uuidv4 } from "uuid";
+
+// Mock uuid
+jest.mock("uuid", () => ({
+  v4: jest.fn().mockReturnValue("mocked-uuid"),
+}));
 
 // Mock the repository
 jest.mock("../../../../src/repository/request.repository");
@@ -259,6 +265,114 @@ describe("RequestService", () => {
         "Failed to get requests: Unknown error",
       );
       expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
+    });
+  });
+
+  describe("createRequest", () => {
+    it("should successfully create a request", async () => {
+      // Mock data
+      const mockRequestData = {
+        userId: "user-123",
+        medicalEquipment: "Equipment Name",
+        complaint: "Issue description",
+        submissionDate: new Date(),
+        createdBy: "user-123",
+        requestType: "MAINTENANCE" as const,
+      };
+
+      const mockCreatedRequest = {
+        id: "mocked-uuid",
+        ...mockRequestData,
+        status: "Pending",
+      };
+
+      // Mock repository method
+      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
+
+      // Call service method
+      const result = await requestService.createRequest(mockRequestData);
+
+      // Assertions
+      expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
+        id: "mocked-uuid",
+        ...mockRequestData,
+        status: "Pending",
+      });
+      expect(result).toBe(mockCreatedRequest);
+    });
+
+    it("should pass through AppError from repository", async () => {
+      // Mock data
+      const mockRequestData = {
+        userId: "user-123",
+        medicalEquipment: "Equipment Name",
+        submissionDate: new Date(),
+        createdBy: "user-123",
+        requestType: "MAINTENANCE" as const,
+      };
+
+      // Create an AppError instance
+      const appError = new AppError("Custom error message", 418);
+
+      // Mock repository method to reject with the AppError
+      mockRequestRepository.createRequest.mockRejectedValue(appError);
+
+      // Assertions - should pass through the original AppError
+      await expect(
+        requestService.createRequest(mockRequestData),
+      ).rejects.toEqual(appError);
+
+      // Ensure the statusCode is preserved
+      try {
+        await requestService.createRequest(mockRequestData);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AppError);
+        expect((error as AppError).statusCode).toBe(418);
+      }
+    });
+
+    it("should handle repository errors", async () => {
+      // Mock data
+      const mockRequestData = {
+        userId: "user-123",
+        medicalEquipment: "Equipment Name",
+        submissionDate: new Date(),
+        createdBy: "user-123",
+        requestType: "CALIBRATION" as const,
+      };
+
+      // Mock repository error
+      mockRequestRepository.createRequest.mockRejectedValue(
+        new Error("Repository error"),
+      );
+
+      // Assertions
+      await expect(
+        requestService.createRequest(mockRequestData),
+      ).rejects.toThrow("Failed to create request: Repository error");
+      expect(mockRequestRepository.createRequest).toHaveBeenCalled();
+    });
+
+    it("should handle non-Error rejections from repository", async () => {
+      // Mock data
+      const mockRequestData = {
+        userId: "user-123",
+        medicalEquipment: "Equipment Name",
+        submissionDate: new Date(),
+        createdBy: "user-123",
+        requestType: "MAINTENANCE" as const,
+      };
+
+      // Mock repository rejecting with a non-Error object
+      mockRequestRepository.createRequest.mockRejectedValue({
+        custom: "error",
+      });
+
+      // Assertions
+      await expect(
+        requestService.createRequest(mockRequestData),
+      ).rejects.toThrow("Failed to create request: Unknown error");
+      expect(mockRequestRepository.createRequest).toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../configs/db.config";
-import { RequestDTO, RequestResponseDTO } from "../dto/request.dto";
+import { RequestResponseDTO } from "../dto/request.dto";
 import AppError from "../utils/appError";
 import { getJakartaTime } from "../utils/date.utils";
 
