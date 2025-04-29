@@ -4,8 +4,8 @@ import {
   AddMedicalEquipmentDTO,
   UpdateMedicalEquipmentDTO,
 } from "../dto/medicalequipment.dto";
-import { MedicalEquipmentFilterOptions } from "../interface/medicalequipment.filter.interface";
-import { PaginationOptions } from "../interface/pagination.interface";
+import { MedicalEquipmentFilterOptions } from "../interfaces/medicalequipment.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 import AppError from "../utils/appError";
 
 class MedicalEquipmentController {

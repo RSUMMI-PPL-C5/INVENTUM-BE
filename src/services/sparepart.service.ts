@@ -3,8 +3,8 @@ import { SparepartDTO, SparepartsDTO } from "../dto/sparepart.dto";
 import { ISparepartService } from "./interface/sparepart.service.interface";
 import SparepartRepository from "../repository/sparepart.repository";
 import AppError from "../utils/appError";
-import { PaginationOptions } from "../interface/pagination.interface";
-import { SparepartFilterOptions } from "../interface/spareparts.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
+import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
 
 class SparepartService implements ISparepartService {
   private readonly sparepartRepository: SparepartRepository;

@@ -1,5 +1,5 @@
-import { PaginationOptions } from "../../interface/pagination.interface";
-import { UserFilterOptions } from "../../interface/user.filter.interface";
+import { PaginationOptions } from "../../interfaces/pagination.interface";
+import { UserFilterOptions } from "../../interfaces/user.filter.interface";
 import { AddUserDTO, AddUserResponseDTO, UserDTO } from "../../dto/user.dto";
 
 export interface IUserService {

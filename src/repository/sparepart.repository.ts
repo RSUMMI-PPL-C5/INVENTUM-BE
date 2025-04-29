@@ -2,8 +2,8 @@ import { PrismaClient, Spareparts } from "@prisma/client";
 import { SparepartDTO, SparepartsDTO } from "../dto/sparepart.dto";
 import prisma from "../configs/db.config";
 import { getJakartaTime } from "../utils/date.utils";
-import { PaginationOptions } from "../interface/pagination.interface";
-import { SparepartFilterOptions } from "../interface/spareparts.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
+import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
 
 class SparepartRepository {
   private readonly prisma: PrismaClient;

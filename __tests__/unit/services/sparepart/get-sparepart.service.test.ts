@@ -2,8 +2,8 @@ import SparepartService from "../../../../src/services/sparepart.service";
 import SparepartRepository from "../../../../src/repository/sparepart.repository";
 import AppError from "../../../../src/utils/appError";
 import { SparepartDTO } from "../../../../src/dto/sparepart.dto";
-import { PaginationOptions } from "../../../../src/interface/pagination.interface";
-import { SparepartFilterOptions } from "../../../../src/interface/spareparts.filter.interface";
+import { PaginationOptions } from "../../../../src/interfaces/pagination.interface";
+import { SparepartFilterOptions } from "../../../../src/interfaces/spareparts.filter.interface";
 
 jest.mock("../../../../src/repository/sparepart.repository");
 

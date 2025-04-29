@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import SparepartService from "../services/sparepart.service";
 import { SparepartDTO } from "../dto/sparepart.dto";
-import { SparepartFilterOptions } from "../interface/spareparts.filter.interface";
-import { PaginationOptions } from "../interface/pagination.interface";
+import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 import AppError from "../utils/appError";
 
 class SparepartController {
