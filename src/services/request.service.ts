@@ -8,7 +8,7 @@ import RequestRepository from "../repository/request.repository";
 import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
 
-export class RequestService implements IRequestService {
+class RequestService implements IRequestService {
   private readonly requestRepository: RequestRepository;
 
   constructor() {

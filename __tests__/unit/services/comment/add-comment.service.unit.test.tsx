@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { CommentService } from "../../../../src/services/comment.service";
-import { CommentRepository } from "../../../../src/repository/comment.repository";
+import CommentService from "../../../../src/services/comment.service";
+import CommentRepository from "../../../../src/repository/comment.repository";
 import { CreateCommentDto } from "../../../../src/dto/comment.dto";
 
 // Mock the repository
@@ -9,15 +8,13 @@ jest.mock("../../../../src/repository/comment.repository");
 describe("CommentService", () => {
   let commentService: CommentService;
   let mockCommentRepository: jest.Mocked<CommentRepository>;
-  const mockPrisma = {} as PrismaClient;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Create a mock repository instance
-    mockCommentRepository = new CommentRepository(
-      mockPrisma,
-    ) as jest.Mocked<CommentRepository>;
+    mockCommentRepository =
+      new CommentRepository() as jest.Mocked<CommentRepository>;
 
     // Mock the constructor to return our mock repository
     (CommentRepository as jest.Mock).mockImplementation(
@@ -25,7 +22,7 @@ describe("CommentService", () => {
     );
 
     // Initialize the service with mock Prisma instance
-    commentService = new CommentService(mockPrisma);
+    commentService = new CommentService();
   });
 
   describe("createComment", () => {

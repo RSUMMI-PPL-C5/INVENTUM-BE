@@ -1,16 +1,17 @@
-import { PrismaClient } from "@prisma/client";
 import { CreateCommentDto, CommentResponseDto } from "../dto/comment.dto";
-import { CommentRepository } from "../repository/comment.repository";
+import CommentRepository from "../repository/comment.repository";
 import { ICommentService } from "../services/interface/comment.service.interface";
 
-export class CommentService implements ICommentService {
+class CommentService implements ICommentService {
   private readonly commentRepository: CommentRepository;
 
-  constructor(prisma: PrismaClient) {
-    this.commentRepository = new CommentRepository(prisma);
+  constructor() {
+    this.commentRepository = new CommentRepository();
   }
 
-  async createComment(data: CreateCommentDto): Promise<CommentResponseDto> {
+  public async createComment(
+    data: CreateCommentDto,
+  ): Promise<CommentResponseDto> {
     try {
       const comment = await this.commentRepository.createComment(data);
       return comment as CommentResponseDto;
@@ -20,7 +21,7 @@ export class CommentService implements ICommentService {
     }
   }
 
-  async getCommentsByRequestId(
+  public async getCommentsByRequestId(
     requestId: string,
   ): Promise<CommentResponseDto[]> {
     try {
@@ -33,7 +34,7 @@ export class CommentService implements ICommentService {
     }
   }
 
-  async getAllComments(): Promise<CommentResponseDto[]> {
+  public async getAllComments(): Promise<CommentResponseDto[]> {
     try {
       const comments = await this.commentRepository.getAllComments();
       return comments as CommentResponseDto[];
@@ -43,3 +44,5 @@ export class CommentService implements ICommentService {
     }
   }
 }
+
+export default CommentService;

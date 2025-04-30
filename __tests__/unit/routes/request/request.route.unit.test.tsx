@@ -37,10 +37,12 @@ jest.mock("../../../../src/middleware/validateRequest", () => ({
 jest.mock("../../../../src/validations/request.validation", () => ({
   createRequestValidation: jest.fn(),
 }));
+jest.mock("../../../../src/middleware/authorizeRole", () =>
+  jest.fn().mockReturnValue(jest.fn()),
+); // Add this mock
 
 // Import the route after all mocks are defined
 import "../../../../src/routes/request.route";
-import { get } from "http";
 
 describe("Request Routes", () => {
   let mockRouter: any;
@@ -54,7 +56,10 @@ describe("Request Routes", () => {
   });
 
   it("should apply verifyToken middleware globally", () => {
-    expect(mockRouter.use).toHaveBeenCalledWith(expect.any(Function));
+    expect(mockRouter.use).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+    );
   });
 
   it("should register GET /all route", () => {

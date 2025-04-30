@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { CommentController } from "../../../../src/controllers/comment.controller";
-import { CommentService } from "../../../../src/services/comment.service";
+import CommentController from "../../../../src/controllers/comment.controller";
+import CommentService from "../../../../src/services/comment.service";
 import { CommentResponseDto } from "../../../../src/dto/comment.dto";
 
 // Mock dependencies
@@ -12,6 +12,7 @@ describe("CommentController", () => {
   let mockCommentService: jest.Mocked<CommentService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockNext: jest.Mock;
   let jsonSpy: jest.Mock;
   let statusSpy: jest.Mock;
 
@@ -23,11 +24,12 @@ describe("CommentController", () => {
     jsonSpy = jest.fn().mockReturnThis();
     statusSpy = jest.fn().mockReturnValue({ json: jsonSpy });
 
-    // Setup mock response
+    // Setup mock response and next function
     mockResponse = {
       status: statusSpy,
       json: jsonSpy,
     };
+    mockNext = jest.fn();
 
     // Initialize controller
     commentController = new CommentController();
@@ -77,6 +79,7 @@ describe("CommentController", () => {
       await commentController.createComment(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -92,9 +95,9 @@ describe("CommentController", () => {
         message: "Comment created successfully",
         data: mockComment,
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    // This test covers line 58 branch
     it("should return 400 if userId is not provided", async () => {
       // Setup request without userId
       mockRequest = {
@@ -112,6 +115,7 @@ describe("CommentController", () => {
       await commentController.createComment(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -121,9 +125,10 @@ describe("CommentController", () => {
         success: false,
         message: "User ID is required",
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it("should handle service errors", async () => {
+    it("should pass service errors to next middleware", async () => {
       // Setup mock data
       const mockUserId = "test-user-id";
       const mockError = new Error("Service error");
@@ -132,6 +137,7 @@ describe("CommentController", () => {
       mockRequest = {
         body: {
           text: "Test comment",
+          requestId: "test-request-id",
         },
         user: {
           userId: mockUserId,
@@ -146,73 +152,12 @@ describe("CommentController", () => {
       await commentController.createComment(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Service error",
-      });
-    });
-
-    // Fix the test for missing req.user property
-    it("should return 500 if req.user is missing entirely", async () => {
-      // Setup request without user object
-      mockRequest = {
-        body: {
-          text: "Test comment",
-          requestId: "test-request-id",
-        },
-        // No user property at all
-      };
-
-      // Call method
-      await commentController.createComment(
-        mockRequest as Request,
-        mockResponse as Response,
-      );
-
-      // Assertions - update expectations to match actual error message
-      expect(mockCommentService.createComment).not.toHaveBeenCalled();
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Cannot read properties of undefined (reading 'userId')",
-      });
-    });
-
-    // Add a test for non-Error objects in catch block
-    it("should handle non-Error objects thrown by service", async () => {
-      // Setup mock data
-      const mockUserId = "test-user-id";
-
-      // Setup request
-      mockRequest = {
-        body: {
-          text: "Test comment",
-        },
-        user: {
-          userId: mockUserId,
-          role: "user",
-        },
-      };
-
-      // Mock service throwing a string or non-Error object
-      mockCommentService.createComment.mockRejectedValue("Not an error object");
-
-      // Call method
-      await commentController.createComment(
-        mockRequest as Request,
-        mockResponse as Response,
-      );
-
-      // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Failed to create comment",
-      });
+      expect(mockNext).toHaveBeenCalledWith(mockError);
+      expect(statusSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -245,6 +190,7 @@ describe("CommentController", () => {
       await commentController.getCommentsByRequestId(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -257,9 +203,9 @@ describe("CommentController", () => {
         message: "Comments retrieved successfully",
         data: mockComments,
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    // This test covers missing branch in line 86-104 range
     it("should return 400 if requestId is not provided", async () => {
       // Setup request without requestId
       mockRequest = {
@@ -270,6 +216,7 @@ describe("CommentController", () => {
       await commentController.getCommentsByRequestId(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -279,9 +226,10 @@ describe("CommentController", () => {
         success: false,
         message: "Request ID is required",
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it("should handle service errors", async () => {
+    it("should pass service errors to next middleware", async () => {
       // Setup mock data
       const mockRequestId = "test-request-id";
       const mockError = new Error("Service error");
@@ -300,50 +248,16 @@ describe("CommentController", () => {
       await commentController.getCommentsByRequestId(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Service error",
-      });
+      expect(mockNext).toHaveBeenCalledWith(mockError);
+      expect(statusSpy).not.toHaveBeenCalled();
     });
 
-    // Add a test for non-Error objects in catch block
-    it("should handle non-Error objects thrown by service", async () => {
-      // Setup mock data
-      const mockRequestId = "test-request-id";
-
-      // Setup request
-      mockRequest = {
-        params: {
-          requestId: mockRequestId,
-        },
-      };
-
-      // Mock service throwing a string or non-Error object
-      mockCommentService.getCommentsByRequestId.mockRejectedValue(
-        "Not an error object",
-      );
-
-      // Call method
-      await commentController.getCommentsByRequestId(
-        mockRequest as Request,
-        mockResponse as Response,
-      );
-
-      // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Failed to get comments",
-      });
-    });
-
-    // Test for null requestId (different from undefined)
-    it("should return 400 if requestId is null", async () => {
-      // Setup request with null requestId
+    it("should return 400 if requestId is empty", async () => {
+      // Setup request with empty requestId
       mockRequest = {
         params: {
           requestId: "",
@@ -354,6 +268,7 @@ describe("CommentController", () => {
       await commentController.getCommentsByRequestId(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -363,6 +278,7 @@ describe("CommentController", () => {
         success: false,
         message: "Request ID is required",
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
   });
 
@@ -395,6 +311,7 @@ describe("CommentController", () => {
       await commentController.getAllComments(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
@@ -405,9 +322,10 @@ describe("CommentController", () => {
         message: "All comments retrieved successfully",
         data: mockComments,
       });
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it("should handle service errors", async () => {
+    it("should pass service errors to next middleware", async () => {
       // Setup mock error
       const mockError = new Error("Service error");
 
@@ -418,35 +336,12 @@ describe("CommentController", () => {
       await commentController.getAllComments(
         mockRequest as Request,
         mockResponse as Response,
+        mockNext,
       );
 
       // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Service error",
-      });
-    });
-
-    // Add a test for non-Error objects in catch block
-    it("should handle non-Error objects thrown by service", async () => {
-      // Mock service throwing a string or non-Error object
-      mockCommentService.getAllComments.mockRejectedValue(
-        "Not an error object",
-      );
-
-      // Call method
-      await commentController.getAllComments(
-        mockRequest as Request,
-        mockResponse as Response,
-      );
-
-      // Assertions
-      expect(statusSpy).toHaveBeenCalledWith(500);
-      expect(jsonSpy).toHaveBeenCalledWith({
-        success: false,
-        message: "Failed to get comments",
-      });
+      expect(mockNext).toHaveBeenCalledWith(mockError);
+      expect(statusSpy).not.toHaveBeenCalled();
     });
   });
 });

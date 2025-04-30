@@ -1,32 +1,21 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import { CommentService } from "../services/comment.service";
+import { Request, Response, NextFunction } from "express";
+import CommentService from "../services/comment.service";
 import { CreateCommentDto } from "../dto/comment.dto";
 
-// Add this interface to properly type the request with user data
-interface AuthRequest extends Request {
-  user: {
-    userId: string;
-    role: string;
-    [key: string]: any;
-  };
-}
-
-export class CommentController {
+class CommentController {
   private readonly commentService: CommentService;
 
   constructor() {
-    const prisma = new PrismaClient();
-    this.commentService = new CommentService(prisma);
+    this.commentService = new CommentService();
   }
 
-  createComment = async (req: Request, res: Response): Promise<void> => {
+  public createComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      // Cast to AuthRequest type to access user property
-      const authReq = req as AuthRequest;
-
-      // Extract user ID from the token - change to userId to match your token
-      const userId = authReq.user.userId;
+      const userId = (req.user as any).userId;
 
       if (!userId) {
         res.status(400).json({
@@ -36,14 +25,12 @@ export class CommentController {
         return;
       }
 
-      // Create DTO with text from request body and userId from token
       const createCommentDto: CreateCommentDto = {
         text: req.body.text,
         userId: userId,
         requestId: req.body.requestId, // Optional
       };
 
-      // Rest of the method stays the same
       const comment = await this.commentService.createComment(createCommentDto);
 
       res.status(201).json({
@@ -52,18 +39,14 @@ export class CommentController {
         data: comment,
       });
     } catch (error) {
-      console.error("Error in create comment controller:", error);
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to create comment",
-      });
+      next(error);
     }
   };
 
-  getCommentsByRequestId = async (
+  public getCommentsByRequestId = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { requestId } = req.params;
@@ -85,16 +68,15 @@ export class CommentController {
         data: comments,
       });
     } catch (error) {
-      console.error("Error in get comments controller:", error);
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to get comments",
-      });
+      next(error);
     }
   };
 
-  getAllComments = async (req: Request, res: Response): Promise<void> => {
+  public getAllComments = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const comments = await this.commentService.getAllComments();
 
@@ -104,12 +86,9 @@ export class CommentController {
         data: comments,
       });
     } catch (error) {
-      console.error("Error in get all comments controller:", error);
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to get comments",
-      });
+      next(error);
     }
   };
 }
+
+export default CommentController;
