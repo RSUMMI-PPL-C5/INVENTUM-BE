@@ -1,24 +1,24 @@
 /*
   Warnings:
 
-  - You are about to drop the `equipmentspareparts` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `partsmanagement` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `EquipmentSpareparts` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `PartsManagement` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- DropForeignKey
-ALTER TABLE `equipmentspareparts` DROP FOREIGN KEY `EquipmentSpareparts_equipmentId_fkey`;
+ALTER TABLE `EquipmentSpareparts` DROP FOREIGN KEY `EquipmentSpareparts_equipmentId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `equipmentspareparts` DROP FOREIGN KEY `EquipmentSpareparts_sparepartId_fkey`;
+ALTER TABLE `EquipmentSpareparts` DROP FOREIGN KEY `EquipmentSpareparts_sparepartId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `partsmanagement` DROP FOREIGN KEY `PartsManagement_sparepartId_fkey`;
+ALTER TABLE `PartsManagement` DROP FOREIGN KEY `PartsManagement_sparepartId_fkey`;
 
 -- DropTable
-DROP TABLE `equipmentspareparts`;
+DROP TABLE `EquipmentSpareparts`;
 
 -- DropTable
-DROP TABLE `partsmanagement`;
+DROP TABLE `PartsManagement`;
 
 -- CreateTable
 CREATE TABLE `PartsHistory` (
