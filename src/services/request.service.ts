@@ -1,5 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import { CreateRequestDTO, RequestResponseDTO } from "../dto/request.dto";
+import {
+  CreateRequestDTO,
+  RequestResponseDTO,
+  RequestDTO,
+} from "../dto/request.dto";
 import RequestRepository from "../repository/request.repository";
 import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
@@ -49,6 +53,36 @@ export class RequestService implements IRequestService {
       console.error("Error in getAllRequests service:", error);
       throw new Error(
         `Failed to get requests: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
+  async getAllRequestMaintenance(): Promise<RequestDTO[]> {
+    try {
+      const requests = await this.requestRepository.getAllRequestMaintenance();
+      return requests;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error in getAllRequestMaintenance service:", error);
+      throw new Error(
+        `Failed to get maintenance requests: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
+  async getAllRequestCalibration(): Promise<RequestDTO[]> {
+    try {
+      const requests = await this.requestRepository.getAllRequestCalibration();
+      return requests;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error in getAllRequestCalibration service:", error);
+      throw new Error(
+        `Failed to get calibration requests: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }

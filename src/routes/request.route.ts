@@ -13,6 +13,12 @@ router.use(verifyToken);
 // Get all requests
 router.get("/all", controller.getAllRequests);
 
+// Get all maintenance requests
+router.get("/maintenance", controller.getAllRequestMaintenance);
+
+// Get all calibration requests
+router.get("/calibration", controller.getAllRequestCalibration);
+
 // Get request by ID
 router.get("/:id", controller.getRequestById);
 
@@ -31,5 +37,4 @@ router.post(
   validateRequest,
   controller.createCalibrationRequest,
 );
-
 export default router;

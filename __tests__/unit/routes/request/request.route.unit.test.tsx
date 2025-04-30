@@ -21,6 +21,8 @@ jest.mock("../../../../src/controllers/request.controller", () => {
     default: jest.fn().mockImplementation(() => ({
       getRequestById: jest.fn(),
       getAllRequests: jest.fn(),
+      getAllRequestMaintenance: jest.fn(),
+      getAllRequestCalibration: jest.fn(),
       createMaintenanceRequest: jest.fn(),
       createCalibrationRequest: jest.fn(), // Add missing controller methods
     })),
@@ -38,6 +40,7 @@ jest.mock("../../../../src/validations/request.validation", () => ({
 
 // Import the route after all mocks are defined
 import "../../../../src/routes/request.route";
+import { get } from "http";
 
 describe("Request Routes", () => {
   let mockRouter: any;
@@ -60,6 +63,20 @@ describe("Request Routes", () => {
 
   it("should register GET /:id route", () => {
     expect(mockRouter.get).toHaveBeenCalledWith("/:id", expect.any(Function));
+  });
+
+  it("should register GET /maintenance route", () => {
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/maintenance",
+      expect.any(Function),
+    );
+  });
+
+  it("should register GET /calibration route", () => {
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/calibration",
+      expect.any(Function),
+    );
   });
 
   it("should register POST /maintenance route with validation", () => {
