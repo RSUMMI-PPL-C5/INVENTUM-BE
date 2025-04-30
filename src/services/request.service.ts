@@ -1,4 +1,9 @@
-import { RequestResponseDTO, RequestDTO } from "../dto/request.dto";
+import { v4 as uuidv4 } from "uuid";
+import {
+  CreateRequestDTO,
+  RequestResponseDTO,
+  RequestDTO,
+} from "../dto/request.dto";
 import RequestRepository from "../repository/request.repository";
 import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
@@ -78,6 +83,28 @@ export class RequestService implements IRequestService {
       console.error("Error in getAllRequestCalibration service:", error);
       throw new Error(
         `Failed to get calibration requests: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
+  public async createRequest(
+    requestData: CreateRequestDTO,
+  ): Promise<RequestResponseDTO> {
+    try {
+      const result = await this.requestRepository.createRequest({
+        id: uuidv4(),
+        ...requestData,
+        status: "Pending",
+      });
+
+      return result;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error in createRequest service:", error);
+      throw new Error(
+        `Failed to create request: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }

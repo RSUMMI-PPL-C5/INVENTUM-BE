@@ -23,15 +23,24 @@ jest.mock("../../../../src/controllers/request.controller", () => {
       getAllRequests: jest.fn(),
       getAllRequestMaintenance: jest.fn(),
       getAllRequestCalibration: jest.fn(),
+      createMaintenanceRequest: jest.fn(),
+      createCalibrationRequest: jest.fn(), // Add missing controller methods
     })),
   };
 });
 
 // Mock middleware
 jest.mock("../../../../src/middleware/verifyToken", () => jest.fn());
+jest.mock("../../../../src/middleware/validateRequest", () => ({
+  validateRequest: jest.fn(),
+}));
+jest.mock("../../../../src/validations/request.validation", () => ({
+  createRequestValidation: jest.fn(),
+}));
 
 // Import the route after all mocks are defined
 import "../../../../src/routes/request.route";
+import { get } from "http";
 
 describe("Request Routes", () => {
   let mockRouter: any;
@@ -66,6 +75,24 @@ describe("Request Routes", () => {
   it("should register GET /calibration route", () => {
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/calibration",
+      expect.any(Function),
+    );
+  });
+
+  it("should register POST /maintenance route with validation", () => {
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/maintenance",
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
+
+  it("should register POST /calibration route with validation", () => {
+    expect(mockRouter.post).toHaveBeenCalledWith(
+      "/calibration",
+      expect.any(Function),
+      expect.any(Function),
       expect.any(Function),
     );
   });
