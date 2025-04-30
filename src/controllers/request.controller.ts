@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import RequestService from "../services/request.service";
-import AppError from "../utils/appError";
 import { CreateRequestDTO } from "../dto/request.dto";
 
 export class RequestController {
@@ -10,7 +9,11 @@ export class RequestController {
     this.requestService = new RequestService();
   }
 
-  getRequestById = async (req: Request, res: Response): Promise<void> => {
+  public getRequestById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -30,25 +33,15 @@ export class RequestController {
         data: request,
       });
     } catch (error) {
-      console.error("Error in get request by ID controller:", error);
-
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to get request",
-      });
+      next(error);
     }
   };
 
-  getAllRequests = async (req: Request, res: Response): Promise<void> => {
+  public getAllRequests = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const requests = await this.requestService.getAllRequests();
 
@@ -58,29 +51,14 @@ export class RequestController {
         data: requests,
       });
     } catch (error) {
-      console.error("Error in get all requests controller:", error);
-
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Failed to get requests",
-      });
+      next(error);
     }
   };
 
-  // Add this to your request.controller.ts file
-
-  getAllRequestMaintenance = async (
+  public getAllRequestMaintenance = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const maintenanceRequests =
@@ -92,29 +70,14 @@ export class RequestController {
         data: maintenanceRequests,
       });
     } catch (error) {
-      console.error("Error in get maintenance requests controller:", error);
-
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to get maintenance requests",
-      });
+      next(error);
     }
   };
 
-  getAllRequestCalibration = async (
+  public getAllRequestCalibration = async (
     req: Request,
     res: Response,
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const calibrationRequests =
@@ -126,23 +89,7 @@ export class RequestController {
         data: calibrationRequests,
       });
     } catch (error) {
-      console.error("Error in get calibration requests controller:", error);
-
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to get calibration requests",
-      });
+      next(error);
     }
   };
 

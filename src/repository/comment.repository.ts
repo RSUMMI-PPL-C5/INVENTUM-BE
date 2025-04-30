@@ -1,14 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { CreateCommentDto } from "../dto/comment.dto";
+import prisma from "../configs/db.config";
 
-export class CommentRepository {
+class CommentRepository {
   private readonly prisma: PrismaClient;
 
-  constructor(prisma: PrismaClient) {
+  constructor() {
     this.prisma = prisma;
   }
 
-  async createComment(data: CreateCommentDto) {
+  public async createComment(data: CreateCommentDto) {
     return this.prisma.comment.create({
       data: {
         text: data.text,
@@ -36,7 +37,7 @@ export class CommentRepository {
     });
   }
 
-  async getCommentsByRequestId(requestId: string) {
+  public async getCommentsByRequestId(requestId: string) {
     return this.prisma.comment.findMany({
       where: {
         requestId,
@@ -56,7 +57,7 @@ export class CommentRepository {
     });
   }
 
-  async getAllComments() {
+  public async getAllComments() {
     return this.prisma.comment.findMany({
       include: {
         user: {
@@ -74,3 +75,5 @@ export class CommentRepository {
     });
   }
 }
+
+export default CommentRepository;

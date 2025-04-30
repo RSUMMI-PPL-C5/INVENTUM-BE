@@ -3,12 +3,13 @@ import RequestController from "../controllers/request.controller";
 import verifyToken from "../middleware/verifyToken";
 import { validateRequest } from "../middleware/validateRequest";
 import { createRequestValidation } from "../validations/request.validation";
+import authorizeRoles from "../middleware/authorizeRole";
 
 const router = Router();
 const controller = new RequestController();
 
 // Middleware
-router.use(verifyToken);
+router.use(verifyToken, authorizeRoles("Admin", "Fasum", "User"));
 
 // Get all requests
 router.get("/all", controller.getAllRequests);

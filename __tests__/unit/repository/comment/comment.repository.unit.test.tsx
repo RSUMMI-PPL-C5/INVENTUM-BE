@@ -1,27 +1,32 @@
-import { PrismaClient } from "@prisma/client";
-import { CommentRepository } from "../../../../src/repository/comment.repository";
+import CommentRepository from "../../../../src/repository/comment.repository";
 import { CreateCommentDto } from "../../../../src/dto/comment.dto";
 
-// Mock Prisma client
-const mockCreate = jest.fn();
-const mockFindMany = jest.fn();
+// Mock the db.config import that's used in CommentRepository
+jest.mock("../../../../src/configs/db.config", () => {
+  return {
+    __esModule: true,
+    default: {
+      comment: {
+        create: jest.fn(),
+        findMany: jest.fn(),
+      },
+    },
+  };
+});
 
-const mockPrismaClient = {
-  comment: {
-    create: mockCreate,
-    findMany: mockFindMany,
-  },
-} as unknown as PrismaClient;
+// Import the mocked module
+import prisma from "../../../../src/configs/db.config";
 
 describe("CommentRepository", () => {
   let commentRepository: CommentRepository;
+  const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
 
-    // Initialize repository with mock Prisma client
-    commentRepository = new CommentRepository(mockPrismaClient);
+    // Initialize repository
+    commentRepository = new CommentRepository();
   });
 
   describe("createComment", () => {
@@ -51,14 +56,16 @@ describe("CommentRepository", () => {
         },
       };
 
-      // Mock Prisma response
-      mockCreate.mockResolvedValue(expectedResult);
+      // Set up the mock implementation
+      (mockPrisma.comment.create as jest.Mock).mockResolvedValue(
+        expectedResult,
+      );
 
       // Call repository method
       const result = await commentRepository.createComment(commentData);
 
       // Assertions
-      expect(mockCreate).toHaveBeenCalledWith({
+      expect(mockPrisma.comment.create).toHaveBeenCalledWith({
         data: {
           text: commentData.text,
           user: {
@@ -105,14 +112,16 @@ describe("CommentRepository", () => {
         request: null,
       };
 
-      // Mock Prisma response
-      mockCreate.mockResolvedValue(expectedResult);
+      // Set up the mock implementation
+      (mockPrisma.comment.create as jest.Mock).mockResolvedValue(
+        expectedResult,
+      );
 
       // Call repository method
       const result = await commentRepository.createComment(commentData);
 
       // Assertions
-      expect(mockCreate).toHaveBeenCalledWith({
+      expect(mockPrisma.comment.create).toHaveBeenCalledWith({
         data: {
           text: commentData.text,
           user: {
@@ -168,14 +177,16 @@ describe("CommentRepository", () => {
         },
       ];
 
-      // Mock Prisma response
-      mockFindMany.mockResolvedValue(expectedComments);
+      // Set up the mock implementation
+      (mockPrisma.comment.findMany as jest.Mock).mockResolvedValue(
+        expectedComments,
+      );
 
       // Call repository method
       const result = await commentRepository.getCommentsByRequestId(requestId);
 
       // Assertions
-      expect(mockFindMany).toHaveBeenCalledWith({
+      expect(mockPrisma.comment.findMany).toHaveBeenCalledWith({
         where: {
           requestId,
         },
@@ -237,14 +248,16 @@ describe("CommentRepository", () => {
         },
       ];
 
-      // Mock Prisma response
-      mockFindMany.mockResolvedValue(expectedComments);
+      // Set up the mock implementation
+      (mockPrisma.comment.findMany as jest.Mock).mockResolvedValue(
+        expectedComments,
+      );
 
       // Call repository method
       const result = await commentRepository.getAllComments();
 
       // Assertions
-      expect(mockFindMany).toHaveBeenCalledWith({
+      expect(mockPrisma.comment.findMany).toHaveBeenCalledWith({
         include: {
           user: {
             select: {
