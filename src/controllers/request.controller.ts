@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import RequestService from "../services/request.service";
 import { CreateRequestDTO } from "../dto/request.dto";
+import { PaginationOptions } from "../interfaces/pagination.interface";
+import { RequestFilterOptions } from "../interfaces/request.filter.interface";
 
 export class RequestController {
   private readonly requestService: RequestService;
@@ -25,12 +27,12 @@ export class RequestController {
         return;
       }
 
-      const request = await this.requestService.getRequestById(id);
+      const result = await this.requestService.getRequestById(id);
 
       res.status(200).json({
         success: true,
         message: "Request retrieved successfully",
-        data: request,
+        data: result.data,
       });
     } catch (error) {
       next(error);
@@ -43,13 +45,26 @@ export class RequestController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const requests = await this.requestService.getAllRequests();
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
 
-      res.status(200).json({
-        success: true,
-        message: "Requests retrieved successfully",
-        data: requests,
-      });
+      const paginationOptions: PaginationOptions = {
+        page: page > 0 ? page : 1,
+        limit: limit > 0 ? limit : 10,
+      };
+
+      const filters: RequestFilterOptions = req.query as any;
+      const search = req.query.search as string | undefined;
+
+      const result = await this.requestService.getAllRequests(
+        search,
+        filters,
+        paginationOptions,
+      );
+
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -61,14 +76,26 @@ export class RequestController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const maintenanceRequests =
-        await this.requestService.getAllRequestMaintenance();
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
 
-      res.status(200).json({
-        success: true,
-        message: "Maintenance requests retrieved successfully",
-        data: maintenanceRequests,
-      });
+      const paginationOptions: PaginationOptions = {
+        page: page > 0 ? page : 1,
+        limit: limit > 0 ? limit : 10,
+      };
+
+      const filters: RequestFilterOptions = req.query as any;
+      const search = req.query.search as string | undefined;
+
+      const result = await this.requestService.getAllRequestMaintenance(
+        search,
+        filters,
+        paginationOptions,
+      );
+
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -80,14 +107,26 @@ export class RequestController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const calibrationRequests =
-        await this.requestService.getAllRequestCalibration();
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 10;
 
-      res.status(200).json({
-        success: true,
-        message: "Calibration requests retrieved successfully",
-        data: calibrationRequests,
-      });
+      const paginationOptions: PaginationOptions = {
+        page: page > 0 ? page : 1,
+        limit: limit > 0 ? limit : 10,
+      };
+
+      const filters: RequestFilterOptions = req.query as any;
+      const search = req.query.search as string | undefined;
+
+      const result = await this.requestService.getAllRequestCalibration(
+        search,
+        filters,
+        paginationOptions,
+      );
+
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -112,7 +151,7 @@ export class RequestController {
 
       res.status(201).json({
         status: "success",
-        data: result,
+        data: result.data,
       });
     } catch (error) {
       next(error);
@@ -138,7 +177,7 @@ export class RequestController {
 
       res.status(201).json({
         status: "success",
-        data: result,
+        data: result.data,
       });
     } catch (error) {
       next(error);

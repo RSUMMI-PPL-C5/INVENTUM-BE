@@ -122,10 +122,9 @@ model Request {
   userId           String
   medicalEquipment String
   complaint        String?
-  submissionDate   DateTime
   status           String       @default("Pending")
   createdBy        String
-  createdOn        DateTime?
+  createdOn        DateTime?    @default(now())
   modifiedBy       String?
   modifiedOn       DateTime     @default(now())
   notifications    Notifikasi[]
