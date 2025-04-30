@@ -140,8 +140,26 @@ export class RequestRepository {
     filters?: RequestFilterOptions,
     pagination?: PaginationOptions,
   ): Promise<{ requests: RequestDTO[]; total: number }> {
-    const baseFilters = { ...filters, requestType: "MAINTENANCE" };
-    const where = this.buildWhereClause(search, baseFilters);
+    const where: any = { requestType: "MAINTENANCE" };
+
+    if (search) {
+      where.OR = [
+        { medicalEquipment: { contains: search } },
+        { complaint: { contains: search } },
+      ];
+    }
+
+    if (filters) {
+      if (filters.status) {
+        where.status = { in: filters.status };
+      }
+
+      if (filters.userId) {
+        where.userId = filters.userId;
+      }
+
+      this.addDateFilters(where, filters);
+    }
 
     const skip = pagination
       ? (pagination.page - 1) * pagination.limit
@@ -177,8 +195,27 @@ export class RequestRepository {
     filters?: RequestFilterOptions,
     pagination?: PaginationOptions,
   ): Promise<{ requests: RequestDTO[]; total: number }> {
-    const baseFilters = { ...filters, requestType: "CALIBRATION" };
-    const where = this.buildWhereClause(search, baseFilters);
+    const where: any = { requestType: "CALIBRATION" };
+
+    if (search) {
+      where.OR = [
+        { medicalEquipment: { contains: search } },
+        { complaint: { contains: search } },
+      ];
+    }
+
+    if (filters) {
+      if (filters.status) {
+        where.status = { in: filters.status };
+      }
+
+      if (filters.userId) {
+        where.userId = filters.userId;
+      }
+
+      // Add date filters
+      this.addDateFilters(where, filters);
+    }
 
     const skip = pagination
       ? (pagination.page - 1) * pagination.limit
