@@ -59,7 +59,10 @@ export class RequestRepository {
 
     if (filters) {
       if (filters.status) {
-        where.status = { in: filters.status };
+        const statusArray = Array.isArray(filters.status)
+          ? filters.status
+          : [filters.status];
+        where.status = { in: statusArray };
       }
 
       if (filters.userId) {
@@ -151,7 +154,10 @@ export class RequestRepository {
 
     if (filters) {
       if (filters.status) {
-        where.status = { in: filters.status };
+        const statusArray = Array.isArray(filters.status)
+          ? filters.status
+          : [filters.status];
+        where.status = { in: statusArray };
       }
 
       if (filters.userId) {
@@ -206,7 +212,10 @@ export class RequestRepository {
 
     if (filters) {
       if (filters.status) {
-        where.status = { in: filters.status };
+        const statusArray = Array.isArray(filters.status)
+          ? filters.status
+          : [filters.status];
+        where.status = { in: statusArray };
       }
 
       if (filters.userId) {
