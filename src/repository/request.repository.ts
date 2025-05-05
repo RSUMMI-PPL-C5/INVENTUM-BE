@@ -266,6 +266,17 @@ export class RequestRepository {
       },
     });
   }
+
+  public async updateRequestStatus(id: string, status: string): Promise<any> {
+    const jakartaTime = getJakartaTime();
+    return await this.prisma.request.update({
+      where: { id },
+      data: {
+        status,
+        modifiedOn: jakartaTime,
+      },
+    });
+  }
 }
 
 export default RequestRepository;

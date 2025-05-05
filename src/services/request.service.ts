@@ -122,6 +122,35 @@ class RequestService implements IRequestService {
 
     return { data: result };
   }
+
+  public async updateRequestStatus(
+    id: string,
+    status: string,
+  ): Promise<{ data: RequestResponseDTO }> {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new AppError(
+        "Request ID is required and must be a valid string",
+        400,
+      );
+    }
+
+    if (!status || typeof status !== "string" || status.trim() === "") {
+      throw new AppError("Status is required and must be a valid string", 400);
+    }
+
+    // Check if request exists
+    const existingRequest = await this.requestRepository.getRequestById(id);
+    if (!existingRequest) {
+      throw new AppError(`Request with ID ${id} not found`, 404);
+    }
+
+    const updatedRequest = await this.requestRepository.updateRequestStatus(
+      id,
+      status,
+    );
+
+    return { data: updatedRequest };
+  }
 }
 
 export default RequestService;
