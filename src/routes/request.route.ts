@@ -38,4 +38,8 @@ router.post(
   validateRequest,
   controller.createCalibrationRequest,
 );
+
+// Update request status
+router.put("/:id", controller.updateRequestStatus);
+
 export default router;

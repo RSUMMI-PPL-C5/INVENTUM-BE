@@ -183,6 +183,35 @@ export class RequestController {
       next(error);
     }
   };
+
+  public updateRequestStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        res.status(400).json({
+          success: false,
+          message: "Status is required in request body",
+        });
+        return;
+      }
+
+      const result = await this.requestService.updateRequestStatus(id, status);
+
+      res.status(200).json({
+        success: true,
+        message: "Request status updated successfully",
+        data: result.data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default RequestController;
