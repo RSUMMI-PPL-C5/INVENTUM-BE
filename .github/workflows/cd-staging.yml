@@ -2,37 +2,19 @@ name: Backend Staging CD
 on:
   push:
     branches:
-      - staging
       - chore/Deployment
-  workflow_dispatch:
-    inputs:
-      deploy_notes:
-        description: "Notes about this deployment"
-        required: false
-        default: "Manual deployment"
-      skip_migrations:
-        description: "Skip database migrations"
-        required: false
-        default: false
-        type: boolean
-      reset_database:
-        description: "Reset database (WARNING: ALL DATA WILL BE LOST)"
-        required: false
-        default: false
-        type: boolean
 jobs:
   deploy:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
+      
       - name: Build Docker image
         run: |
           docker build -t inventum-backend:staging .
-          
+      
       - name: Run database migrations
-        if: ${{ inputs.skip_migrations != true }}
         working-directory: /home/noov/inventum/staging
         run: |
           # Source the .env file to get environment variables
@@ -45,23 +27,13 @@ jobs:
             sleep 15
           fi
           
-          # Reset database if requested
-          if [ "${{ inputs.reset_database }}" == "true" ]; then
-            echo "⚠️ RESETTING DATABASE - ALL DATA WILL BE LOST ⚠️"
-            docker run --rm \
-              --network inventum-network \
-              -e DATABASE_URL="$DATABASE_URL" \
-              inventum-backend:staging \
-              npx prisma migrate reset --force
-          else
-            # Run regular migrations
-            docker run --rm \
-              --network inventum-network \
-              -e DATABASE_URL="$DATABASE_URL" \
-              inventum-backend:staging \
-              npx prisma migrate deploy
-          fi
-          
+          # Run regular migrations
+          docker run --rm \
+            --network inventum-network \
+            -e DATABASE_URL="$DATABASE_URL" \
+            inventum-backend:staging \
+            npx prisma migrate deploy
+      
       - name: Deploy backend
         working-directory: /home/noov/inventum/staging
         run: |
@@ -74,7 +46,4 @@ jobs:
       
       - name: Deployment Info
         run: |
-          echo "Deployment completed with notes: ${{ github.event.inputs.deploy_notes || 'No notes provided' }}"
-          if [ "${{ inputs.reset_database }}" == "true" ]; then
-            echo "⚠️ DATABASE WAS RESET - ALL PREVIOUS DATA HAS BEEN LOST ⚠️"
-          fi
+          echo "Deployment completed successfully"
