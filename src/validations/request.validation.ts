@@ -9,10 +9,4 @@ export const createRequestValidation = [
     .optional()
     .isString()
     .withMessage("Complaint must be a string"),
-
-  body("submissionDate")
-    .notEmpty()
-    .withMessage("Submission date is required")
-    .isISO8601()
-    .withMessage("Submission date must be a valid date"),
 ];

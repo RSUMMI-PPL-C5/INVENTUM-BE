@@ -5,7 +5,6 @@ export class RequestDTO {
   userId!: string;
   medicalEquipment!: string;
   complaint!: string | null; // Changed from string? to string | null
-  submissionDate!: Date;
   status!: string;
   createdBy!: string;
   createdOn!: Date | null; // Changed to allow null
@@ -48,7 +47,6 @@ export interface CreateRequestDTO {
   userId: string;
   medicalEquipment: string;
   complaint?: string;
-  submissionDate: Date;
   createdBy: string;
   requestType: "MAINTENANCE" | "CALIBRATION";
 }
