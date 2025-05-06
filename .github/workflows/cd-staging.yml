@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       deploy_notes:
-        description: 'Notes about this deployment'
+        description: "Notes about this deployment"
         required: false
-        default: 'Manual deployment'
+        default: "Manual deployment"
       skip_migrations:
-        description: 'Skip database migrations'
+        description: "Skip database migrations"
         required: false
         default: false
         type: boolean
@@ -27,20 +27,20 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t inventum-backend:staging .
-      
+
       - name: Run database migrations
         working-directory: /home/noov/inventum/staging
         run: |
           # Source the .env file to get environment variables
           source .env.staging
-          
+
           # Start DB if not running
           if ! docker ps | grep -q inventum-mysql-staging; then
             docker compose -f docker-compose.staging.yml up -d db
             echo "Waiting for MySQL to initialize..."
             sleep 15
           fi
-          
+
           # Run migrations
           docker run --rm \
             --network inventum-network \
@@ -54,6 +54,6 @@ jobs:
           # Stop and remove only the backend container if it exists
           docker compose -f docker-compose.staging.yml stop backend || true
           docker compose -f docker-compose.staging.yml rm -f backend || true
-          
+
           # Start the backend container
           docker compose -f docker-compose.staging.yml up -d backend

@@ -1,7 +1,8 @@
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
 import AppError from "../../../../src/utils/appError";
-import { v4 as uuidv4 } from "uuid";
+import { RequestType } from "@prisma/client";
+import { RequestResponseDTO } from "@/src/dto/request.dto";
 
 // Mock uuid
 jest.mock("uuid", () => ({
@@ -216,13 +217,38 @@ describe("RequestService", () => {
 
     it("should successfully get all requests", async () => {
       // Mock data
-      const mockRequests: any[] = [
-        { id: "request-1", medicalEquipment: "Equipment 1" },
-        { id: "request-2", medicalEquipment: "Equipment 2" },
+      const mockRequests: RequestResponseDTO[] = [
+        {
+          id: "request-1",
+          medicalEquipment: "Equipment 1",
+          userId: "user-123",
+          complaint: null,
+          status: "Pending",
+          createdBy: "user-123",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.MAINTENANCE,
+        },
+        {
+          id: "request-2",
+          medicalEquipment: "Equipment 2",
+          userId: "user-456",
+          complaint: "Some issue",
+          status: "Pending",
+          createdBy: "user-456",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.CALIBRATION,
+        },
       ];
 
       // Mock repository method
-      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+      mockRequestRepository.getAllRequests.mockResolvedValue({
+        requests: mockRequests,
+        total: mockRequests.length,
+      });
 
       // Call service method
       const result = await requestService.getAllRequests();
@@ -379,23 +405,38 @@ describe("RequestService", () => {
   describe("getAllRequestMaintenance", () => {
     it("should successfully get all maintenance requests", async () => {
       // Mock data
-      const mockRequests: any[] = [
+      const mockRequests: RequestResponseDTO[] = [
         {
           id: "request-1",
           medicalEquipment: "Equipment 1",
-          requestType: "MAINTENANCE",
+          userId: "user-123",
+          complaint: null,
+          status: "Pending",
+          createdBy: "user-123",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.MAINTENANCE,
         },
         {
           id: "request-2",
           medicalEquipment: "Equipment 2",
-          requestType: "MAINTENANCE",
+          userId: "user-456",
+          complaint: "Some issue",
+          status: "Pending",
+          createdBy: "user-456",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.MAINTENANCE,
         },
       ];
 
       // Mock repository method
-      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
-        mockRequests,
-      );
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue({
+        requests: mockRequests,
+        total: mockRequests.length,
+      });
 
       // Call service method
       const result = await requestService.getAllRequestMaintenance();
@@ -472,23 +513,38 @@ describe("RequestService", () => {
   describe("getAllRequestCalibration", () => {
     it("should successfully get all calibration requests", async () => {
       // Mock data
-      const mockRequests: any[] = [
+      const mockRequests: RequestResponseDTO[] = [
         {
           id: "request-1",
           medicalEquipment: "Equipment 1",
-          requestType: "CALIBRATION",
+          userId: "user-123",
+          complaint: null,
+          status: "Pending",
+          createdBy: "user-123",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.CALIBRATION,
         },
         {
           id: "request-2",
           medicalEquipment: "Equipment 2",
-          requestType: "CALIBRATION",
+          userId: "user-456",
+          complaint: "Some issue",
+          status: "Pending",
+          createdBy: "user-456",
+          createdOn: new Date(),
+          modifiedBy: null,
+          modifiedOn: new Date(),
+          requestType: RequestType.CALIBRATION,
         },
       ];
 
       // Mock repository method
-      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
-        mockRequests,
-      );
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue({
+        requests: mockRequests,
+        total: mockRequests.length,
+      });
 
       // Call service method
       const result = await requestService.getAllRequestCalibration();
