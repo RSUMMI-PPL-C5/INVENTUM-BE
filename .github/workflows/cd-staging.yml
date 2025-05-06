@@ -5,6 +5,17 @@ on:
     branches:
       - staging
       - chore/Deployment
+  workflow_dispatch:
+    inputs:
+      deploy_notes:
+        description: 'Notes about this deployment'
+        required: false
+        default: 'Manual deployment'
+      skip_migrations:
+        description: 'Skip database migrations'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
