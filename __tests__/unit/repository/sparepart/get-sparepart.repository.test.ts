@@ -75,7 +75,7 @@ describe("SparepartRepository - READ", () => {
         where: { deletedOn: null },
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: { deletedOn: null },
@@ -112,7 +112,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -151,7 +151,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -190,7 +190,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -230,7 +230,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -269,7 +269,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -308,7 +308,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -355,7 +355,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -402,7 +402,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -449,7 +449,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -486,7 +486,7 @@ describe("SparepartRepository - READ", () => {
         where: { deletedOn: null },
         skip: 1, // (page-1) * limit
         take: 1, // limit
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: { deletedOn: null },
@@ -538,7 +538,7 @@ describe("SparepartRepository - READ", () => {
         where: expectedWhereClause,
         skip: 0,
         take: 10,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.spareparts.count).toHaveBeenCalledWith({
         where: expectedWhereClause,
@@ -564,7 +564,7 @@ describe("SparepartRepository - READ", () => {
         where: { deletedOn: null },
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
 
       // Verify result
