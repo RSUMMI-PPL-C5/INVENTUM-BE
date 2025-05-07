@@ -17,7 +17,12 @@ router.use(verifyToken, authorizeRoles("Admin", "Fasum", "User"));
 
 // Routes
 router
-  .get("/", sparepartFilterQueryValidation, controller.getSpareparts)
+  .get(
+    "/",
+    sparepartFilterQueryValidation,
+    validateRequest,
+    controller.getSpareparts,
+  )
   .get("/:id", controller.getSparepartById)
   .post("/", addSparepartValidation, validateRequest, controller.addSparepart)
   .put(
