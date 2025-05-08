@@ -17,7 +17,6 @@ class CalibrationHistoryController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      // Extract equipment ID from URL parameters
       const equipmentId = req.params.equipmentId;
       const {
         actionPerformed,
@@ -28,7 +27,6 @@ class CalibrationHistoryController {
         nextCalibrationDue,
       } = req.body;
 
-      // Convert date strings to Date objects
       const calibrationData: CreateCalibrationHistoryDTO = {
         medicalEquipmentId: equipmentId,
         actionPerformed,
@@ -47,7 +45,6 @@ class CalibrationHistoryController {
           calibrationData,
         );
 
-      // Return success response
       res.status(201).json({
         status: "success",
         data: data,
@@ -63,37 +60,24 @@ class CalibrationHistoryController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      // Extract equipment ID from URL parameters
       const equipmentId = req.params.equipmentId;
-      // Get search term from query string
       const search = req.query.search as string;
 
-      // Parse pagination parameters with fallback values
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit
         ? parseInt(req.query.limit as string, 10)
         : 10;
 
-      // Build pagination options
       const paginationOptions: PaginationOptions = {
         page: page > 0 ? page : 1,
         limit: limit > 0 ? limit : 10,
       };
 
-      // Build filter options
       const filters: CalibrationHistoryFilterOptions = {
+        ...req.query,
         medicalEquipmentId: equipmentId,
-        result: req.query.result as string,
-        calibrationDateStart: req.query.calibrationDateStart as unknown as Date,
-        calibrationDateEnd: req.query.calibrationDateEnd as unknown as Date,
-        calibrationMethod: req.query.calibrationMethod as string,
-        nextCalibrationDueBefore: req.query
-          .nextCalibrationDueBefore as unknown as Date,
-        createdOnStart: req.query.createdOnStart as unknown as Date,
-        createdOnEnd: req.query.createdOnEnd as unknown as Date,
-      };
+      } as any;
 
-      // Fetch calibration histories
       const result =
         await this.calibrationHistoryService.getCalibrationHistories(
           search,
@@ -101,7 +85,6 @@ class CalibrationHistoryController {
           paginationOptions,
         );
 
-      // Return success response
       res.status(200).json(result);
     } catch (error) {
       next(error);

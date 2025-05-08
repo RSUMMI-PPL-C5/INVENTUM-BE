@@ -36,9 +36,10 @@ describe("RequestController", () => {
         requestType: "MAINTENANCE",
       };
 
-      (RequestService.prototype.createRequest as jest.Mock).mockResolvedValue(
-        mockRequest,
-      );
+      // Mock the service to return the expected data structure
+      (RequestService.prototype.createRequest as jest.Mock).mockResolvedValue({
+        data: mockRequest,
+      });
 
       await controller.createMaintenanceRequest(
         req as Request,
@@ -86,9 +87,10 @@ describe("RequestController", () => {
         requestType: "CALIBRATION",
       };
 
-      (RequestService.prototype.createRequest as jest.Mock).mockResolvedValue(
-        mockRequest,
-      );
+      // Mock the service to return the expected data structure
+      (RequestService.prototype.createRequest as jest.Mock).mockResolvedValue({
+        data: mockRequest,
+      });
 
       await controller.createCalibrationRequest(
         req as Request,

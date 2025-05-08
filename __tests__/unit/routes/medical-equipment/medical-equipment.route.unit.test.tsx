@@ -72,6 +72,7 @@ describe("MedicalEquipment Routes", () => {
       "/",
       expect.any(Function),
       expect.any(Function),
+      expect.any(Function),
     );
   });
 

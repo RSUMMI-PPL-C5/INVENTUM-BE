@@ -17,7 +17,7 @@ router.use(verifyToken, authorizeRoles("Admin"));
 
 // Routes
 router
-  .get("/", userFilterQueryValidation, controller.getUsers)
+  .get("/", userFilterQueryValidation, validateRequest, controller.getUsers)
   .get("/:id", controller.getUserById)
   .post("/", addUserValidation, validateRequest, controller.createUser)
   .put("/:id", updateUserValidation, validateRequest, controller.updateUser)

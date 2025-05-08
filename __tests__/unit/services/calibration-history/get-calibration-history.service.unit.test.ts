@@ -235,7 +235,7 @@ describe("CalibrationHistoryService - getCalibrationHistories", () => {
     // Arrange
     const filters: CalibrationHistoryFilterOptions = {
       medicalEquipmentId: defaultEquipmentId,
-      result: "Success",
+      result: ["Success"],
       calibrationDateStart: new Date("2025-01-01"),
       calibrationDateEnd: new Date("2025-04-30"),
     };
@@ -283,7 +283,7 @@ describe("CalibrationHistoryService - getCalibrationHistories", () => {
     const search = "calibration";
     const filters: CalibrationHistoryFilterOptions = {
       medicalEquipmentId: defaultEquipmentId,
-      result: "Success",
+      result: ["Success"],
       calibrationDateStart: new Date("2025-01-01"),
       calibrationDateEnd: new Date("2025-04-30"),
     };
@@ -330,7 +330,7 @@ describe("CalibrationHistoryService - getCalibrationHistories", () => {
     // Arrange
     const filters: CalibrationHistoryFilterOptions = {
       medicalEquipmentId: defaultEquipmentId,
-      result: "Failed",
+      result: ["Failed"],
     };
 
     const mockEquipment = { id: defaultEquipmentId, name: "MRI Scanner" };

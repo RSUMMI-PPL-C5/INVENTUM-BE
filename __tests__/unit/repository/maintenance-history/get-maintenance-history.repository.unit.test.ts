@@ -154,7 +154,7 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
     // Arrange
     const filters: MaintenanceHistoryFilterOptions = {
       medicalEquipmentId: defaultEquipmentId,
-      result: "Failed",
+      result: ["Failed"],
     };
 
     (prisma.maintenanceHistory.findMany as jest.Mock).mockResolvedValue([]);
@@ -167,7 +167,9 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
     expect(prisma.maintenanceHistory.findMany).toHaveBeenCalledWith({
       where: {
         medicalEquipmentId: defaultEquipmentId,
-        result: "Failed",
+        result: {
+          in: ["Failed"],
+        },
       },
       skip: undefined,
       take: undefined,
@@ -378,7 +380,7 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
 
     const filters: MaintenanceHistoryFilterOptions = {
       medicalEquipmentId: defaultEquipmentId,
-      result: "Successful",
+      result: ["Success"],
       maintenanceDateStart: startDate,
       maintenanceDateEnd: endDate,
       createdOnStart: createdStartDate,
@@ -395,7 +397,9 @@ describe("MaintenanceHistoryRepository - getMaintenanceHistories", () => {
     expect(prisma.maintenanceHistory.findMany).toHaveBeenCalledWith({
       where: {
         medicalEquipmentId: defaultEquipmentId,
-        result: "Successful",
+        result: {
+          in: ["Success"],
+        },
         maintenanceDate: { gte: startDate, lte: endDate },
         createdOn: { gte: createdStartDate, lte: createdEndDate },
         OR: [{ technician: { contains: "John" } }],

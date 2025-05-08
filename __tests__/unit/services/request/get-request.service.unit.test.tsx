@@ -1,7 +1,6 @@
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
-import AppError from "../../../../src/utils/appError";
-import { v4 as uuidv4 } from "uuid";
+import { RequestResponseDTO } from "../../../../src/dto/request.dto";
 
 // Mock uuid
 jest.mock("uuid", () => ({
@@ -18,14 +17,14 @@ describe("RequestService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Create a mock repository instance
     mockRequestRepository =
       new RequestRepository() as jest.Mocked<RequestRepository>;
 
-    // Mock the constructor to return our mock repository
     (RequestRepository as jest.Mock).mockImplementation(
       () => mockRequestRepository,
     );
+
+    mockRequestRepository.updateRequestStatus = jest.fn();
 
     // Initialize the service
     requestService = new RequestService();
@@ -51,21 +50,23 @@ describe("RequestService", () => {
       expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
         requestId,
       );
-      expect(result).toBe(mockRequest);
+      expect(result).toEqual({ data: mockRequest });
     });
 
     it("should throw an error if request ID is invalid", async () => {
       // Assertions for empty string
-      await expect(requestService.getRequestById("")).rejects.toThrow(AppError);
+      await expect(requestService.getRequestById("")).rejects.toThrow(
+        "Request ID is required and must be a valid string",
+      );
 
       // Assertions for null
       await expect(
         requestService.getRequestById(null as unknown as string),
-      ).rejects.toThrow(AppError);
+      ).rejects.toThrow("Request ID is required and must be a valid string");
 
       // Assertions for whitespace-only string
       await expect(requestService.getRequestById("   ")).rejects.toThrow(
-        AppError,
+        "Request ID is required and must be a valid string",
       );
 
       // Ensure repository method wasn't called
@@ -81,145 +82,41 @@ describe("RequestService", () => {
 
       // Assertions
       await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        AppError,
+        `Request with ID ${requestId} not found`,
       );
       expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
         requestId,
       );
     });
 
-    it("should handle repository errors", async () => {
+    it("should pass through repository errors", async () => {
       // Mock data
       const requestId = "request-123";
+      const mockError = new Error("Repository error");
 
       // Mock repository error
-      mockRequestRepository.getRequestById.mockRejectedValue(
-        new Error("Repository error"),
-      );
+      mockRequestRepository.getRequestById.mockRejectedValue(mockError);
 
-      // Assertions
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow();
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-
-    it("should handle non-Error rejections from repository", async () => {
-      // Mock data
-      const requestId = "request-123";
-
-      // Mock repository rejecting with a string (not an Error object)
-      mockRequestRepository.getRequestById.mockRejectedValue(
-        "Some string error",
-      );
-
-      // Assertions
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        "Failed to get request",
-      );
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-
-    it("should handle undefined rejections from repository", async () => {
-      // Mock data
-      const requestId = "request-123";
-
-      // Mock repository rejecting with undefined
-      mockRequestRepository.getRequestById.mockRejectedValue(undefined);
-
-      // Assertions
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        "Failed to get request: Unknown error",
-      );
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-
-    // Add these additional test cases
-
-    it("should properly handle AppError instances by passing them through", async () => {
-      // Mock data
-      const requestId = "request-123";
-
-      // Create an AppError instance
-      const appError = new AppError("Custom error message", 418);
-
-      // Mock repository method to reject with the AppError
-      mockRequestRepository.getRequestById.mockRejectedValue(appError);
-
-      // Assertions - should pass through the original AppError
+      // Assertions - should pass through the original error
       await expect(requestService.getRequestById(requestId)).rejects.toEqual(
-        appError,
+        mockError,
       );
-
-      // Ensure the statusCode is preserved
-      try {
-        await requestService.getRequestById(requestId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(AppError);
-        expect((error as AppError).statusCode).toBe(418);
-      }
-    });
-
-    it("should properly format error messages for different types of errors", async () => {
-      const requestId = "request-123";
-
-      // Test with Error instance containing message
-      mockRequestRepository.getRequestById.mockRejectedValue(
-        new Error("Database connection failed"),
-      );
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        "Failed to get request: Database connection failed",
-      );
-
-      // Test with object that's not an Error
-      mockRequestRepository.getRequestById.mockRejectedValue({
-        custom: "error",
-      });
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        "Failed to get request: Unknown error",
-      );
-
-      // Test with null rejection
-      mockRequestRepository.getRequestById.mockRejectedValue(null);
-      await expect(requestService.getRequestById(requestId)).rejects.toThrow(
-        "Failed to get request: Unknown error",
+      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
+        requestId,
       );
     });
   });
 
   describe("getAllRequests", () => {
-    it("should properly handle AppError instances by passing them through in getAllRequests", async () => {
-      // Create an AppError instance
-      const appError = new AppError(
-        "Custom error message for getAllRequests",
-        418,
-      );
-
-      // Mock repository method to reject with the AppError
-      mockRequestRepository.getAllRequests.mockRejectedValue(appError);
-
-      // Assertions - should pass through the original AppError
-      await expect(requestService.getAllRequests()).rejects.toEqual(appError);
-
-      // Ensure the statusCode is preserved
-      try {
-        await requestService.getAllRequests();
-      } catch (error) {
-        expect(error).toBeInstanceOf(AppError);
-        expect((error as AppError).statusCode).toBe(418);
-      }
-    });
-
     it("should successfully get all requests", async () => {
       // Mock data
-      const mockRequests: any[] = [
-        { id: "request-1", medicalEquipment: "Equipment 1" },
-        { id: "request-2", medicalEquipment: "Equipment 2" },
-      ];
+      const mockRequests = {
+        requests: [
+          { id: "request-1", medicalEquipment: "Equipment 1" },
+          { id: "request-2", medicalEquipment: "Equipment 2" },
+        ],
+        total: 2,
+      } as { requests: RequestResponseDTO[]; total: number };
 
       // Mock repository method
       mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
@@ -229,42 +126,365 @@ describe("RequestService", () => {
 
       // Assertions
       expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
-      expect(result).toBe(mockRequests);
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
     });
 
-    it("should handle repository errors", async () => {
+    it("should correctly handle pagination parameters", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          { id: "request-1", medicalEquipment: "Equipment 1" },
+          { id: "request-2", medicalEquipment: "Equipment 2" },
+        ],
+        total: 25,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      const pagination = { page: 2, limit: 10 };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+
+      // Call service method
+      const result = await requestService.getAllRequests(
+        undefined,
+        undefined,
+        pagination,
+      );
+
+      // Assertions
+      expect(mockRequestRepository.getAllRequests).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+        pagination,
+      );
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 25,
+          page: 2,
+          limit: 10,
+          totalPages: 3, // ceiling of 25/10 = 3
+        },
+      });
+    });
+
+    it("should handle small limit values correctly for pagination", async () => {
+      // Mock data with a total of 5 items
+      const mockRequests = {
+        requests: [{ id: "request-1", medicalEquipment: "Equipment 1" }],
+        total: 5,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      // Pagination with small limit
+      const pagination = { page: 1, limit: 2 };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+
+      // Call service method
+      const result = await requestService.getAllRequests(
+        undefined,
+        undefined,
+        pagination,
+      );
+
+      // Assertions
+      expect(result.meta.totalPages).toBe(3); // ceiling of 5/2 = 3
+    });
+
+    it("should pass through repository errors", async () => {
+      // Mock error
+      const mockError = new Error("Repository error");
+
       // Mock repository error
-      mockRequestRepository.getAllRequests.mockRejectedValue(
-        new Error("Repository error"),
-      );
+      mockRequestRepository.getAllRequests.mockRejectedValue(mockError);
 
       // Assertions
-      await expect(requestService.getAllRequests()).rejects.toThrow();
+      await expect(requestService.getAllRequests()).rejects.toEqual(mockError);
       expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
     });
+  });
 
-    it("should handle non-Error rejections from repository", async () => {
-      // Mock repository rejecting with a string (not an Error object)
-      mockRequestRepository.getAllRequests.mockRejectedValue(
-        "Some string error",
+  describe("getAllRequestMaintenance", () => {
+    it("should successfully get all maintenance requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          {
+            id: "request-1",
+            medicalEquipment: "Equipment 1",
+            requestType: "MAINTENANCE",
+          },
+          {
+            id: "request-2",
+            medicalEquipment: "Equipment 2",
+            requestType: "MAINTENANCE",
+          },
+        ],
+        total: 2,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
       );
+
+      // Call service method
+      const result = await requestService.getAllRequestMaintenance();
 
       // Assertions
-      await expect(requestService.getAllRequests()).rejects.toThrow(
-        "Failed to get requests",
-      );
-      expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
     });
 
-    it("should handle undefined rejections from repository", async () => {
-      // Mock repository rejecting with undefined
-      mockRequestRepository.getAllRequests.mockRejectedValue(undefined);
+    it("should correctly handle pagination parameters for maintenance requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          {
+            id: "request-1",
+            medicalEquipment: "Equipment 1",
+            requestType: "MAINTENANCE",
+          },
+        ],
+        total: 15,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      const pagination = { page: 2, limit: 5 };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestMaintenance(
+        undefined,
+        undefined,
+        pagination,
+      );
 
       // Assertions
-      await expect(requestService.getAllRequests()).rejects.toThrow(
-        "Failed to get requests: Unknown error",
+      expect(
+        mockRequestRepository.getAllRequestMaintenance,
+      ).toHaveBeenCalledWith(undefined, undefined, pagination);
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 15,
+          page: 2,
+          limit: 5,
+          totalPages: 3, // ceiling of 15/5 = 3
+        },
+      });
+    });
+
+    it("should handle search and filters for maintenance requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [{ id: "request-1", medicalEquipment: "Specific Equipment" }],
+        total: 1,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      const search = "Specific";
+      const filters = { status: ["Pending"] };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
       );
-      expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
+
+      // Call service method
+      const result = await requestService.getAllRequestMaintenance(
+        search,
+        filters,
+      );
+
+      // Assertions
+      expect(
+        mockRequestRepository.getAllRequestMaintenance,
+      ).toHaveBeenCalledWith(search, filters, undefined);
+      expect(result.data).toEqual(mockRequests.requests);
+    });
+
+    it("should pass through repository errors", async () => {
+      // Mock error
+      const mockError = new Error("Repository error");
+
+      // Mock repository error
+      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
+        mockError,
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestMaintenance()).rejects.toEqual(
+        mockError,
+      );
+      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+    });
+  });
+
+  describe("getAllRequestCalibration", () => {
+    it("should successfully get all calibration requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          {
+            id: "request-1",
+            medicalEquipment: "Equipment 1",
+            requestType: "CALIBRATION",
+          },
+          {
+            id: "request-2",
+            medicalEquipment: "Equipment 2",
+            requestType: "CALIBRATION",
+          },
+        ],
+        total: 2,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestCalibration();
+
+      // Assertions
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it("should correctly handle pagination parameters for calibration requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          {
+            id: "request-1",
+            medicalEquipment: "Equipment 1",
+            requestType: "CALIBRATION",
+          },
+        ],
+        total: 21,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      const pagination = { page: 3, limit: 7 };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestCalibration(
+        undefined,
+        undefined,
+        pagination,
+      );
+
+      // Assertions
+      expect(
+        mockRequestRepository.getAllRequestCalibration,
+      ).toHaveBeenCalledWith(undefined, undefined, pagination);
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 21,
+          page: 3,
+          limit: 7,
+          totalPages: 3, // ceiling of 21/7 = 3
+        },
+      });
+    });
+
+    it("should handle search and filters for calibration requests", async () => {
+      // Mock data
+      const mockRequests = {
+        requests: [
+          { id: "request-1", medicalEquipment: "Specific Instrument" },
+        ],
+        total: 1,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      const search = "Instrument";
+      const filters = { status: ["Processing"] };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestCalibration(
+        search,
+        filters,
+      );
+
+      // Assertions
+      expect(
+        mockRequestRepository.getAllRequestCalibration,
+      ).toHaveBeenCalledWith(search, filters, undefined);
+      expect(result.data).toEqual(mockRequests.requests);
+    });
+
+    it("should handle zero total results correctly", async () => {
+      // Mock data with zero results
+      const mockRequests = {
+        requests: [],
+        total: 0,
+      } as { requests: RequestResponseDTO[]; total: number };
+
+      // Mock repository method
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      // Call service method
+      const result = await requestService.getAllRequestCalibration();
+
+      // Assertions
+      expect(result.meta.totalPages).toBe(0); // total/10 = 0
+    });
+
+    it("should pass through repository errors", async () => {
+      // Mock error
+      const mockError = new Error("Repository error");
+
+      // Mock repository error
+      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
+        mockError,
+      );
+
+      // Assertions
+      await expect(requestService.getAllRequestCalibration()).rejects.toEqual(
+        mockError,
+      );
+      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
     });
   });
 
@@ -275,7 +495,6 @@ describe("RequestService", () => {
         userId: "user-123",
         medicalEquipment: "Equipment Name",
         complaint: "Issue description",
-        submissionDate: new Date(),
         createdBy: "user-123",
         requestType: "MAINTENANCE" as const,
       };
@@ -296,269 +515,234 @@ describe("RequestService", () => {
       expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
         id: "mocked-uuid",
         ...mockRequestData,
-        status: "Pending",
       });
-      expect(result).toBe(mockCreatedRequest);
+      expect(result).toEqual({ data: mockCreatedRequest });
     });
 
-    it("should pass through AppError from repository", async () => {
-      // Mock data
+    it("should handle creating a request without optional fields", async () => {
+      // Mock data without complaint
       const mockRequestData = {
         userId: "user-123",
         medicalEquipment: "Equipment Name",
-        submissionDate: new Date(),
         createdBy: "user-123",
         requestType: "MAINTENANCE" as const,
       };
 
-      // Create an AppError instance
-      const appError = new AppError("Custom error message", 418);
+      const mockCreatedRequest = {
+        id: "mocked-uuid",
+        ...mockRequestData,
+        status: "Pending",
+      };
 
-      // Mock repository method to reject with the AppError
-      mockRequestRepository.createRequest.mockRejectedValue(appError);
+      // Mock repository method
+      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
 
-      // Assertions - should pass through the original AppError
-      await expect(
-        requestService.createRequest(mockRequestData),
-      ).rejects.toEqual(appError);
+      // Call service method
+      const result = await requestService.createRequest(mockRequestData);
 
-      // Ensure the statusCode is preserved
-      try {
-        await requestService.createRequest(mockRequestData);
-      } catch (error) {
-        expect(error).toBeInstanceOf(AppError);
-        expect((error as AppError).statusCode).toBe(418);
-      }
+      // Assertions
+      expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
+        id: "mocked-uuid",
+        ...mockRequestData,
+      });
+      expect(result).toEqual({ data: mockCreatedRequest });
     });
 
-    it("should handle repository errors", async () => {
-      // Mock data
+    it("should handle creating a calibration request", async () => {
+      // Mock data for calibration
       const mockRequestData = {
         userId: "user-123",
-        medicalEquipment: "Equipment Name",
-        submissionDate: new Date(),
+        medicalEquipment: "Calibration Equipment",
         createdBy: "user-123",
         requestType: "CALIBRATION" as const,
       };
 
-      // Mock repository error
-      mockRequestRepository.createRequest.mockRejectedValue(
-        new Error("Repository error"),
-      );
+      const mockCreatedRequest = {
+        id: "mocked-uuid",
+        ...mockRequestData,
+        status: "Pending",
+      };
+
+      // Mock repository method
+      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
+
+      // Call service method
+      const result = await requestService.createRequest(mockRequestData);
 
       // Assertions
-      await expect(
-        requestService.createRequest(mockRequestData),
-      ).rejects.toThrow("Failed to create request: Repository error");
-      expect(mockRequestRepository.createRequest).toHaveBeenCalled();
+      expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
+        id: "mocked-uuid",
+        ...mockRequestData,
+      });
+      expect(result).toEqual({ data: mockCreatedRequest });
     });
 
-    it("should handle non-Error rejections from repository", async () => {
+    it("should pass through repository errors", async () => {
       // Mock data
       const mockRequestData = {
         userId: "user-123",
         medicalEquipment: "Equipment Name",
-        submissionDate: new Date(),
         createdBy: "user-123",
         requestType: "MAINTENANCE" as const,
       };
 
-      // Mock repository rejecting with a non-Error object
-      mockRequestRepository.createRequest.mockRejectedValue({
-        custom: "error",
-      });
+      const mockError = new Error("Repository error");
+
+      // Mock repository error
+      mockRequestRepository.createRequest.mockRejectedValue(mockError);
 
       // Assertions
       await expect(
         requestService.createRequest(mockRequestData),
-      ).rejects.toThrow("Failed to create request: Unknown error");
+      ).rejects.toEqual(mockError);
       expect(mockRequestRepository.createRequest).toHaveBeenCalled();
     });
   });
 
-  describe("getAllRequestMaintenance", () => {
-    it("should successfully get all maintenance requests", async () => {
+  describe("updateRequestStatus", () => {
+    it("should successfully update request status", async () => {
       // Mock data
-      const mockRequests: any[] = [
-        {
-          id: "request-1",
-          medicalEquipment: "Equipment 1",
-          requestType: "MAINTENANCE",
-        },
-        {
-          id: "request-2",
-          medicalEquipment: "Equipment 2",
-          requestType: "MAINTENANCE",
-        },
-      ];
+      const requestId = "request-123";
+      const newStatus = "Completed";
 
-      // Mock repository method
-      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
-        mockRequests,
+      const existingRequest = {
+        id: requestId,
+        status: "Pending",
+        medicalEquipment: "Equipment Name",
+      };
+
+      const updatedRequest = {
+        ...existingRequest,
+        status: newStatus,
+      };
+
+      // Mock repository methods
+      mockRequestRepository.getRequestById.mockResolvedValue(
+        existingRequest as any,
+      );
+      mockRequestRepository.updateRequestStatus.mockResolvedValue(
+        updatedRequest as any,
       );
 
       // Call service method
-      const result = await requestService.getAllRequestMaintenance();
-
-      // Assertions
-      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
-      expect(result).toBe(mockRequests);
-    });
-
-    it("should properly handle AppError instances by passing them through", async () => {
-      // Create an AppError instance
-      const appError = new AppError(
-        "Custom error message for getAllRequestMaintenance",
-        418,
-      );
-
-      // Mock repository method to reject with the AppError
-      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
-        appError,
-      );
-
-      // Assertions - should pass through the original AppError
-      await expect(requestService.getAllRequestMaintenance()).rejects.toEqual(
-        appError,
-      );
-
-      // Ensure the statusCode is preserved
-      try {
-        await requestService.getAllRequestMaintenance();
-      } catch (error) {
-        expect(error).toBeInstanceOf(AppError);
-        expect((error as AppError).statusCode).toBe(418);
-      }
-    });
-
-    it("should handle repository errors", async () => {
-      // Mock repository error
-      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
-        new Error("Repository error"),
+      const result = await requestService.updateRequestStatus(
+        requestId,
+        newStatus,
       );
 
       // Assertions
-      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow();
-      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
+        requestId,
+      );
+      expect(mockRequestRepository.updateRequestStatus).toHaveBeenCalledWith(
+        requestId,
+        newStatus,
+      );
+      expect(result).toEqual({ data: updatedRequest });
     });
 
-    it("should handle non-Error rejections from repository", async () => {
-      // Mock repository rejecting with a string (not an Error object)
-      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
-        "Some string error",
-      );
+    it("should throw an error if request ID is invalid", async () => {
+      // Assertions for empty string
+      await expect(
+        requestService.updateRequestStatus("", "Completed"),
+      ).rejects.toThrow("Request ID is required and must be a valid string");
 
-      // Assertions
-      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow(
-        "Failed to get maintenance requests",
-      );
-      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+      // Assertions for null
+      await expect(
+        requestService.updateRequestStatus(
+          null as unknown as string,
+          "Completed",
+        ),
+      ).rejects.toThrow("Request ID is required and must be a valid string");
+
+      // Ensure repository method wasn't called
+      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
     });
 
-    it("should handle undefined rejections from repository", async () => {
-      // Mock repository rejecting with undefined
-      mockRequestRepository.getAllRequestMaintenance.mockRejectedValue(
-        undefined,
-      );
+    it("should throw an error if status is invalid", async () => {
+      // Assertions for empty string
+      await expect(
+        requestService.updateRequestStatus("request-123", ""),
+      ).rejects.toThrow("Status is required and must be a valid string");
 
-      // Assertions
-      await expect(requestService.getAllRequestMaintenance()).rejects.toThrow(
-        "Failed to get maintenance requests: Unknown error",
-      );
-      expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
+      // Assertions for null
+      await expect(
+        requestService.updateRequestStatus(
+          "request-123",
+          null as unknown as string,
+        ),
+      ).rejects.toThrow("Status is required and must be a valid string");
+
+      // Ensure repository method wasn't called
+      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
     });
-  });
 
-  describe("getAllRequestCalibration", () => {
-    it("should successfully get all calibration requests", async () => {
+    it("should throw an error if request is not found", async () => {
       // Mock data
-      const mockRequests: any[] = [
-        {
-          id: "request-1",
-          medicalEquipment: "Equipment 1",
-          requestType: "CALIBRATION",
-        },
-        {
-          id: "request-2",
-          medicalEquipment: "Equipment 2",
-          requestType: "CALIBRATION",
-        },
-      ];
+      const requestId = "nonexistent-id";
+      const newStatus = "Completed";
 
-      // Mock repository method
-      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
-        mockRequests,
-      );
-
-      // Call service method
-      const result = await requestService.getAllRequestCalibration();
+      // Mock repository method to return null (not found)
+      mockRequestRepository.getRequestById.mockResolvedValue(null);
 
       // Assertions
-      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
-      expect(result).toBe(mockRequests);
+      await expect(
+        requestService.updateRequestStatus(requestId, newStatus),
+      ).rejects.toThrow(`Request with ID ${requestId} not found`);
+      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
+        requestId,
+      );
+      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
     });
 
-    it("should properly handle AppError instances by passing them through", async () => {
-      // Create an AppError instance
-      const appError = new AppError(
-        "Custom error message for getAllRequestCalibration",
-        418,
-      );
+    it("should pass through repository errors from getRequestById", async () => {
+      // Mock data
+      const requestId = "request-123";
+      const newStatus = "Completed";
+      const mockError = new Error("Repository error");
 
-      // Mock repository method to reject with the AppError
-      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
-        appError,
-      );
-
-      // Assertions - should pass through the original AppError
-      await expect(requestService.getAllRequestCalibration()).rejects.toEqual(
-        appError,
-      );
-
-      // Ensure the statusCode is preserved
-      try {
-        await requestService.getAllRequestCalibration();
-      } catch (error) {
-        expect(error).toBeInstanceOf(AppError);
-        expect((error as AppError).statusCode).toBe(418);
-      }
-    });
-
-    it("should handle repository errors", async () => {
       // Mock repository error
-      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
-        new Error("Repository error"),
-      );
+      mockRequestRepository.getRequestById.mockRejectedValue(mockError);
 
       // Assertions
-      await expect(requestService.getAllRequestCalibration()).rejects.toThrow();
-      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
+      await expect(
+        requestService.updateRequestStatus(requestId, newStatus),
+      ).rejects.toEqual(mockError);
+      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
+        requestId,
+      );
+      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
     });
 
-    it("should handle non-Error rejections from repository", async () => {
-      // Mock repository rejecting with a string (not an Error object)
-      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
-        "Some string error",
+    it("should pass through repository errors from updateRequestStatus", async () => {
+      // Mock data
+      const requestId = "request-123";
+      const newStatus = "Completed";
+      const mockError = new Error("Update error");
+
+      const existingRequest = {
+        id: requestId,
+        status: "Pending",
+        medicalEquipment: "Equipment Name",
+      };
+
+      // Mock repository methods
+      mockRequestRepository.getRequestById.mockResolvedValue(
+        existingRequest as any,
       );
+      mockRequestRepository.updateRequestStatus.mockRejectedValue(mockError);
 
       // Assertions
-      await expect(requestService.getAllRequestCalibration()).rejects.toThrow(
-        "Failed to get calibration requests",
+      await expect(
+        requestService.updateRequestStatus(requestId, newStatus),
+      ).rejects.toEqual(mockError);
+      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
+        requestId,
       );
-      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
-    });
-
-    it("should handle undefined rejections from repository", async () => {
-      // Mock repository rejecting with undefined
-      mockRequestRepository.getAllRequestCalibration.mockRejectedValue(
-        undefined,
+      expect(mockRequestRepository.updateRequestStatus).toHaveBeenCalledWith(
+        requestId,
+        newStatus,
       );
-
-      // Assertions
-      await expect(requestService.getAllRequestCalibration()).rejects.toThrow(
-        "Failed to get calibration requests: Unknown error",
-      );
-      expect(mockRequestRepository.getAllRequestCalibration).toHaveBeenCalled();
     });
   });
 });

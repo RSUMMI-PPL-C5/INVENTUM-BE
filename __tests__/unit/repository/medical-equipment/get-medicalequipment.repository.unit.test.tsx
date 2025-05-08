@@ -51,7 +51,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: { deletedOn: null },
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.medicalEquipment.count).toHaveBeenCalledWith({
         where: { deletedOn: null },
@@ -85,7 +85,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.medicalEquipment.count).toHaveBeenCalledWith({
         where: expectedWhere,
@@ -114,7 +114,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -147,7 +147,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -180,7 +180,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -213,7 +213,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: undefined,
         take: undefined,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -235,7 +235,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: { deletedOn: null },
         skip: 10, // (page-1) * limit
         take: 10,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -273,7 +273,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         where: expectedWhere,
         skip: 5,
         take: 5,
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
   });

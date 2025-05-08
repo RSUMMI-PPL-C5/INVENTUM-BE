@@ -106,7 +106,7 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
     // Arrange
     const filters = {
       medicalEquipmentId: "equip1",
-      result: "Success",
+      result: ["Success"],
     };
 
     const filteredHistories = [sampleCalibrationHistories[0]];
@@ -123,7 +123,9 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
     expect(prismaMock.calibrationHistory.findMany).toHaveBeenCalledWith({
       where: {
         medicalEquipmentId: "equip1",
-        result: "Success",
+        result: {
+          in: ["Success"],
+        },
       },
       skip: undefined,
       take: undefined,
@@ -289,7 +291,7 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
     // Arrange
     const filters = {
       medicalEquipmentId: "equip1",
-      result: "Success",
+      result: ["Success"],
       calibrationDateStart: new Date("2025-01-01"),
       calibrationDateEnd: new Date("2025-12-31"),
     };
@@ -306,7 +308,9 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
     expect(prismaMock.calibrationHistory.findMany).toHaveBeenCalledWith({
       where: {
         medicalEquipmentId: "equip1",
-        result: "Success",
+        result: {
+          in: ["Success"],
+        },
         calibrationDate: {
           gte: filters.calibrationDateStart,
           lte: filters.calibrationDateEnd,
@@ -391,7 +395,7 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
     // Arrange
     const search = "Standard";
     const filters = {
-      result: "Success",
+      result: ["Success"],
     };
 
     prismaMock.calibrationHistory.findMany.mockResolvedValue([
@@ -409,7 +413,9 @@ describe("CalibrationHistoryRepository - getCalibrationHistories", () => {
           { technician: { contains: "Standard" } },
           { calibrationMethod: { contains: "Standard" } },
         ],
-        result: "Success",
+        result: {
+          in: ["Success"],
+        },
       },
       skip: undefined,
       take: undefined,

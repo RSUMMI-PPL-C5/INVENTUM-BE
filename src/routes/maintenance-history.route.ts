@@ -19,6 +19,7 @@ router
   .get(
     "/:equipmentId/maintenance-history",
     maintenanceHistoryFilterQueryValidation,
+    validateRequest,
     maintenanceController.getMaintenanceHistoriesByEquipmentId,
   )
   .post(

@@ -5,5 +5,5 @@
 
 */
 -- AlterTable
-ALTER TABLE `request` DROP COLUMN `submissionDate`,
+ALTER TABLE `Request` DROP COLUMN `submissionDate`,
     MODIFY `createdOn` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3);

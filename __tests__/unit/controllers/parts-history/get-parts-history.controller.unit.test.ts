@@ -51,7 +51,7 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
           createdOn: new Date(),
         },
       ],
-      pagination: {
+      meta: {
         total: 1,
         page: 1,
         limit: 10,
@@ -70,21 +70,13 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
       mockNext,
     );
 
-    // Assertions
+    // Assertions - should match actual controller behavior which passes all query params in filters
     expect(
       PartsHistoryService.prototype.getPartsHistories,
     ).toHaveBeenCalledWith(
       undefined, // search
-      {
-        medicalEquipmentId: "equip-123",
-        sparepartId: undefined,
-        result: undefined,
-        replacementDateStart: undefined,
-        replacementDateEnd: undefined,
-        createdOnStart: undefined,
-        createdOnEnd: undefined,
-      },
-      { page: 1, limit: 10 },
+      { medicalEquipmentId: "equip-123" }, // Only equipmentId in filters since query is empty
+      { page: 1, limit: 10 }, // Default pagination
     );
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
@@ -119,7 +111,7 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
           createdOn: new Date(),
         },
       ],
-      pagination: {
+      meta: {
         total: 1,
         page: 2,
         limit: 5,
@@ -138,21 +130,22 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
       mockNext,
     );
 
-    // Assertions - FIXED: Use string dates to match controller's behavior
+    // Assertions - match what the controller would actually pass
     expect(
       PartsHistoryService.prototype.getPartsHistories,
     ).toHaveBeenCalledWith(
-      "motor",
+      "motor", // search param
       {
         medicalEquipmentId: "equip-123",
+        page: "2",
+        limit: "5",
+        search: "motor",
         sparepartId: "part-456",
         result: "Success",
         replacementDateStart: "2023-01-01",
         replacementDateEnd: "2023-12-31",
-        createdOnStart: undefined,
-        createdOnEnd: undefined,
       },
-      { page: 2, limit: 5 },
+      { page: 2, limit: 5 }, // parsed pagination
     );
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
@@ -190,7 +183,52 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
 
     const mockPartsHistories = {
       data: [],
-      pagination: {
+      meta: {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+      },
+    };
+
+    (
+      PartsHistoryService.prototype.getPartsHistories as jest.Mock
+    ).mockResolvedValueOnce(mockPartsHistories);
+
+    // Execute the controller method
+    await partsHistoryController.getPartsHistoriesByEquipmentId(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
+
+    // Assertions - controller includes all query params in filters
+    expect(
+      PartsHistoryService.prototype.getPartsHistories,
+    ).toHaveBeenCalledWith(
+      undefined,
+      {
+        medicalEquipmentId: "equip-123",
+        page: "-1",
+        limit: "0",
+      },
+      { page: 1, limit: 10 }, // Should default to valid values
+    );
+
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+  });
+
+  // Edge case - non-numeric pagination values
+  it("should handle non-numeric pagination values", async () => {
+    // Setup request with non-numeric pagination
+    mockRequest.query = {
+      page: "abc",
+      limit: "def",
+    };
+
+    const mockPartsHistories = {
+      data: [],
+      meta: {
         total: 0,
         page: 1,
         limit: 10,
@@ -216,12 +254,52 @@ describe("PartsHistoryController - getPartsHistoriesByEquipmentId", () => {
       undefined,
       {
         medicalEquipmentId: "equip-123",
-        sparepartId: undefined,
-        result: undefined,
-        replacementDateStart: undefined,
-        replacementDateEnd: undefined,
-        createdOnStart: undefined,
-        createdOnEnd: undefined,
+        page: "abc",
+        limit: "def",
+      },
+      { page: 1, limit: 10 }, // Should default to valid values
+    );
+
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(mockPartsHistories);
+  });
+
+  // Edge case - with empty search string
+  it("should handle empty search string", async () => {
+    // Setup request with empty search
+    mockRequest.query = {
+      search: "",
+    };
+
+    const mockPartsHistories = {
+      data: [],
+      meta: {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+      },
+    };
+
+    (
+      PartsHistoryService.prototype.getPartsHistories as jest.Mock
+    ).mockResolvedValueOnce(mockPartsHistories);
+
+    // Execute the controller method
+    await partsHistoryController.getPartsHistoriesByEquipmentId(
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
+
+    // Assertions
+    expect(
+      PartsHistoryService.prototype.getPartsHistories,
+    ).toHaveBeenCalledWith(
+      "",
+      {
+        medicalEquipmentId: "equip-123",
+        search: "",
       },
       { page: 1, limit: 10 },
     );

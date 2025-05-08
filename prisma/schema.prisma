@@ -58,25 +58,8 @@ model MedicalEquipment {
   deletedBy         String?
   deletedOn         DateTime?
   spareparts        PartsHistory[]
-  relocationHistory RelocationHistory[]
   maintenanceHistories MaintenanceHistory[]
   calibrationHistories CalibrationHistory[]
-}
-
-model RelocationHistory {
-  id                 String      @id @unique
-  medicalEquipmentId String
-  initLocation       String
-  currentLocation    String
-  requestDate        String
-  shiftReason        String?
-  createdBy          Int
-  createdOn          DateTime?
-  modifiedBy         Int?
-  modifiedOn         DateTime         @default(now())
-  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
-
-  @@index([medicalEquipmentId], map: "RelocationHistory_medicalEquipmentId_fkey")
 }
 
 model Spareparts {

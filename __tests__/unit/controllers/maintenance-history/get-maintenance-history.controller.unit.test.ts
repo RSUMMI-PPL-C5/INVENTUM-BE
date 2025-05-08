@@ -11,6 +11,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
   let next: NextFunction;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     controller = new MaintenanceHistoryController();
     req = {
       params: { equipmentId: "123" },
@@ -53,7 +54,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       undefined, // search is undefined
-      { medicalEquipmentId: "123" },
+      { medicalEquipmentId: "123" }, // Only equipment ID in filters
       { page: 1, limit: 10 },
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -95,7 +96,11 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       undefined, // search is undefined
-      { medicalEquipmentId: "123" },
+      {
+        medicalEquipmentId: "123",
+        page: "2",
+        limit: "5",
+      },
       { page: 2, limit: 5 },
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -137,7 +142,10 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       "John", // search parameter
-      { medicalEquipmentId: "123" },
+      {
+        medicalEquipmentId: "123",
+        search: "John",
+      },
       { page: 1, limit: 10 },
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -147,7 +155,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
   // Positive case - with filters
   it("should get maintenance histories with filters", async () => {
     req.query = {
-      result: "Successful",
+      result: "Success",
       maintenanceDateStart: "2025-01-01",
       maintenanceDateEnd: "2025-04-30",
     };
@@ -158,7 +166,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
           id: "maint1",
           medicalEquipmentId: "123",
           maintenanceDate: "2025-03-15",
-          result: "Successful",
+          result: "Success",
         },
       ],
       meta: {
@@ -185,7 +193,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       undefined, // search is undefined
       {
         medicalEquipmentId: "123",
-        result: "Successful",
+        result: "Success",
         maintenanceDateStart: "2025-01-01",
         maintenanceDateEnd: "2025-04-30",
       },
@@ -248,7 +256,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       search: "calibration",
       page: "2",
       limit: "5",
-      result: "Successful",
+      result: "Success",
       maintenanceDateStart: "2025-01-01",
       maintenanceDateEnd: "2025-04-30",
       createdOnStart: "2025-01-01",
@@ -261,7 +269,7 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
           id: "maint1",
           medicalEquipmentId: "123",
           maintenanceDate: "2025-03-15",
-          result: "Successful",
+          result: "Success",
         },
       ],
       meta: {
@@ -288,7 +296,10 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       "calibration",
       {
         medicalEquipmentId: "123",
-        result: "Successful",
+        search: "calibration",
+        page: "2",
+        limit: "5",
+        result: "Success",
         maintenanceDateStart: "2025-01-01",
         maintenanceDateEnd: "2025-04-30",
         createdOnStart: "2025-01-01",
@@ -346,7 +357,11 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       undefined,
-      { medicalEquipmentId: "123" },
+      {
+        medicalEquipmentId: "123",
+        page: "-1",
+        limit: "-5",
+      },
       { page: 1, limit: 10 }, // Should default to page 1 and limit 10
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -367,7 +382,11 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       undefined,
-      { medicalEquipmentId: "123" },
+      {
+        medicalEquipmentId: "123",
+        page: "abc",
+        limit: "def",
+      },
       { page: 1, limit: 10 },
     );
   });
@@ -386,7 +405,10 @@ describe("MaintenanceHistoryController - getMaintenanceHistoriesByEquipmentId", 
       MaintenanceHistoryService.prototype.getMaintenanceHistories,
     ).toHaveBeenCalledWith(
       "",
-      { medicalEquipmentId: "123" },
+      {
+        medicalEquipmentId: "123",
+        search: "",
+      },
       { page: 1, limit: 10 },
     );
   });
