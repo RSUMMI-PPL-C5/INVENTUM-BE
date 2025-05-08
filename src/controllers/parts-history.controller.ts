@@ -56,14 +56,9 @@ class PartsHistoryController {
       };
 
       const filters: PartsHistoryFilterOptions = {
+        ...req.query,
         medicalEquipmentId: equipmentId,
-        sparepartId: req.query.sparepartId as string,
-        result: req.query.result as string,
-        replacementDateStart: req.query.replacementDateStart as unknown as Date,
-        replacementDateEnd: req.query.replacementDateEnd as unknown as Date,
-        createdOnStart: req.query.createdOnStart as unknown as Date,
-        createdOnEnd: req.query.createdOnEnd as unknown as Date,
-      };
+      } as any;
 
       const result = await this.partsHistoryService.getPartsHistories(
         search,

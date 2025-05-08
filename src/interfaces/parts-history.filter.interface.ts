@@ -1,7 +1,7 @@
 export interface PartsHistoryFilterOptions {
   medicalEquipmentId?: string;
   sparepartId?: string;
-  result?: string;
+  result?: string[];
   replacementDateStart?: Date;
   replacementDateEnd?: Date;
   createdOnStart?: Date;

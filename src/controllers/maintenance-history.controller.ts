@@ -58,13 +58,9 @@ class MaintenanceHistoryController {
       };
 
       const filters: MaintenanceHistoryFilterOptions = {
+        ...req.query,
         medicalEquipmentId: equipmentId,
-        result: req.query.result as string,
-        maintenanceDateStart: req.query.maintenanceDateStart as unknown as Date,
-        maintenanceDateEnd: req.query.maintenanceDateEnd as unknown as Date,
-        createdOnStart: req.query.createdOnStart as unknown as Date,
-        createdOnEnd: req.query.createdOnEnd as unknown as Date,
-      };
+      } as any;
 
       const result =
         await this.maintenanceHistoryService.getMaintenanceHistories(

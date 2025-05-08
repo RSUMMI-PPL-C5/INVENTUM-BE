@@ -19,6 +19,7 @@ router
   .get(
     "/:equipmentId/parts-history",
     partsHistoryFilterQueryValidation,
+    validateRequest,
     partsController.getPartsHistoriesByEquipmentId,
   )
   .post(

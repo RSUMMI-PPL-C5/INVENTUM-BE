@@ -20,6 +20,7 @@ router
   .get(
     "/",
     medicalEquipmentFilterQueryValidation,
+    validateRequest,
     controller.getMedicalEquipment,
   )
   .get("/:id", controller.getMedicalEquipmentById)

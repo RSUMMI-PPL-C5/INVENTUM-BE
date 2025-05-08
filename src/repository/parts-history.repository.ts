@@ -4,12 +4,15 @@ import { PartsHistoryFilterOptions } from "../interfaces/parts-history.filter.in
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import { getJakartaTime } from "../utils/date.utils";
 import prisma from "../configs/db.config";
+import PartsHistoryWhereBuilder from "../utils/builders/parts-history-where.builder";
 
 class PartsHistoryRepository {
   private readonly prisma: PrismaClient;
+  private readonly whereBuilder: PartsHistoryWhereBuilder;
 
   constructor() {
     this.prisma = prisma;
+    this.whereBuilder = new PartsHistoryWhereBuilder();
   }
 
   public async createPartsHistory(partsData: any): Promise<PartsHistoryDTO> {
@@ -40,79 +43,12 @@ class PartsHistoryRepository {
     return newPartsHistory;
   }
 
-  private buildWhereClause(
-    search?: string,
-    filters?: PartsHistoryFilterOptions,
-  ): any {
-    const where: any = {};
-
-    if (search) {
-      where.OR = [
-        { technician: { contains: search } },
-        { sparepart: { partsName: { contains: search } } },
-      ];
-    }
-
-    if (filters) {
-      if (filters.medicalEquipmentId) {
-        where.medicalEquipmentId = filters.medicalEquipmentId;
-      }
-
-      if (filters.sparepartId) {
-        where.sparepartId = filters.sparepartId;
-      }
-
-      if (filters.result) {
-        where.result = filters.result;
-      }
-
-      this.addReplacementDateFilter(where, filters);
-      this.addCreatedOnDateFilter(where, filters);
-    }
-
-    return where;
-  }
-
-  private addReplacementDateFilter(
-    where: any,
-    filters: PartsHistoryFilterOptions,
-  ): void {
-    if (filters.replacementDateStart || filters.replacementDateEnd) {
-      where.replacementDate = {};
-
-      if (filters.replacementDateStart) {
-        where.replacementDate.gte = filters.replacementDateStart;
-      }
-
-      if (filters.replacementDateEnd) {
-        where.replacementDate.lte = filters.replacementDateEnd;
-      }
-    }
-  }
-
-  private addCreatedOnDateFilter(
-    where: any,
-    filters: PartsHistoryFilterOptions,
-  ): void {
-    if (filters.createdOnStart || filters.createdOnEnd) {
-      where.createdOn = {};
-
-      if (filters.createdOnStart) {
-        where.createdOn.gte = filters.createdOnStart;
-      }
-
-      if (filters.createdOnEnd) {
-        where.createdOn.lte = filters.createdOnEnd;
-      }
-    }
-  }
-
   public async getPartsHistories(
     search?: string,
     filters?: PartsHistoryFilterOptions,
     pagination?: PaginationOptions,
   ): Promise<{ partsHistories: any[]; total: number }> {
-    const where = this.buildWhereClause(search, filters);
+    const where = this.whereBuilder.buildComplete(search, filters);
 
     const skip = pagination
       ? (pagination.page - 1) * pagination.limit
