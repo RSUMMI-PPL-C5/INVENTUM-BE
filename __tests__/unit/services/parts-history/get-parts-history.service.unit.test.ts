@@ -95,7 +95,7 @@ describe("PartsHistoryService - getPartsHistories", () => {
     const search = "motor";
     const filters: PartsHistoryFilterOptions = {
       medicalEquipmentId: "equip-123",
-      result: "Success",
+      result: ["Success"],
     };
     const pagination: PaginationOptions = {
       page: 2,

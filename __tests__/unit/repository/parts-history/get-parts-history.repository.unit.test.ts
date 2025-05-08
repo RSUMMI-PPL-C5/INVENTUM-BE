@@ -96,10 +96,7 @@ describe("PartsHistoryRepository - getPartsHistories", () => {
     expect(mockPrisma.partsHistory.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          OR: [
-            { technician: { contains: "motor" } },
-            { sparepart: { partsName: { contains: "motor" } } },
-          ],
+          OR: [{ technician: { contains: "motor" } }],
         },
       }),
     );
@@ -209,7 +206,7 @@ describe("PartsHistoryRepository - getPartsHistories", () => {
     const filters = {
       medicalEquipmentId: "equip-123",
       sparepartId: "sp-456",
-      result: "Success",
+      result: ["Success"],
       replacementDateStart: new Date("2023-01-01"),
       replacementDateEnd: new Date("2023-12-31"),
       createdOnStart: new Date("2023-01-01"),
@@ -230,7 +227,9 @@ describe("PartsHistoryRepository - getPartsHistories", () => {
           OR: expect.any(Array),
           medicalEquipmentId: "equip-123",
           sparepartId: "sp-456",
-          result: "Success",
+          result: {
+            in: ["Success"],
+          },
           replacementDate: expect.any(Object),
           createdOn: expect.any(Object),
         }),
