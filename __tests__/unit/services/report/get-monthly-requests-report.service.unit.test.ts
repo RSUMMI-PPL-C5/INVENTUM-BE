@@ -100,6 +100,44 @@ describe("ReportService - getMonthlyRequestCounts", () => {
       });
     });
 
+    it("should throw error when repository returns non-array data", async () => {
+      // Arrange
+      // @ts-ignore - Deliberately returning non-array data for testing
+      mockRepository.getMonthlyRequestCounts = jest.fn().mockResolvedValue({
+        notAnArray: true,
+      });
+
+      // Act & Assert
+      await expect(service.getMonthlyRequestCounts()).rejects.toThrow(
+        "Data input tidak valid: harap berikan array data bulanan",
+      );
+      expect(mockRepository.getMonthlyRequestCounts).toHaveBeenCalledTimes(1);
+    });
+
+    it("should throw error when repository returns null", async () => {
+      // Arrange
+      mockRepository.getMonthlyRequestCounts = jest
+        .fn()
+        .mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.getMonthlyRequestCounts()).rejects.toThrow(
+        "Data input tidak valid: harap berikan array data bulanan",
+      );
+    });
+
+    it("should throw error when repository returns undefined", async () => {
+      // Arrange
+      mockRepository.getMonthlyRequestCounts = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      // Act & Assert
+      await expect(service.getMonthlyRequestCounts()).rejects.toThrow(
+        "Data input tidak valid: harap berikan array data bulanan",
+      );
+    });
+
     it("should handle null values in data from repository", async () => {
       // Arrange
       const mockRawData = [

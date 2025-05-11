@@ -22,6 +22,12 @@ class ReportService {
   private ensureLast12Months(
     rawData: MonthlyDataRecord[],
   ): MonthlyDataRecord[] {
+    if (!Array.isArray(rawData)) {
+      throw new Error(
+        "Data input tidak valid: harap berikan array data bulanan",
+      );
+    }
+
     const currentDate = getJakartaTime();
     const monthsData: Record<string, MonthlyDataRecord> = {};
 
