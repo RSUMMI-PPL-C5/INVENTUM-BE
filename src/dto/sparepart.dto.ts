@@ -1,6 +1,8 @@
 import { Spareparts } from "@prisma/client";
 
-export interface SparepartDTO extends Spareparts {}
+export interface SparepartDTO extends Spareparts {
+  imageUrl?: string | null;
+}
 
 export interface FilterSparepartDTO {
   partsName?: string;
@@ -18,6 +20,7 @@ export interface SparepartsDTO {
   price?: number | null;
   toolLocation?: string | null;
   toolDate?: string | null;
+  imageUrl?: string | null;
   createdBy: string;
   createdOn?: Date | null;
   modifiedBy?: string | null;

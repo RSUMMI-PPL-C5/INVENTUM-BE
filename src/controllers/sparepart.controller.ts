@@ -21,10 +21,11 @@ class SparepartController {
         ...req.body,
         createdBy: (req.user as any).userId,
       };
-
+      if (req.file) {
+        sparepartData.imageUrl = `/uploads/spareparts/${req.file.filename}`;
+      }
       const newSparepart =
         await this.sparepartService.addSparepart(sparepartData);
-
       res.status(201).json({
         status: "success",
         data: newSparepart,
@@ -103,12 +104,13 @@ class SparepartController {
         ...req.body,
         modifiedBy: (req.user as any).userId,
       };
-
+      if (req.file) {
+        sparepartData.imageUrl = `/uploads/spareparts/${req.file.filename}`;
+      }
       const updatedSparepart = await this.sparepartService.updateSparepart(
         id,
         sparepartData,
       );
-
       if (!updatedSparepart) {
         res.status(404).json({
           status: "error",
@@ -116,7 +118,6 @@ class SparepartController {
         });
         return;
       }
-
       res.status(200).json({
         status: "success",
         data: updatedSparepart,

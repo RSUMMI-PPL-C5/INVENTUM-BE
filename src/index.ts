@@ -16,6 +16,7 @@ setupSentry();
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import path from "path";
 
 // Import routes
 import userRoutes from "./routes/user.route";
@@ -128,5 +129,7 @@ const server = app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
   console.log(`CORS enabled for origins: ${whitelist.join(", ")}`);
 });
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 export default server;
