@@ -51,6 +51,7 @@ model MedicalEquipment {
   purchasePrice     Int?
   status            String                @default("Active")
   vendor            String?
+  lastLocation      String?
   createdBy         String
   createdOn         DateTime?
   modifiedBy        String?
