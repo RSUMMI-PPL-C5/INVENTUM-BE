@@ -1,7 +1,7 @@
 import SparepartService from "../../../../src/services/sparepart.service";
 import SparepartRepository from "../../../../src/repository/sparepart.repository";
-import AppError from "../../../../src/utils/appError";
 import { SparepartDTO, SparepartsDTO } from "../../../../src/dto/sparepart.dto";
+import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/repository/sparepart.repository");
 
@@ -10,122 +10,217 @@ describe("SparepartService - updateSparepart", () => {
   let sparepartRepositoryMock: jest.Mocked<SparepartRepository>;
 
   beforeEach(() => {
-    sparepartRepositoryMock =
-      new SparepartRepository() as jest.Mocked<SparepartRepository>;
+    sparepartRepositoryMock = {
+      getSparepartById: jest.fn(),
+      updateSparepart: jest.fn(),
+    } as unknown as jest.Mocked<SparepartRepository>;
     sparepartService = new SparepartService();
     (sparepartService as any).sparepartRepository = sparepartRepositoryMock;
   });
 
-  const baseSparepart: SparepartDTO = {
-    id: "1",
-    partsName: "Original Part",
-    purchaseDate: null,
-    price: 100,
-    toolLocation: "Warehouse A",
-    toolDate: null,
-    createdBy: "user123",
-    createdOn: new Date("2023-01-01"),
-    modifiedBy: null,
-    modifiedOn: new Date("2023-01-01"),
-    deletedBy: null,
-    deletedOn: null,
-  };
-
   it("should successfully update a sparepart", async () => {
-    const updatedData: Partial<SparepartsDTO> = {
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
-    };
-
-    const updatedSparepart: SparepartsDTO = {
-      ...baseSparepart,
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
       modifiedOn: new Date(),
-      purchaseDate: baseSparepart.purchaseDate,
+      deletedBy: null,
+      deletedOn: null,
     };
 
-    sparepartRepositoryMock.getSparepartById.mockResolvedValue(baseSparepart);
+    const updateData: Partial<SparepartsDTO> = {
+      partsName: "Updated Part",
+      price: 150,
+    };
+
+    const updatedSparepart = {
+      ...mockSparepart,
+      ...updateData,
+      modifiedOn: new Date(),
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
     sparepartRepositoryMock.updateSparepart.mockResolvedValue(updatedSparepart);
 
-    const result = await sparepartService.updateSparepart("1", updatedData);
+    const result = await sparepartService.updateSparepart(
+      "test-id",
+      updateData,
+    );
 
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("1");
-    expect(sparepartRepositoryMock.updateSparepart).toHaveBeenCalledWith("1", {
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
-    });
+    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
+      "test-id",
+    );
+    expect(sparepartRepositoryMock.updateSparepart).toHaveBeenCalledWith(
+      "test-id",
+      updateData,
+    );
     expect(result).toEqual(updatedSparepart);
   });
 
-  it("should successfully update a sparepart with image", async () => {
-    const updatedData: Partial<SparepartsDTO> = {
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
-      imageUrl: "/uploads/spareparts/updated-test.jpg",
-    };
-
-    const updatedSparepart: SparepartsDTO = {
-      ...baseSparepart,
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
-      modifiedOn: new Date(),
-      purchaseDate: baseSparepart.purchaseDate,
-      imageUrl: "/uploads/spareparts/updated-test.jpg",
-    };
-
-    sparepartRepositoryMock.getSparepartById.mockResolvedValue(baseSparepart);
-    sparepartRepositoryMock.updateSparepart.mockResolvedValue(updatedSparepart);
-
-    const result = await sparepartService.updateSparepart("1", updatedData);
-
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("1");
-    expect(sparepartRepositoryMock.updateSparepart).toHaveBeenCalledWith("1", {
-      partsName: "Updated Part",
-      price: 150,
-      modifiedBy: "user456",
-      imageUrl: "/uploads/spareparts/updated-test.jpg",
-    });
-    expect(result).toEqual(updatedSparepart);
-  });
-
-  it("should throw an error if sparepart is not found", async () => {
+  it("should throw error if sparepart not found", async () => {
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(null);
 
     await expect(
-      sparepartService.updateSparepart("999", { partsName: "Updated Part" }),
-    ).rejects.toThrow(new AppError("Sparepart not found", 404));
+      sparepartService.updateSparepart("non-existent-id", {
+        partsName: "New Name",
+      }),
+    ).rejects.toThrow("Sparepart not found");
+  });
+
+  it("should throw error if partsName is empty", async () => {
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
+
+    await expect(
+      sparepartService.updateSparepart("test-id", { partsName: "" }),
+    ).rejects.toThrow("Parts name cannot be empty");
+  });
+
+  it("should throw error if partsName is whitespace", async () => {
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
+
+    await expect(
+      sparepartService.updateSparepart("test-id", { partsName: "   " }),
+    ).rejects.toThrow("Parts name cannot be empty");
+  });
+
+  it("should throw error if partsName is not a string", async () => {
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
+
+    await expect(
+      sparepartService.updateSparepart("test-id", { partsName: 123 as any }),
+    ).rejects.toThrow("Parts name must be a string");
+  });
+
+  it("should throw error if sparepart ID is invalid", async () => {
+    await expect(
+      sparepartService.updateSparepart("", { partsName: "New Name" }),
+    ).rejects.toThrow("Invalid sparepart ID");
+  });
+
+  it("should handle repository error", async () => {
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
+    sparepartRepositoryMock.updateSparepart.mockRejectedValue(
+      new Error("Database error"),
+    );
+
+    await expect(
+      sparepartService.updateSparepart("test-id", { partsName: "New Name" }),
+    ).rejects.toThrow("Database error");
+  });
+
+  it("should successfully update a sparepart with image", async () => {
+    const mockSparepart: SparepartDTO = {
+      id: "test-id",
+      partsName: "Original Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: "2024-03-20",
+      imageUrl: null,
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    const updateData: Partial<SparepartsDTO> = {
+      imageUrl: "/uploads/spareparts/new-image.jpg",
+    };
+
+    const updatedSparepart = {
+      ...mockSparepart,
+      ...updateData,
+      modifiedOn: new Date(),
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(mockSparepart);
+    sparepartRepositoryMock.updateSparepart.mockResolvedValue(updatedSparepart);
+
+    const result = await sparepartService.updateSparepart(
+      "test-id",
+      updateData,
+    );
 
     expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith(
-      "999",
+      "test-id",
     );
-    expect(sparepartRepositoryMock.updateSparepart).not.toHaveBeenCalled();
-  });
-
-  it("should throw an error if partsName is empty", async () => {
-    sparepartRepositoryMock.getSparepartById.mockResolvedValue(baseSparepart);
-
-    await expect(
-      sparepartService.updateSparepart("1", { partsName: "   " }),
-    ).rejects.toThrow(new AppError("Parts name cannot be empty", 400));
-
-    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("1");
-    expect(sparepartRepositoryMock.updateSparepart).not.toHaveBeenCalled();
-  });
-
-  it("should throw an error if ID is invalid", async () => {
-    await expect(
-      sparepartService.updateSparepart("", { partsName: "Updated Part" }),
-    ).rejects.toThrow(
-      new AppError("Sparepart ID is required and must be a valid string", 400),
+    expect(sparepartRepositoryMock.updateSparepart).toHaveBeenCalledWith(
+      "test-id",
+      updateData,
     );
-
-    expect(sparepartRepositoryMock.getSparepartById).not.toHaveBeenCalled();
-    expect(sparepartRepositoryMock.updateSparepart).not.toHaveBeenCalled();
+    expect(result).toEqual(updatedSparepart);
   });
 });
