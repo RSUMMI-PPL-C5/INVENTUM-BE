@@ -11,5 +11,6 @@ router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
 
 // Routes
 router.get("/monthly-requests", controller.getMonthlyRequestCounts);
+router.get("/request-status", controller.getRequestStatusReport);
 
 export default router;

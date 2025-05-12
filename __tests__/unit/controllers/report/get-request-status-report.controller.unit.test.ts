@@ -2,8 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import { ReportController } from "../../../../src/controllers/report.controller";
 import ReportService from "../../../../src/services/report.service";
 
-// Mock service
-jest.mock("../../../../src/services/report.service");
+// Mock the ReportService properly
+jest.mock("../../../../src/services/report.service", () => {
+  return jest.fn().mockImplementation(() => ({
+    getRequestStatusReport: jest.fn(),
+  }));
+});
 
 describe("ReportController - getRequestStatusReport", () => {
   let controller: ReportController;
@@ -14,9 +18,9 @@ describe("ReportController - getRequestStatusReport", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockService = new ReportService() as jest.Mocked<ReportService>;
-    controller = new ReportController();
 
+    // Create fresh mocks for each test
+    mockService = new ReportService() as jest.Mocked<ReportService>;
     mockRequest = {};
     mockResponse = {
       status: jest.fn().mockReturnThis(),
@@ -24,7 +28,11 @@ describe("ReportController - getRequestStatusReport", () => {
     };
     mockNext = jest.fn();
 
+    // Ensure the service constructor returns our mock
     (ReportService as jest.Mock).mockImplementation(() => mockService);
+
+    // Create controller with our mocked service
+    controller = new ReportController();
   });
 
   // POSITIVE CASES
@@ -33,13 +41,13 @@ describe("ReportController - getRequestStatusReport", () => {
       // Arrange
       const mockReportData = {
         MAINTENANCE: [
-          { status: "Completed", count: 50, percentage: 50 },
-          { status: "In Progress", count: 30, percentage: 30 },
+          { status: "Success", count: 50, percentage: 50 },
+          { status: "Partial", count: 30, percentage: 30 },
           { status: "Failed", count: 20, percentage: 20 },
         ],
         CALIBRATION: [
-          { status: "Completed", count: 40, percentage: 40 },
-          { status: "In Progress", count: 40, percentage: 40 },
+          { status: "Success", count: 40, percentage: 40 },
+          { status: "Partial", count: 40, percentage: 40 },
           { status: "Failed", count: 20, percentage: 20 },
         ],
         total: {
@@ -50,7 +58,8 @@ describe("ReportController - getRequestStatusReport", () => {
         },
       };
 
-      mockService.getRequestStatusReport = jest.fn().mockResolvedValue({
+      // Set up mock to return our data
+      mockService.getRequestStatusReport.mockResolvedValue({
         success: true,
         data: mockReportData,
       });

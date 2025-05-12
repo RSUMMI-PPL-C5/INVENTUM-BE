@@ -7,11 +7,23 @@ jest.mock("../../../../src/repository/report.repository");
 
 describe("ReportService - getRequestStatusReport", () => {
   let service: ReportService;
-  let mockRepository: jest.Mocked<ReportRepository>;
+  let mockRepository: jest.MockedObject<ReportRepository>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRepository = new ReportRepository() as jest.Mocked<ReportRepository>;
+
+    // Create a mock repository instance with the mocked method
+    mockRepository = {
+      getRequestStatusReport: jest.fn(),
+      getMonthlyRequestCounts: jest.fn(),
+    } as any;
+
+    // Mock the constructor to return our mock repository
+    (
+      ReportRepository as jest.MockedClass<typeof ReportRepository>
+    ).mockImplementation(() => mockRepository);
+
+    // Create service with our mocked repository
     service = new ReportService();
   });
 
@@ -21,13 +33,13 @@ describe("ReportService - getRequestStatusReport", () => {
       // Arrange
       const mockReportData: RequestStatusReport = {
         MAINTENANCE: [
-          { status: "Completed", count: 50, percentage: 50 },
-          { status: "In Progress", count: 30, percentage: 30 },
+          { status: "Success", count: 50, percentage: 50 },
+          { status: "Partial", count: 30, percentage: 30 },
           { status: "Failed", count: 20, percentage: 20 },
         ],
         CALIBRATION: [
-          { status: "Completed", count: 40, percentage: 40 },
-          { status: "In Progress", count: 40, percentage: 40 },
+          { status: "Success", count: 40, percentage: 40 },
+          { status: "Partial", count: 40, percentage: 40 },
           { status: "Failed", count: 20, percentage: 20 },
         ],
         total: {
@@ -38,10 +50,8 @@ describe("ReportService - getRequestStatusReport", () => {
         },
       };
 
-      mockRepository.getRequestStatusReport = jest
-        .fn()
-        .mockResolvedValue(mockReportData);
-      (ReportRepository as jest.Mock).mockImplementation(() => mockRepository);
+      // Set up the mock return value
+      mockRepository.getRequestStatusReport.mockResolvedValue(mockReportData);
 
       // Act
       const result = await service.getRequestStatusReport();
@@ -70,10 +80,7 @@ describe("ReportService - getRequestStatusReport", () => {
         },
       };
 
-      mockRepository.getRequestStatusReport = jest
-        .fn()
-        .mockResolvedValue(emptyReport);
-      (ReportRepository as jest.Mock).mockImplementation(() => mockRepository);
+      mockRepository.getRequestStatusReport.mockResolvedValue(emptyReport);
 
       // Act
       const result = await service.getRequestStatusReport();
@@ -91,10 +98,7 @@ describe("ReportService - getRequestStatusReport", () => {
     it("should throw error when repository fails", async () => {
       // Arrange
       const mockError = new Error("Repository error");
-      mockRepository.getRequestStatusReport = jest
-        .fn()
-        .mockRejectedValue(mockError);
-      (ReportRepository as jest.Mock).mockImplementation(() => mockRepository);
+      mockRepository.getRequestStatusReport.mockRejectedValue(mockError);
 
       // Act & Assert
       await expect(service.getRequestStatusReport()).rejects.toThrow(
