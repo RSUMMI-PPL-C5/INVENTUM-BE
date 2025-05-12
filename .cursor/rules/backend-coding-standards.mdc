@@ -1,0 +1,27 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Backend Coding Standards
+
+## Architecture Pattern
+- Follow the layered architecture pattern:
+  1. **Routes**: Define API endpoints in [src/routes](mdc:PPL-C5-BACKEND/src/routes)
+  2. **Controllers**: Handle HTTP requests in [src/controllers](mdc:PPL-C5-BACKEND/src/controllers)
+  3. **Services**: Implement business logic in [src/services](mdc:PPL-C5-BACKEND/src/services)
+  4. **Repository**: Data access layer in [src/repository](mdc:PPL-C5-BACKEND/src/repository)
+- Each layer should have a single responsibility
+
+## Prisma Query Building
+- Use the builder pattern for constructing Prisma queries
+- Create reusable filter patterns for common query operations
+- Keep complex queries in the repository layer
+- Use appropriate Prisma methods like findMany, findUnique, etc.
+
+## Error Handling
+- Use consistent try-catch structure in all service functions
+- Provide descriptive error messages
+- Follow the error handling pattern in [src/index.ts](mdc:PPL-C5-BACKEND/src/index.ts)
+- Use custom error classes for different types of errors
+- Log errors appropriately using Sentry

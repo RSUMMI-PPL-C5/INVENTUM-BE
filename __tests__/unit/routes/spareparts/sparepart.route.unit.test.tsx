@@ -34,19 +34,12 @@ jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
 
-// Mock validation
-jest.mock(
-  "../../../../src/validations/sparepartfilterquery.validation",
-  () => ({
-    sparepartFilterQueryValidation: jest.fn((_req: any, _res: any, next: any) =>
-      next(),
-    ),
-  }),
-);
-
 jest.mock("../../../../src/validations/spareparts.validation", () => ({
   addSparepartValidation: jest.fn((_req: any, _res: any, next: any) => next()),
   updateSparepartValidation: jest.fn((_req: any, _res: any, next: any) =>
+    next(),
+  ),
+  sparepartFilterQueryValidation: jest.fn((_req: any, _res: any, next: any) =>
     next(),
   ),
 }));
@@ -75,6 +68,7 @@ describe("Sparepart Routes", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/",
+      expect.any(Function),
       expect.any(Function),
       expect.any(Function),
     );

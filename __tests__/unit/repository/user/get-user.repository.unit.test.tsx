@@ -85,7 +85,7 @@ describe("User Repository - GET", () => {
         skip: 0,
         take: 10,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(mockPrisma.count).toHaveBeenCalledWith({
         where: { deletedOn: null },
@@ -116,7 +116,7 @@ describe("User Repository - GET", () => {
         skip: undefined,
         take: undefined,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(result).toEqual({ users: mockUsers, total: 2 });
     });
@@ -136,7 +136,7 @@ describe("User Repository - GET", () => {
         skip: 0,
         take: 10,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
       expect(result).toEqual({ users: mockUsers, total: 2 });
     });
@@ -162,7 +162,7 @@ describe("User Repository - GET", () => {
         skip: undefined,
         take: undefined,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -182,7 +182,7 @@ describe("User Repository - GET", () => {
         skip: undefined,
         take: undefined,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -207,7 +207,7 @@ describe("User Repository - GET", () => {
         skip: undefined,
         take: undefined,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -232,7 +232,7 @@ describe("User Repository - GET", () => {
         skip: undefined,
         take: undefined,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
 
@@ -259,7 +259,7 @@ describe("User Repository - GET", () => {
         skip: 5, // (page - 1) * limit = (2 - 1) * 5
         take: 5,
         include: { divisi: true },
-        orderBy: { id: "desc" },
+        orderBy: { modifiedOn: "desc" },
       });
     });
   });
@@ -363,6 +363,7 @@ describe("User Repository - GET", () => {
           email: "user1@example.com",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });
@@ -395,6 +396,7 @@ describe("User Repository - GET", () => {
           username: "user1",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });
@@ -425,6 +427,7 @@ describe("User Repository - GET", () => {
           nokar: "12345",
           deletedOn: null,
         },
+        include: { divisi: true },
       });
       expect(result).toEqual(mockUsers[0]);
     });

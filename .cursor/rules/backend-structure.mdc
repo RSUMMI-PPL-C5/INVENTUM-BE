@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Backend Structure (PPL-C5-BACKEND)
+
+## Key Directories
+
+- **[src/routes](mdc:PPL-C5-BACKEND/src/routes)**: API route definitions
+- **[src/controllers](mdc:PPL-C5-BACKEND/src/controllers)**: Request handlers
+- **[src/services](mdc:PPL-C5-BACKEND/src/services)**: Business logic
+- **[src/repository](mdc:PPL-C5-BACKEND/src/repository)**: Data access layer
+- **[src/middleware](mdc:PPL-C5-BACKEND/src/middleware)**: Express middleware
+- **[src/validations](mdc:PPL-C5-BACKEND/src/validations)**: Input validation
+- **[src/dto](mdc:PPL-C5-BACKEND/src/dto)**: Data transfer objects
+- **[src/interfaces](mdc:PPL-C5-BACKEND/src/interfaces)**: TypeScript interfaces
+- **[src/utils](mdc:PPL-C5-BACKEND/src/utils)**: Utility functions
+- **[src/configs](mdc:PPL-C5-BACKEND/src/configs)**: Configuration files
+- **[prisma](mdc:PPL-C5-BACKEND/prisma)**: Database schema and migrations
+
+## Main Files
+
+- **[package.json](mdc:PPL-C5-BACKEND/package.json)**: Project dependencies and scripts
+- **[src/index.ts](mdc:PPL-C5-BACKEND/src/index.ts)**: Application entry point
+- **[prisma/schema.prisma](mdc:PPL-C5-BACKEND/prisma/schema.prisma)**: Database schema

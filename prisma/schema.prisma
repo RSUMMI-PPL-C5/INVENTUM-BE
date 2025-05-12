@@ -57,24 +57,9 @@ model MedicalEquipment {
   modifiedOn        DateTime              @default(now())
   deletedBy         String?
   deletedOn         DateTime?
-  spareparts        EquipmentSpareparts[]
-  relocationHistory RelocationHistory[]
-}
-
-model RelocationHistory {
-  id                 String      @id @unique
-  medicalEquipmentId String
-  initLocation       String
-  currentLocation    String
-  requestDate        String
-  shiftReason        String?
-  createdBy          Int
-  createdOn          DateTime?
-  modifiedBy         Int?
-  modifiedOn         DateTime         @default(now())
-  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
-
-  @@index([medicalEquipmentId], map: "RelocationHistory_medicalEquipmentId_fkey")
+  spareparts        PartsHistory[]
+  maintenanceHistories MaintenanceHistory[]
+  calibrationHistories CalibrationHistory[]
 }
 
 model Spareparts {
@@ -90,36 +75,24 @@ model Spareparts {
   modifiedOn      DateTime              @default(now())
   deletedBy       String?
   deletedOn       DateTime?
-  equipment       EquipmentSpareparts[]
-  partsManagement PartsManagement[]
+  equipment       PartsHistory[]
 }
 
-model PartsManagement {
-  id                   String     @id @unique
-  sparepartId          String
-  replacementComponent String
-  replacementDate      DateTime
-  availabilityCost     Int?
-  createdBy            Int
-  createdOn            DateTime?
-  modifiedBy           Int?
-  modifiedOn           DateTime   @default(now())
-  sparepart            Spareparts @relation(fields: [sparepartId], references: [id])
+model PartsHistory {
+  id                 String           @id @unique
+  medicalEquipmentId String
+  sparepartId        String
+  actionPerformed    String           @db.Text
+  technician         String           
+  result             String           // Success, Partial, Failed
+  replacementDate    DateTime
+  createdBy          String
+  createdOn          DateTime         @default(now())
+  equipment          MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+  sparepart          Spareparts       @relation(fields: [sparepartId], references: [id])
 
-  @@index([sparepartId], map: "PartsManagement_sparepartId_fkey")
-}
-
-model EquipmentSpareparts {
-  id          String      @id @unique
-  equipmentId String
-  sparepartId String
-  createdBy   Int
-  createdOn   DateTime?
-  equipment   MedicalEquipment @relation(fields: [equipmentId], references: [id])
-  sparepart   Spareparts       @relation(fields: [sparepartId], references: [id])
-
-  @@unique([equipmentId, sparepartId])
-  @@index([sparepartId], map: "EquipmentSpareparts_sparepartId_fkey")
+  @@index([medicalEquipmentId])
+  @@index([sparepartId])
 }
 
 enum RequestType{
@@ -132,10 +105,9 @@ model Request {
   userId           String
   medicalEquipment String
   complaint        String?
-  submissionDate   DateTime
   status           String       @default("Pending")
   createdBy        String
-  createdOn        DateTime?
+  createdOn        DateTime?    @default(now())
   modifiedBy       String?
   modifiedOn       DateTime     @default(now())
   notifications    Notifikasi[]
@@ -143,6 +115,36 @@ model Request {
   user             User         @relation(fields: [userId], references: [id])
   requestType      RequestType  @default(MAINTENANCE)
   @@index([userId], map: "Request_userId_fkey")
+}
+
+model MaintenanceHistory {
+  id                 String           @id @unique
+  medicalEquipmentId String
+  actionPerformed    String           @db.Text
+  technician         String           
+  result             String           // Success, Partial, Failed
+  maintenanceDate    DateTime
+  createdBy          String
+  createdOn          DateTime         @default(now())
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([medicalEquipmentId])
+}
+
+model CalibrationHistory {
+  id                  String           @id @unique
+  medicalEquipmentId  String
+  actionPerformed     String           @db.Text
+  technician          String           
+  result              String           // Success, Partial, Failed
+  calibrationDate     DateTime
+  calibrationMethod   String
+  nextCalibrationDue  DateTime?
+  createdBy           String
+  createdOn           DateTime         @default(now())
+  medicalEquipment    MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+
+  @@index([medicalEquipmentId])
 }
 
 model Notifikasi {

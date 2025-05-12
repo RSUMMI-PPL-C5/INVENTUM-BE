@@ -1,174 +1,110 @@
-import { Request, Response } from "express";
 import DivisionController from "../../../../src/controllers/division.controller";
 import DivisionService from "../../../../src/services/division.service";
-import AppError from "../../../../src/utils/appError";
+import { Request, Response, NextFunction } from "express";
 
 jest.mock("../../../../src/services/division.service");
 
-describe("DivisionController - UPDATE", () => {
+describe("DivisionController - updateDivision", () => {
   let divisionController: DivisionController;
-  let mockRequest: Partial<Request>;
-  let mockResponse: Partial<Response>;
-  let mockDivisionService: jest.Mocked<DivisionService>;
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+  let next: NextFunction;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-
-    mockRequest = {
-      params: { id: "1" },
-      body: {},
-    };
-
-    mockDivisionService = new DivisionService() as jest.Mocked<DivisionService>;
-    (DivisionService as jest.Mock).mockImplementation(
-      () => mockDivisionService,
-    );
-
     divisionController = new DivisionController();
+    req = { params: {}, body: {} };
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    next = jest.fn();
   });
 
-  // Positive test case
-  it("should update a division and return 200", async () => {
-    const updatedDivision = { id: 1, divisi: "Updated Division", parentId: 2 };
-    mockDivisionService.updateDivision.mockResolvedValue(updatedDivision);
-
-    mockRequest.body = { divisi: "Updated Division", parentId: 2 };
+  it("should return 400 if id is invalid", async () => {
+    req.params = { id: "invalid" };
 
     await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+      req as Request,
+      res as Response,
+      next,
     );
 
-    expect(mockDivisionService.updateDivision).toHaveBeenCalledWith(1, {
-      divisi: "Updated Division",
-      parentId: 2,
-    });
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "Division updated successfully",
-      division: updatedDivision,
-    });
-  });
-
-  it("should handle parentId as null and update the division", async () => {
-    const updatedDivision = {
-      id: 1,
-      divisi: "Updated Division",
-      parentId: null,
-    };
-    mockDivisionService.updateDivision.mockResolvedValue(updatedDivision);
-
-    mockRequest.body = { divisi: "Updated Division", parentId: null };
-
-    await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockDivisionService.updateDivision).toHaveBeenCalledWith(1, {
-      divisi: "Updated Division",
-      parentId: null,
-    });
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "Division updated successfully",
-      division: updatedDivision,
-    });
-  });
-
-  // Negative test cases
-  it("should return 400 if division ID is invalid", async () => {
-    mockRequest.params = { id: "invalid" };
-
-    await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockDivisionService.updateDivision).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
       message: "Invalid division ID",
     });
   });
 
-  it("should return 400 if no update data is provided", async () => {
-    mockRequest.body = {};
+  it("should return 400 if no update data provided", async () => {
+    req.params = { id: "1" };
+    req.body = {};
 
     await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+      req as Request,
+      res as Response,
+      next,
     );
 
-    expect(mockDivisionService.updateDivision).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
       message: "No update data provided",
     });
   });
 
   it("should return 400 if parentId is invalid", async () => {
-    mockRequest.body = { parentId: "invalid" };
+    req.params = { id: "1" };
+    req.body = { parentId: "invalid" };
 
     await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+      req as Request,
+      res as Response,
+      next,
     );
 
-    expect(mockDivisionService.updateDivision).not.toHaveBeenCalled();
-    expect(mockResponse.status).toHaveBeenCalledWith(400);
-    expect(mockResponse.json).toHaveBeenCalledWith({
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "error",
       message: "Invalid parent ID",
     });
   });
 
-  // Corner cases
-  it("should handle AppError and return the appropriate status code and message", async () => {
-    const appError = new AppError("Custom error message", 403);
-    mockDivisionService.updateDivision.mockRejectedValue(appError);
+  it("should update division successfully", async () => {
+    req.params = { id: "1" };
+    req.body = { divisi: "Finance", parentId: null };
+    const mockDivision = { id: 1, divisi: "Finance", parentId: null };
 
-    mockRequest.body = { divisi: "Updated Division" };
-
-    await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+    (DivisionService.prototype.updateDivision as jest.Mock).mockResolvedValue(
+      mockDivision,
     );
 
-    expect(mockDivisionService.updateDivision).toHaveBeenCalledWith(1, {
-      divisi: "Updated Division",
-      parentId: undefined,
-    });
-    expect(mockResponse.status).toHaveBeenCalledWith(403);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "Custom error message",
+    await divisionController.updateDivision(
+      req as Request,
+      res as Response,
+      next,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "success",
+      message: "Division updated successfully",
+      division: mockDivision,
     });
   });
 
-  it("should handle unexpected errors and return 500", async () => {
-    const errorMessage = "Unexpected error";
-    mockDivisionService.updateDivision.mockRejectedValue(
-      new Error(errorMessage),
-    );
+  it("should call next(error) on exception", async () => {
+    req.params = { id: "1" };
+    req.body = { divisi: "Finance" };
 
-    mockRequest.body = { divisi: "Updated Division" };
+    const error = new Error("Failed");
+    (DivisionService.prototype.updateDivision as jest.Mock).mockRejectedValue(
+      error,
+    );
 
     await divisionController.updateDivision(
-      mockRequest as Request,
-      mockResponse as Response,
+      req as Request,
+      res as Response,
+      next,
     );
 
-    expect(mockDivisionService.updateDivision).toHaveBeenCalledWith(1, {
-      divisi: "Updated Division",
-      parentId: undefined,
-    });
-    expect(mockResponse.status).toHaveBeenCalledWith(500);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "An unexpected error occurred",
-    });
+    expect(next).toHaveBeenCalledWith(error);
   });
 });

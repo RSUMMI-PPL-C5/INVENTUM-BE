@@ -2,14 +2,17 @@ import { PrismaClient, Spareparts } from "@prisma/client";
 import { SparepartDTO, SparepartsDTO } from "../dto/sparepart.dto";
 import prisma from "../configs/db.config";
 import { getJakartaTime } from "../utils/date.utils";
-import { PaginationOptions } from "../filters/interface/pagination.interface";
-import { SparepartFilterOptions } from "../filters/interface/spareparts.filter.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
+import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
+import SparepartWhereBuilder from "../utils/builders/sparepart-where.builder";
 
 class SparepartRepository {
   private readonly prisma: PrismaClient;
+  private readonly whereBuilder: SparepartWhereBuilder;
 
   constructor() {
     this.prisma = prisma;
+    this.whereBuilder = new SparepartWhereBuilder();
   }
 
   public async createSparepart(sparepartData: any): Promise<SparepartsDTO> {
@@ -27,104 +30,12 @@ class SparepartRepository {
     };
   }
 
-  private buildWhereClause(
-    search?: string,
-    filters?: SparepartFilterOptions,
-  ): any {
-    const where: any = {
-      deletedOn: null,
-    };
-
-    if (search) {
-      where.OR = [
-        { partsName: { contains: search } },
-        { toolLocation: { contains: search } },
-      ];
-    }
-
-    if (filters) {
-      if (filters.partsName) {
-        where.partsName = { contains: filters.partsName };
-      }
-
-      if (filters.toolLocation) {
-        where.toolLocation = { contains: filters.toolLocation };
-      }
-
-      this.addPriceFilter(where, filters);
-      this.addPurchaseDateFilter(where, filters);
-      this.addCreatedOnFilter(where, filters);
-      this.addModifiedOnFilter(where, filters);
-    }
-
-    return where;
-  }
-
-  private addPriceFilter(where: any, filters: SparepartFilterOptions): void {
-    if (filters.priceMin || filters.priceMax) {
-      where.price = {};
-
-      if (filters.priceMin) {
-        where.price.gte = filters.priceMin;
-      }
-
-      if (filters.priceMax) {
-        where.price.lte = filters.priceMax;
-      }
-    }
-  }
-
-  private addPurchaseDateFilter(
-    where: any,
-    filters: SparepartFilterOptions,
-  ): void {
-    if (filters.purchaseDateStart || filters.purchaseDateEnd) {
-      where.purchaseDate = {};
-      if (filters.purchaseDateStart) {
-        where.purchaseDate.gte = new Date(filters.purchaseDateStart);
-      }
-      if (filters.purchaseDateEnd) {
-        where.purchaseDate.lte = new Date(filters.purchaseDateEnd);
-      }
-    }
-  }
-
-  private addCreatedOnFilter(
-    where: any,
-    filters: SparepartFilterOptions,
-  ): void {
-    if (filters.createdOnStart || filters.createdOnEnd) {
-      where.createdOn = {};
-      if (filters.createdOnStart) {
-        where.createdOn.gte = new Date(filters.createdOnStart);
-      }
-      if (filters.createdOnEnd) {
-        where.createdOn.lte = new Date(filters.createdOnEnd);
-      }
-    }
-  }
-
-  private addModifiedOnFilter(
-    where: any,
-    filters: SparepartFilterOptions,
-  ): void {
-    if (filters.modifiedOnStart || filters.modifiedOnEnd) {
-      where.modifiedOn = {};
-      if (filters.modifiedOnStart) {
-        where.modifiedOn.gte = new Date(filters.modifiedOnStart);
-      }
-      if (filters.modifiedOnEnd) {
-        where.modifiedOn.lte = new Date(filters.modifiedOnEnd);
-      }
-    }
-  }
-
   public async getSpareparts(
     search?: string,
     filters?: SparepartFilterOptions,
     pagination?: PaginationOptions,
   ): Promise<{ spareparts: SparepartDTO[]; total: number }> {
-    const where = this.buildWhereClause(search, filters);
+    const where = this.whereBuilder.buildComplete(search, filters);
 
     const skip = pagination
       ? (pagination.page - 1) * pagination.limit
@@ -137,7 +48,7 @@ class SparepartRepository {
         skip,
         take,
         orderBy: {
-          id: "desc",
+          modifiedOn: "desc",
         },
       }),
       this.prisma.spareparts.count({ where }),
