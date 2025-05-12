@@ -61,6 +61,39 @@ describe("SparepartService - updateSparepart", () => {
     expect(result).toEqual(updatedSparepart);
   });
 
+  it("should successfully update a sparepart with image", async () => {
+    const updatedData: Partial<SparepartsDTO> = {
+      partsName: "Updated Part",
+      price: 150,
+      modifiedBy: "user456",
+      imageUrl: "/uploads/spareparts/updated-test.jpg",
+    };
+
+    const updatedSparepart: SparepartsDTO = {
+      ...baseSparepart,
+      partsName: "Updated Part",
+      price: 150,
+      modifiedBy: "user456",
+      modifiedOn: new Date(),
+      purchaseDate: baseSparepart.purchaseDate,
+      imageUrl: "/uploads/spareparts/updated-test.jpg",
+    };
+
+    sparepartRepositoryMock.getSparepartById.mockResolvedValue(baseSparepart);
+    sparepartRepositoryMock.updateSparepart.mockResolvedValue(updatedSparepart);
+
+    const result = await sparepartService.updateSparepart("1", updatedData);
+
+    expect(sparepartRepositoryMock.getSparepartById).toHaveBeenCalledWith("1");
+    expect(sparepartRepositoryMock.updateSparepart).toHaveBeenCalledWith("1", {
+      partsName: "Updated Part",
+      price: 150,
+      modifiedBy: "user456",
+      imageUrl: "/uploads/spareparts/updated-test.jpg",
+    });
+    expect(result).toEqual(updatedSparepart);
+  });
+
   it("should throw an error if sparepart is not found", async () => {
     sparepartRepositoryMock.getSparepartById.mockResolvedValue(null);
 

@@ -62,6 +62,50 @@ describe("SparepartService - addSparepart", () => {
     expect(result).toEqual(mockCreatedSparepart);
   });
 
+  it("should successfully add a sparepart with image", async () => {
+    const mockSparepartData: SparepartDTO = {
+      id: "mock-id",
+      partsName: "Test Part",
+      purchaseDate: new Date(),
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: null,
+      imageUrl: "/uploads/spareparts/test.jpg",
+      createdBy: "user123",
+      createdOn: new Date(),
+      modifiedBy: null,
+      modifiedOn: new Date(),
+      deletedBy: null,
+      deletedOn: null,
+    };
+
+    const mockCreatedSparepart = { ...mockSparepartData, id: "generated-uuid" };
+    (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
+    sparepartRepositoryMock.createSparepart.mockResolvedValue(
+      mockCreatedSparepart,
+    );
+
+    const result = await sparepartService.addSparepart(mockSparepartData);
+
+    expect(uuidv4).toHaveBeenCalled();
+    expect(sparepartRepositoryMock.createSparepart).toHaveBeenCalledWith({
+      id: "generated-uuid",
+      partsName: "Test Part",
+      purchaseDate: mockSparepartData.purchaseDate,
+      price: 100,
+      toolLocation: "Warehouse A",
+      toolDate: null,
+      imageUrl: "/uploads/spareparts/test.jpg",
+      createdBy: "user123",
+      createdOn: mockSparepartData.createdOn,
+      modifiedBy: null,
+      modifiedOn: mockSparepartData.modifiedOn,
+      deletedBy: null,
+      deletedOn: null,
+    });
+    expect(result).toEqual(mockCreatedSparepart);
+  });
+
   it("should throw an error if partsName is missing", async () => {
     const invalidData: Partial<SparepartDTO> = {
       price: 100,
