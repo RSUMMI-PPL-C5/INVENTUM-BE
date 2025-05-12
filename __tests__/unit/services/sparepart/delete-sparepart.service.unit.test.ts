@@ -42,6 +42,7 @@ describe("SparepartService - deleteSparepart", () => {
     );
     expect(sparepartRepositoryMock.deleteSparepart).toHaveBeenCalledWith(
       "test-id",
+      undefined,
     );
     expect(result).toEqual(mockSparepart);
   });
@@ -56,7 +57,7 @@ describe("SparepartService - deleteSparepart", () => {
 
   it("should throw error if sparepart ID is invalid", async () => {
     await expect(sparepartService.deleteSparepart("")).rejects.toThrow(
-      "Invalid sparepart ID",
+      "Sparepart ID is required and must be a valid string",
     );
   });
 
@@ -84,6 +85,14 @@ describe("SparepartService - deleteSparepart", () => {
 
     await expect(sparepartService.deleteSparepart("test-id")).rejects.toThrow(
       "Database error",
+    );
+  });
+
+  it("should instantiate SparepartService and repository", () => {
+    const service = new SparepartService();
+    expect(service).toBeInstanceOf(SparepartService);
+    expect((service as any).sparepartRepository).toBeInstanceOf(
+      SparepartRepository,
     );
   });
 });

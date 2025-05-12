@@ -39,10 +39,10 @@ describe("SparepartService - addSparepart", () => {
       deletedOn: null,
     };
 
-    const mockCreatedSparepart: SparepartDTO = {
+    const mockCreatedSparepart = {
       ...mockSparepartData,
       id: "generated-uuid",
-    };
+    } as SparepartDTO;
 
     (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
     sparepartRepositoryMock.createSparepart.mockResolvedValue(
@@ -75,6 +75,15 @@ describe("SparepartService - addSparepart", () => {
       id: "mock-id",
       price: 100,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -88,6 +97,15 @@ describe("SparepartService - addSparepart", () => {
       partsName: "",
       price: 100,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -101,6 +119,15 @@ describe("SparepartService - addSparepart", () => {
       partsName: "   ",
       price: 100,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -114,6 +141,15 @@ describe("SparepartService - addSparepart", () => {
       partsName: 123 as any,
       price: 100,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -133,6 +169,9 @@ describe("SparepartService - addSparepart", () => {
       toolLocation: "Location A",
       toolDate: "2024-03-20",
       imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     };
 
     sparepartRepositoryMock.createSparepart.mockRejectedValue(
@@ -161,10 +200,10 @@ describe("SparepartService - addSparepart", () => {
       deletedOn: null,
     };
 
-    const mockCreatedSparepart: SparepartDTO = {
+    const mockCreatedSparepart = {
       ...mockSparepartData,
       id: "generated-uuid",
-    };
+    } as SparepartDTO;
 
     (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
     sparepartRepositoryMock.createSparepart.mockResolvedValue(
@@ -197,6 +236,15 @@ describe("SparepartService - addSparepart", () => {
       id: "mock-id",
       partsName: null as any,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -209,6 +257,15 @@ describe("SparepartService - addSparepart", () => {
       id: "mock-id",
       partsName: undefined as any,
       createdBy: "user123",
+      purchaseDate: null,
+      createdOn: new Date(),
+      modifiedOn: new Date(),
+      toolLocation: null,
+      toolDate: null,
+      imageUrl: null,
+      modifiedBy: null,
+      deletedBy: null,
+      deletedOn: null,
     } as SparepartsDTO;
 
     await expect(sparepartService.addSparepart(invalidData)).rejects.toThrow(
@@ -233,10 +290,10 @@ describe("SparepartService - addSparepart", () => {
       deletedOn: null,
     };
 
-    const expectedResponse: SparepartDTO = {
+    const expectedResponse = {
       ...minimalData,
       id: "generated-uuid",
-    };
+    } as SparepartDTO;
 
     (uuidv4 as jest.Mock).mockReturnValue("generated-uuid");
     sparepartRepositoryMock.createSparepart.mockResolvedValue(expectedResponse);
@@ -300,5 +357,13 @@ describe("SparepartService - addSparepart", () => {
       ...data,
       id: expect.any(String),
     });
+  });
+
+  it("should instantiate SparepartService and repository", () => {
+    const service = new SparepartService();
+    expect(service).toBeInstanceOf(SparepartService);
+    expect((service as any).sparepartRepository).toBeInstanceOf(
+      SparepartRepository,
+    );
   });
 });

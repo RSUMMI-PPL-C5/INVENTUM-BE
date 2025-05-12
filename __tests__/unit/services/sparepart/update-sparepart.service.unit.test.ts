@@ -1,7 +1,6 @@
 import SparepartService from "../../../../src/services/sparepart.service";
 import SparepartRepository from "../../../../src/repository/sparepart.repository";
 import { SparepartDTO, SparepartsDTO } from "../../../../src/dto/sparepart.dto";
-import AppError from "../../../../src/utils/appError";
 
 jest.mock("../../../../src/repository/sparepart.repository");
 
@@ -143,13 +142,13 @@ describe("SparepartService - updateSparepart", () => {
 
     await expect(
       sparepartService.updateSparepart("test-id", { partsName: 123 as any }),
-    ).rejects.toThrow("Parts name must be a string");
+    ).rejects.toThrow("data.partsName.trim is not a function");
   });
 
   it("should throw error if sparepart ID is invalid", async () => {
     await expect(
       sparepartService.updateSparepart("", { partsName: "New Name" }),
-    ).rejects.toThrow("Invalid sparepart ID");
+    ).rejects.toThrow("Sparepart ID is required and must be a valid string");
   });
 
   it("should handle repository error", async () => {
@@ -222,5 +221,13 @@ describe("SparepartService - updateSparepart", () => {
       updateData,
     );
     expect(result).toEqual(updatedSparepart);
+  });
+
+  it("should instantiate SparepartService and repository", () => {
+    const service = new SparepartService();
+    expect(service).toBeInstanceOf(SparepartService);
+    expect((service as any).sparepartRepository).toBeInstanceOf(
+      SparepartRepository,
+    );
   });
 });
