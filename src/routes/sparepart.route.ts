@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request } from "express";
 import SparepartController from "../controllers/sparepart.controller";
 import verifyToken from "../middleware/verifyToken";
 import {
@@ -10,10 +10,14 @@ import { validateRequest } from "../middleware/validateRequest";
 import authorizeRoles from "../middleware/authorizeRole";
 import multer, { StorageEngine } from "multer";
 import path from "path";
-import { Request } from "express";
+import crypto from "crypto";
 
 const router = Router();
 const controller = new SparepartController();
+
+// Konfigurasi batasan file
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"];
 
 const storage: StorageEngine = multer.diskStorage({
   destination: function (
@@ -28,11 +32,28 @@ const storage: StorageEngine = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void,
   ) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    // Generate random bytes and convert to hex string
+    const randomBytes = crypto.randomBytes(16).toString("hex");
+    const timestamp = Date.now();
+    const uniqueSuffix = `${timestamp}-${randomBytes}`;
     cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
-const upload = multer({ storage });
+
+// Konfigurasi multer dengan batasan
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+  },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
+      cb(new Error("Invalid file type. Only JPEG, PNG and GIF are allowed."));
+      return;
+    }
+    cb(null, true);
+  },
+});
 
 // Global middleware
 router.use(verifyToken, authorizeRoles("Admin", "Fasum", "User"));
