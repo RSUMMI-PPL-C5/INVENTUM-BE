@@ -9,7 +9,10 @@ class ReportService {
     this.reportRepository = new ReportRepository();
   }
 
-  public async getMonthlyRequestCounts() {
+  public async getMonthlyRequestCounts(): Promise<{
+    success: boolean;
+    data: MonthlyDataRecord[];
+  }> {
     const rawData = await this.reportRepository.getMonthlyRequestCounts();
     const result = this.ensureLast12Months(rawData);
 
