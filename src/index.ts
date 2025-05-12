@@ -20,6 +20,7 @@ import helmet from "helmet";
 // Import routes
 import userRoutes from "./routes/user.route";
 import authRoutes from "./routes/auth.route";
+import reportRoutes from "./routes/report.route";
 import sparepartRoutes from "./routes/sparepart.route";
 import divisionRoutes from "./routes/division.route";
 import commentRoutes from "./routes/comment.route";
@@ -115,6 +116,7 @@ app.use("/medical-equipment", [
   calibrationHistoryRoutes,
   partsHistoryRoutes,
 ]);
+app.use("/report", reportRoutes);
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);
