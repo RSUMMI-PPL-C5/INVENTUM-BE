@@ -48,6 +48,19 @@ jest.mock("../../../../src/middleware/validateRequest", () => ({
   validateRequest: jest.fn((_req: any, _res: any, next: any) => next()),
 }));
 
+// Mock multer
+jest.mock("multer", () => {
+  const multer = () => {
+    return {
+      single: () => {
+        return (req: any, res: any, next: any) => next();
+      },
+    };
+  };
+  multer.diskStorage = () => ({});
+  return multer;
+});
+
 // Import the route after all mocks
 import "../../../../src/routes/sparepart.route";
 
@@ -79,20 +92,22 @@ describe("Sparepart Routes", () => {
     expect(mockRouter.get).toHaveBeenCalledWith("/:id", expect.any(Function));
   });
 
-  it("should register POST / route with validation", () => {
+  it("should register POST / route with multer and validation", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.post).toHaveBeenCalledWith(
       "/",
       expect.any(Function),
       expect.any(Function),
       expect.any(Function),
+      expect.any(Function),
     );
   });
 
-  it("should register PUT /:id route with validation", () => {
+  it("should register PUT /:id route with multer and validation", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.put).toHaveBeenCalledWith(
       "/:id",
+      expect.any(Function),
       expect.any(Function),
       expect.any(Function),
       expect.any(Function),
