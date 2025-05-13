@@ -1,0 +1,64 @@
+name: Database CI/CD
+
+on:
+  push:
+    branches: [main, staging, development]
+    paths:
+      - 'prisma/**'
+  pull_request:
+    branches: [main, staging, development]
+    paths:
+      - 'prisma/**'
+  workflow_dispatch:
+
+jobs:
+  migrate-and-seed:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+        
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Determine environment
+        id: determine_env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "env=production" >> $GITHUB_OUTPUT
+            echo "DB_URL=${{ secrets.DATABASE_URL_PROD }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "env=test" >> $GITHUB_OUTPUT
+            echo "DB_URL=${{ secrets.DATABASE_URL_TEST }}" >> $GITHUB_OUTPUT
+          else
+            echo "env=development" >> $GITHUB_OUTPUT
+            echo "DB_URL=${{ secrets.DATABASE_URL_DEV }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ steps.determine_env.outputs.DB_URL }}
+          NODE_ENV: ${{ steps.determine_env.outputs.env }}
+        run: |
+          if [[ "${{ steps.determine_env.outputs.env }}" == "production" ]]; then
+            npm run db:migrate:prod
+          else
+            npm run db:migrate:dev
+          fi
+      
+      - name: Seed database
+        env:
+          DATABASE_URL: ${{ steps.determine_env.outputs.DB_URL }}
+          NODE_ENV: ${{ steps.determine_env.outputs.env }}
+        run: |
+          npm run db:seed:${{ steps.determine_env.outputs.env }}
