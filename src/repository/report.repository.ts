@@ -3,6 +3,8 @@ import prisma from "../configs/db.config";
 import {
   MonthlyDataRecord,
   MonthlyTypeCount,
+  RequestStatusReport,
+  RequestStatusCount,
 } from "../interfaces/report.interface";
 
 class ReportRepository {
@@ -51,6 +53,115 @@ class ReportRepository {
       month,
       ...counts,
     }));
+  }
+
+  public async getRequestStatusReport(): Promise<RequestStatusReport> {
+    try {
+      // Get all requests with their status and type
+      const requests =
+        (await this.prisma.request.findMany({
+          select: {
+            status: true,
+            requestType: true,
+          },
+        })) || [];
+
+      // Status categories
+      const successStatus = "Success";
+      const partialStatus = "Partial";
+      const failedStatus = "Failed";
+
+      // Initialize counters for each request type and status
+      const maintenanceStatusCounts: Record<string, number> = {
+        [successStatus]: 0,
+        [partialStatus]: 0,
+        [failedStatus]: 0,
+      };
+
+      const calibrationStatusCounts: Record<string, number> = {
+        [successStatus]: 0,
+        [partialStatus]: 0,
+        [failedStatus]: 0,
+      };
+
+      let maintenanceTotal = 0;
+      let calibrationTotal = 0;
+
+      // Process each request
+      for (const request of requests) {
+        // Normalize the status
+        let normalizedStatus = request.status;
+
+        // If it's not one of our three categories, default to "Partial"
+        if (
+          ![successStatus, partialStatus, failedStatus].includes(
+            normalizedStatus,
+          )
+        ) {
+          normalizedStatus = partialStatus;
+        }
+
+        if (request.requestType === "MAINTENANCE") {
+          maintenanceStatusCounts[normalizedStatus] =
+            (maintenanceStatusCounts[normalizedStatus] || 0) + 1;
+          maintenanceTotal++;
+        } else if (request.requestType === "CALIBRATION") {
+          calibrationStatusCounts[normalizedStatus] =
+            (calibrationStatusCounts[normalizedStatus] || 0) + 1;
+          calibrationTotal++;
+        }
+      }
+
+      // Format data for MAINTENANCE
+      const maintenanceStatuses: RequestStatusCount[] = Object.entries(
+        maintenanceStatusCounts,
+      ).map(([status, count]) => ({
+        status,
+        count,
+        percentage:
+          maintenanceTotal > 0
+            ? Math.round((count / maintenanceTotal) * 100 * 100) / 100
+            : 0,
+      }));
+
+      // Format data for CALIBRATION
+      const calibrationStatuses: RequestStatusCount[] = Object.entries(
+        calibrationStatusCounts,
+      ).map(([status, count]) => ({
+        status,
+        count,
+        percentage:
+          calibrationTotal > 0
+            ? Math.round((count / calibrationTotal) * 100 * 100) / 100
+            : 0,
+      }));
+
+      // Calculate total values
+      const totalSuccess =
+        maintenanceStatusCounts[successStatus] +
+        calibrationStatusCounts[successStatus];
+      const totalPartial =
+        maintenanceStatusCounts[partialStatus] +
+        calibrationStatusCounts[partialStatus];
+      const totalFailed =
+        maintenanceStatusCounts[failedStatus] +
+        calibrationStatusCounts[failedStatus];
+      const totalCount = maintenanceTotal + calibrationTotal;
+
+      return {
+        MAINTENANCE: maintenanceStatuses,
+        CALIBRATION: calibrationStatuses,
+        total: {
+          success: totalSuccess,
+          warning: totalPartial, // Mapping Partial to warning in the total
+          failed: totalFailed,
+          total: totalCount,
+        },
+      };
+    } catch (error) {
+      console.error("Error in getRequestStatusReport:", error);
+      throw error;
+    }
   }
 }
 
