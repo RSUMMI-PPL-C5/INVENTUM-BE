@@ -1,0 +1,43 @@
+name: Database Migration and Seeding
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Prisma
+        run: npm install prisma@latest
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Set environment variables
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "ENVIRONMENT=development" >> .env
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+
+      - name: Seed database
+        run: npx prisma db seed -- --environment development
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} 

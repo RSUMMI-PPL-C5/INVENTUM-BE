@@ -13,6 +13,9 @@
     "test:integration": "jest --coverage --detectOpenHandles integration",
     "lint": "prettier --check 'src/**/*.{js,ts}'"
   },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -36,6 +39,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.7.0",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
