@@ -5,6 +5,7 @@ on:
     branches:
       - "*"
       - "chore/*" # must be deleted later
+      - "fikri/data-seeding"
   schedule:
     - cron: "0 0 * * 0" # Setiap Minggu
 

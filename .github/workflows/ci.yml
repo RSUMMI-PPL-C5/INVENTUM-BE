@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "*"
+      - "fikri/data-seeding"
     
 
 jobs:
