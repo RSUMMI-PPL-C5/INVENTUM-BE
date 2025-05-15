@@ -32,6 +32,34 @@ describe("SparepartController - addSparepart", () => {
     });
   });
 
+  it("should add sparepart with image successfully", async () => {
+    const mockSparepart = {
+      id: "1",
+      name: "Gear",
+      imageUrl: "/uploads/spareparts/test.jpg",
+    };
+    (SparepartService.prototype.addSparepart as jest.Mock).mockResolvedValue(
+      mockSparepart,
+    );
+
+    req = {
+      body: { name: "Gear" },
+      user: { userId: "123" },
+      file: {
+        filename: "test.jpg",
+        path: "uploads/spareparts/test.jpg",
+      } as Express.Multer.File,
+    };
+
+    await controller.addSparepart(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "success",
+      data: mockSparepart,
+    });
+  });
+
   it("should call next(error) on exception", async () => {
     (SparepartService.prototype.addSparepart as jest.Mock).mockRejectedValue(
       new Error("Failed"),

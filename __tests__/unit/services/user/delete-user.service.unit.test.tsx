@@ -29,7 +29,7 @@ describe("UserService - deleteUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: "1",
       deletedOn: new Date(),
     };
@@ -80,7 +80,7 @@ describe("UserService - deleteUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: new Date(),
     };
@@ -107,7 +107,7 @@ describe("UserService - deleteUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: "",
       deletedOn: new Date(),
     };

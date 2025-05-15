@@ -31,7 +31,7 @@ describe("UserService - updateUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -81,7 +81,7 @@ describe("UserService - updateUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -126,7 +126,7 @@ describe("UserService - updateUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -175,7 +175,7 @@ describe("UserService - updateUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -232,7 +232,7 @@ describe("UserService - updateUser", () => {
       createdBy: "1",
       createdOn: new Date(),
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };

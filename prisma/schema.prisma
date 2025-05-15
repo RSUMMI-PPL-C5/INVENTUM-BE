@@ -20,7 +20,7 @@ model User {
   createdBy  String?
   createdOn  DateTime?
   modifiedBy String?
-  modifiedOn DateTime?     @default(now())
+  modifiedOn DateTime     @default(now())
   deletedBy  String?
   deletedOn  DateTime?
   requests   Request[]
@@ -69,6 +69,7 @@ model Spareparts {
   price           Int?
   toolLocation    String?
   toolDate        String?
+  imageUrl        String?               @db.Text
   createdBy       String
   createdOn       DateTime?
   modifiedBy      String?

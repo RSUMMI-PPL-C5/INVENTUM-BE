@@ -55,4 +55,33 @@ describe("SparepartController - updateSparepart", () => {
 
     expect(next).toHaveBeenCalled();
   });
+
+  it("should update sparepart with image successfully", async () => {
+    const mockUpdatedSparepart = {
+      id: "1",
+      name: "Updated Gear",
+      imageUrl: "/uploads/spareparts/updated-test.jpg",
+    };
+    (SparepartService.prototype.updateSparepart as jest.Mock).mockResolvedValue(
+      mockUpdatedSparepart,
+    );
+
+    req = {
+      params: { id: "1" },
+      body: { name: "Updated Gear" },
+      user: { userId: "123" },
+      file: {
+        filename: "updated-test.jpg",
+        path: "uploads/spareparts/updated-test.jpg",
+      } as Express.Multer.File,
+    };
+
+    await controller.updateSparepart(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      status: "success",
+      data: mockUpdatedSparepart,
+    });
+  });
 });

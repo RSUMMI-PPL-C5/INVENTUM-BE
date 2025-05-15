@@ -120,7 +120,7 @@ describe("UserService - createUser", () => {
       createdOn: new Date(),
       divisiId: 1,
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -164,7 +164,7 @@ describe("UserService - createUser", () => {
       createdOn: new Date(),
       divisiId: 1,
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
@@ -209,7 +209,7 @@ describe("UserService - createUser", () => {
       createdOn: new Date(),
       divisiId: 1,
       modifiedBy: null,
-      modifiedOn: null,
+      modifiedOn: new Date(),
       deletedBy: null,
       deletedOn: null,
     };
