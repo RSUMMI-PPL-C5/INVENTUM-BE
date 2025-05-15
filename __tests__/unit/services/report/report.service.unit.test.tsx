@@ -306,6 +306,36 @@ describe("ReportService", () => {
           (reportService as any).ensureLast12Months(undefined),
         ).toThrow("Data input tidak valid: harap berikan array data bulanan");
       });
+
+      it("should handle null or undefined values in raw data", () => {
+        const mockRawData = [
+          { month: "2023-01", MAINTENANCE: null, CALIBRATION: 3 },
+          { month: "2023-02", MAINTENANCE: 5, CALIBRATION: undefined },
+          { month: "2023-03", MAINTENANCE: undefined, CALIBRATION: null },
+        ];
+
+        const result = (reportService as any).ensureLast12Months(mockRawData);
+
+        expect(result).toHaveLength(12);
+        expect(result.find((d: any) => d.month === "2023-01").MAINTENANCE).toBe(
+          0,
+        );
+        expect(result.find((d: any) => d.month === "2023-01").CALIBRATION).toBe(
+          3,
+        );
+        expect(result.find((d: any) => d.month === "2023-02").MAINTENANCE).toBe(
+          5,
+        );
+        expect(result.find((d: any) => d.month === "2023-02").CALIBRATION).toBe(
+          0,
+        );
+        expect(result.find((d: any) => d.month === "2023-03").MAINTENANCE).toBe(
+          0,
+        );
+        expect(result.find((d: any) => d.month === "2023-03").CALIBRATION).toBe(
+          0,
+        );
+      });
     });
   });
 });

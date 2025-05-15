@@ -123,12 +123,23 @@ class ReportService {
     }
 
     // Update data dengan nilai dari data asli
-    rawData.forEach((item) => {
+    for (const item of rawData) {
       if (monthsData[item.month]) {
-        monthsData[item.month].MAINTENANCE = item.MAINTENANCE ?? 0;
-        monthsData[item.month].CALIBRATION = item.CALIBRATION ?? 0;
+        // Handle maintenance count - explicitly handle null/undefined cases
+        if (item.MAINTENANCE !== null && item.MAINTENANCE !== undefined) {
+          monthsData[item.month].MAINTENANCE = item.MAINTENANCE;
+        } else {
+          monthsData[item.month].MAINTENANCE = 0;
+        }
+
+        // Handle calibration count - explicitly handle null/undefined cases
+        if (item.CALIBRATION !== null && item.CALIBRATION !== undefined) {
+          monthsData[item.month].CALIBRATION = item.CALIBRATION;
+        } else {
+          monthsData[item.month].CALIBRATION = 0;
+        }
       }
-    });
+    }
 
     // Convert kembali ke array dan diurutkan berdasarkan bulan (newest first)
     return Object.values(monthsData).sort((a, b) =>

@@ -769,3 +769,58 @@ describe("ReportRepository - getSummaryReports", () => {
     });
   });
 });
+
+// Add this test suite to ensure full coverage of mapResultStatus method
+describe("ReportRepository - edge cases coverage", () => {
+  let reportRepository: ReportRepository;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    reportRepository = new ReportRepository();
+  });
+
+  it("should apply unknown result filter and resolve to empty string", async () => {
+    // This test covers the default case in mapResultStatus
+    const filters: ResultReportFilterOptions = {
+      result: "unknown-value" as any, // Force an unknown value to trigger default case
+    };
+
+    await reportRepository.getResultReports(filters);
+
+    // Verify that all history queries were called with empty result
+    expect(prisma.maintenanceHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ result: "" }),
+      }),
+    );
+
+    expect(prisma.calibrationHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ result: "" }),
+      }),
+    );
+
+    expect(prisma.partsHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ result: "" }),
+      }),
+    );
+  });
+
+  it("should handle null search criteria properly", async () => {
+    const filters: ResultReportFilterOptions = {
+      search: null as any,
+    };
+
+    await reportRepository.getResultReports(filters);
+
+    // Verify that the search filter wasn't applied (no medicalEquipment.name filter)
+    expect(prisma.maintenanceHistory.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({
+          medicalEquipment: expect.anything(),
+        }),
+      }),
+    );
+  });
+});
