@@ -94,6 +94,20 @@ describe("ReportRepository - getRequestStatusReport", () => {
       expect(result.total.failed).toBe(0);
       expect(result.total.total).toBe(0);
     });
+
+    it("should handle null data by using empty array fallback", async () => {
+      // Arrange
+      (prisma.request.findMany as jest.Mock).mockResolvedValue(null);
+
+      // Act
+      const result = await repository.getRequestStatusReport();
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(result.MAINTENANCE).toHaveLength(3);
+      expect(result.CALIBRATION).toHaveLength(3);
+      expect(result.total.total).toBe(0);
+    });
   });
 
   // NEGATIVE CASES
