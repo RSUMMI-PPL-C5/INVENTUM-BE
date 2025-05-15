@@ -92,57 +92,6 @@ export class ReportController {
     }
   };
 
-  // Export plan reports to CSV
-  public exportPlanReportsToCSV = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      // Extract and validate query parameters (similar to getPlanReports)
-      const search = req.query.search as string;
-      const rawStatus = req.query.status as string;
-      const rawType = req.query.type as string;
-      const startDate = req.query.startDate as string;
-      const endDate = req.query.endDate as string;
-
-      // Validate status parameter
-      const validStatusValues = ["all", "scheduled", "pending"];
-      const status = validStatusValues.includes(rawStatus)
-        ? (rawStatus as PlanReportFilterOptions["status"])
-        : undefined;
-
-      // Validate type parameter
-      const validTypeValues = ["all", "MAINTENANCE", "CALIBRATION"];
-      const type = validTypeValues.includes(rawType)
-        ? (rawType as PlanReportFilterOptions["type"])
-        : undefined;
-
-      const filters: PlanReportFilterOptions = {
-        search,
-        status, // Use validated value
-        type, // Use validated value
-        startDate,
-        endDate,
-      };
-
-      const csvContent =
-        await this.reportService.exportPlanReportsToCSV(filters);
-
-      // Set response headers
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        "attachment; filename=rencana-laporan.csv",
-      );
-
-      // Send CSV content
-      res.status(200).send(csvContent);
-    } catch (error) {
-      next(error);
-    }
-  };
-
   // Get result reports (maintenance, calibration, and parts replacement results)
   public getResultReports = async (
     req: Request,
@@ -208,62 +157,6 @@ export class ReportController {
     }
   };
 
-  // Export result reports to CSV
-  public exportResultReportsToCSV = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      // Extract query parameters
-      const search = req.query.search as string;
-      const rawResult = req.query.result as string;
-      const rawType = req.query.type as string;
-      const startDate = req.query.startDate as string;
-      const endDate = req.query.endDate as string;
-
-      // Validate result parameter
-      const validResultValues = [
-        "all",
-        "success",
-        "success-with-notes",
-        "failed-with-notes",
-      ];
-      const result = validResultValues.includes(rawResult)
-        ? (rawResult as ResultReportFilterOptions["result"])
-        : undefined;
-
-      // Validate type parameter
-      const validTypeValues = ["all", "MAINTENANCE", "CALIBRATION", "PARTS"];
-      const type = validTypeValues.includes(rawType)
-        ? (rawType as ResultReportFilterOptions["type"])
-        : undefined;
-
-      const filters: ResultReportFilterOptions = {
-        search,
-        result, // Use validated value
-        type, // Use validated value
-        startDate,
-        endDate,
-      };
-
-      const csvContent =
-        await this.reportService.exportResultReportsToCSV(filters);
-
-      // Set response headers
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        "attachment; filename=hasil-laporan.csv",
-      );
-
-      // Send CSV content
-      res.status(200).send(csvContent);
-    } catch (error) {
-      next(error);
-    }
-  };
-
   // Get summary reports (comments/responses)
   public getSummaryReports = async (
     req: Request,
@@ -311,49 +204,6 @@ export class ReportController {
         message: "Summary reports retrieved successfully",
         ...result,
       });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  // Export summary reports to CSV
-  public exportSummaryReportsToCSV = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      // Extract query parameters
-      const search = req.query.search as string;
-      const rawType = req.query.type as string;
-      const startDate = req.query.startDate as string;
-      const endDate = req.query.endDate as string;
-
-      // Validate type parameter
-      const validTypeValues = ["all", "MAINTENANCE", "CALIBRATION"];
-      const type = validTypeValues.includes(rawType)
-        ? (rawType as SummaryReportFilterOptions["type"])
-        : undefined;
-
-      const filters: SummaryReportFilterOptions = {
-        search,
-        type, // Use validated value
-        startDate,
-        endDate,
-      };
-
-      const csvContent =
-        await this.reportService.exportSummaryReportsToCSV(filters);
-
-      // Set response headers
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        "attachment; filename=rekap-tanggapan.csv",
-      );
-
-      // Send CSV content
-      res.status(200).send(csvContent);
     } catch (error) {
       next(error);
     }

@@ -84,6 +84,16 @@ describe("ReportService", () => {
         "Data input tidak valid: harap berikan array data bulanan",
       );
     });
+
+    it("should throw error for undefined data", async () => {
+      reportRepository.getMonthlyRequestCounts.mockResolvedValue(
+        undefined as any,
+      );
+
+      await expect(reportService.getMonthlyRequestCounts()).rejects.toThrow(
+        "Data input tidak valid: harap berikan array data bulanan",
+      );
+    });
   });
 
   describe("getPlanReports", () => {
@@ -203,356 +213,7 @@ describe("ReportService", () => {
     });
   });
 
-  describe("exportPlanReportsToCSV", () => {
-    it("should export plan reports to CSV format", async () => {
-      const mockPlans = [
-        {
-          id: "1",
-          medicalEquipment: "Equip1",
-          requestType: "Maintenance",
-          status: "Pending",
-          createdOn: new Date("2023-01-01"),
-          user: { fullname: "User1" },
-        },
-      ];
-
-      reportRepository.getPlanReports.mockResolvedValue({
-        plans: mockPlans,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportPlanReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalledWith(
-        [
-          "ID",
-          "ID Peralatan",
-          "Tipe",
-          "Status",
-          "Tanggal Dibuat",
-          "Dibuat Oleh",
-        ],
-        [["1", "Equip1", "Maintenance", "Pending", "01/01/2023", "User1"]],
-      );
-    });
-
-    it("should handle empty or null fields", async () => {
-      const mockPlans = [
-        {
-          id: "1",
-          medicalEquipment: null,
-          requestType: null,
-          status: null,
-          createdOn: new Date("2023-01-01"),
-          user: null,
-        },
-      ];
-
-      reportRepository.getPlanReports.mockResolvedValue({
-        plans: mockPlans,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportPlanReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalled();
-    });
-  });
-
-  describe("exportResultReportsToCSV", () => {
-    it("should export result reports to CSV format", async () => {
-      const mockResults = [
-        {
-          id: "1",
-          medicalEquipmentId: "Equip1",
-          medicalEquipment: { name: "Equipment 1", inventorisId: "INV001" },
-          type: "MAINTENANCE",
-          result: "Success",
-          technician: "Tech1",
-          actionPerformed: "Action",
-          maintenanceDate: new Date("2023-01-01"),
-          createdBy: "User1",
-          createdOn: new Date("2023-01-01"),
-        },
-      ];
-
-      reportRepository.getResultReports.mockResolvedValue({
-        results: mockResults,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportResultReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalled();
-    });
-
-    it("should handle calibration results", async () => {
-      const mockResults = [
-        {
-          id: "1",
-          medicalEquipmentId: "Equip1",
-          medicalEquipment: { name: "Equipment 1", inventorisId: "INV001" },
-          type: "CALIBRATION",
-          result: "Success",
-          technician: "Tech1",
-          actionPerformed: "Calibrated",
-          calibrationDate: new Date("2023-01-01"),
-          createdBy: "User1",
-          createdOn: new Date("2023-01-01"),
-        },
-      ];
-
-      reportRepository.getResultReports.mockResolvedValue({
-        results: mockResults,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportResultReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalled();
-    });
-
-    it("should handle parts replacement results", async () => {
-      const mockResults = [
-        {
-          id: "1",
-          medicalEquipmentId: "Equip1",
-          medicalEquipment: { name: "Equipment 1", inventorisId: "INV001" },
-          type: "PARTS",
-          sparepart: { partsName: "Spare Part 1" },
-          result: "Success",
-          technician: "Tech1",
-          actionPerformed: "Replaced parts",
-          replacementDate: new Date("2023-01-01"),
-          createdBy: "User1",
-          createdOn: new Date("2023-01-01"),
-        },
-      ];
-
-      reportRepository.getResultReports.mockResolvedValue({
-        results: mockResults,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportResultReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalled();
-    });
-
-    it("should handle null or undefined values", async () => {
-      const mockResults = [{ id: "1" }];
-
-      reportRepository.getResultReports.mockResolvedValue({
-        results: mockResults,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest.spyOn(reportService as any, "formatDate").mockReturnValue("");
-
-      const result = await reportService.exportResultReportsToCSV();
-
-      expect(result).toBe("CSV content");
-    });
-  });
-
-  describe("exportSummaryReportsToCSV", () => {
-    it("should export summary reports to CSV format", async () => {
-      const mockComments = [
-        {
-          id: "1",
-          requestId: "req1",
-          request: { requestType: "MAINTENANCE" },
-          text: "Comment text",
-          createdAt: new Date("2023-01-01"),
-          user: { fullname: "User1" },
-        },
-      ];
-
-      reportRepository.getSummaryReports.mockResolvedValue({
-        comments: mockComments,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportSummaryReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalledWith(
-        [
-          "ID",
-          "ID Permintaan",
-          "Tipe Permintaan",
-          "Tanggapan",
-          "Tanggal",
-          "Ditulis Oleh",
-        ],
-        [["1", "req1", "MAINTENANCE", "Comment text", "01/01/2023", "User1"]],
-      );
-    });
-
-    it("should handle empty or null fields", async () => {
-      const mockComments = [
-        {
-          id: "1",
-          requestId: null,
-          request: null,
-          text: null,
-          createdAt: new Date("2023-01-01"),
-          user: null,
-        },
-      ];
-
-      reportRepository.getSummaryReports.mockResolvedValue({
-        comments: mockComments,
-        total: 1,
-      });
-
-      jest
-        .spyOn(reportService as any, "generateCSV")
-        .mockReturnValue("CSV content");
-      jest
-        .spyOn(reportService as any, "formatDate")
-        .mockReturnValue("01/01/2023");
-
-      const result = await reportService.exportSummaryReportsToCSV();
-
-      expect(result).toBe("CSV content");
-      expect((reportService as any).generateCSV).toHaveBeenCalled();
-    });
-  });
-
   describe("Private methods", () => {
-    describe("formatDate", () => {
-      it("should format date correctly", () => {
-        const date = new Date("2023-01-15T12:00:00Z");
-        const result = (reportService as any).formatDate(date);
-        expect(result).toBe("15/01/2023");
-      });
-
-      it("should handle null or undefined dates", () => {
-        expect((reportService as any).formatDate(null)).toBe("");
-        expect((reportService as any).formatDate(undefined)).toBe("");
-      });
-
-      it("should handle numeric values", () => {
-        expect((reportService as any).formatDate(12345)).toBe("");
-      });
-
-      it("should handle invalid date objects", () => {
-        expect((reportService as any).formatDate(new Date("invalid"))).toBe("");
-      });
-
-      it("should handle other data types", () => {
-        expect((reportService as any).formatDate({})).toBe("");
-        expect((reportService as any).formatDate([])).toBe("");
-        // Boolean true is converted to timestamp 1, which is 01/01/1970
-        expect((reportService as any).formatDate(true)).toBe("01/01/1970");
-      });
-
-      it("should handle objects that throw exceptions during date operations", () => {
-        // Create an object that throws an error when accessed in Date operations
-        const errorObj = {
-          valueOf: () => {
-            throw new Error("Test error");
-          },
-          toString: () => {
-            throw new Error("Test error");
-          },
-        };
-
-        // This should trigger the catch block
-        const result = (reportService as any).formatDate(errorObj);
-
-        expect(result).toBe("");
-      });
-    });
-
-    describe("generateCSV", () => {
-      it("should generate CSV content from headers and rows", () => {
-        const headers = ["Header1", "Header2"];
-        const rows = [
-          ["Value1", "Value2"],
-          ["Value3", "Value4"],
-        ];
-
-        const result = (reportService as any).generateCSV(headers, rows);
-
-        expect(result).toBe("Header1,Header2\nValue1,Value2\nValue3,Value4");
-      });
-
-      it("should handle empty rows", () => {
-        const headers = ["Header1", "Header2"];
-        const rows: any[][] = [];
-
-        const result = (reportService as any).generateCSV(headers, rows);
-
-        expect(result).toBe("Header1,Header2");
-      });
-
-      it("should escape values with special characters", () => {
-        const headers = ["Header1", "Header2"];
-        const rows = [
-          ["Value with, comma", 'Value with "quotes"'],
-          ["Value\nwith\nnewline", "Normal"],
-        ];
-
-        const result = (reportService as any).generateCSV(headers, rows);
-
-        expect(result).toContain('"Value with, comma"');
-        expect(result).toContain('"Value with ""quotes"""');
-        expect(result).toContain('"Value\nwith\nnewline"');
-      });
-    });
-
     describe("ensureLast12Months", () => {
       it("should ensure data for last 12 months is present", () => {
         const mockRawData = [
@@ -577,6 +238,57 @@ describe("ReportService", () => {
         );
       });
 
+      it("should ignore months outside the last 12 months range", () => {
+        // Get the current date used in the function (2023-06-15 from mocked getJakartaTime)
+        const currentDate = new Date("2023-06-15");
+
+        // Create a date that's more than 12 months in the past
+        const oldDate = new Date(currentDate);
+        oldDate.setFullYear(oldDate.getFullYear() - 2); // 2 years ago
+        const oldYearMonth = `${oldDate.getFullYear()}-${String(oldDate.getMonth() + 1).padStart(2, "0")}`;
+
+        const mockRawData = [
+          { month: "2023-01", MAINTENANCE: 5, CALIBRATION: 3 },
+          { month: oldYearMonth, MAINTENANCE: 99, CALIBRATION: 99 }, // This should be ignored
+        ];
+
+        const result = (reportService as any).ensureLast12Months(mockRawData);
+
+        expect(result).toHaveLength(12);
+        expect(result.find((d: any) => d.month === "2023-01").MAINTENANCE).toBe(
+          5,
+        );
+        expect(
+          result.find((d: any) => d.month === oldYearMonth),
+        ).toBeUndefined();
+        // Verify the old month data is not included in any result item
+        expect(result.some((d: any) => d.MAINTENANCE === 99)).toBe(false);
+      });
+
+      // Add a more specific test with a hardcoded month outside the range
+      it("should specifically handle months that don't exist in monthsData", () => {
+        // Use a fixed month string that is definitely not in the last 12 months from 2023-06-15
+        const mockRawData = [
+          { month: "2023-01", MAINTENANCE: 5, CALIBRATION: 3 },
+          { month: "2020-01", MAINTENANCE: 99, CALIBRATION: 99 }, // Much older date, definitely outside range
+          { month: "non-existent", MAINTENANCE: 50, CALIBRATION: 50 }, // Invalid month format
+        ];
+
+        const result = (reportService as any).ensureLast12Months(mockRawData);
+
+        expect(result).toHaveLength(12);
+        expect(result.find((d: any) => d.month === "2023-01").MAINTENANCE).toBe(
+          5,
+        );
+        // Verify none of the months have the values from the out-of-range items
+        expect(
+          result.some((d: any) => d.MAINTENANCE === 99 || d.MAINTENANCE === 50),
+        ).toBe(false);
+        expect(
+          result.some((d: any) => d.CALIBRATION === 99 || d.CALIBRATION === 50),
+        ).toBe(false);
+      });
+
       it("should throw error for non-array input", () => {
         expect(() =>
           (reportService as any).ensureLast12Months("not an array"),
@@ -587,6 +299,12 @@ describe("ReportService", () => {
         expect(() => (reportService as any).ensureLast12Months(null)).toThrow(
           "Data input tidak valid: harap berikan array data bulanan",
         );
+      });
+
+      it("should throw error for undefined input", () => {
+        expect(() =>
+          (reportService as any).ensureLast12Months(undefined),
+        ).toThrow("Data input tidak valid: harap berikan array data bulanan");
       });
     });
   });

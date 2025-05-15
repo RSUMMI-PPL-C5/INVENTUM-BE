@@ -3,7 +3,6 @@ import prisma from "../configs/db.config";
 import {
   MonthlyDataRecord,
   MonthlyTypeCount,
-  PaginationMeta,
   PlanReportFilterOptions,
   ResultReportFilterOptions,
   SummaryReportFilterOptions,
