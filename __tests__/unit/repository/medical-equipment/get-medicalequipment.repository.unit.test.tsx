@@ -76,7 +76,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         deletedOn: null,
         OR: [
           { name: { contains: "test" } },
-          { inventorisId: { contains: "test" } },
+          { lastLocation: { contains: "test" } },
           { brandName: { contains: "test" } },
         ],
       };
@@ -262,7 +262,7 @@ describe("MedicalEquipmentRepository - Get Methods", () => {
         deletedOn: null,
         OR: [
           { name: { contains: "test" } },
-          { inventorisId: { contains: "test" } },
+          { lastLocation: { contains: "test" } },
           { brandName: { contains: "test" } },
         ],
         status: { in: ["Active"] },

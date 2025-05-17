@@ -287,6 +287,7 @@ describe("MedicalEquipmentService - Get Methods", () => {
         purchasePrice: 1000,
         status: "Active",
         vendor: "Vendor A",
+        lastLocation: "Room 101",
         createdBy: "user-123",
         createdOn: new Date(),
         modifiedOn: new Date(),

@@ -7,33 +7,26 @@ import {
 } from "../../../src/validations/medical-equipment.validation";
 import * as dateUtils from "../../../src/utils/date.utils";
 
-// Helper function to get the field name from a validation error
 const getErrorField = (error: any): string => {
-  // Handle different versions of express-validator
   return error.path;
 };
 
-// Helper function to get the error message
 const getErrorMessage = (error: any): string => {
   return error.msg;
 };
 
-// Helper function to run validations against a mock request
 const runValidation = async (
   validations: ValidationChain[],
   mockRequest: Partial<Request>,
 ) => {
-  // Run all validations on the request
   const promises = validations.map((validation) =>
     validation.run(mockRequest as Request),
   );
   await Promise.all(promises);
 
-  // Return the validation result
   return validationResult(mockRequest as Request);
 };
 
-// Mock the toJakartaDate function
 jest.mock("../../../src/utils/date.utils", () => ({
   toJakartaDate: jest.fn((date, isEndOfDay = false) => {
     if (!date) return date;
@@ -41,7 +34,7 @@ jest.mock("../../../src/utils/date.utils", () => ({
     const parsedDate = new Date(date);
 
     if (isNaN(parsedDate.getTime())) {
-      return new Date(NaN); // Invalid date
+      return new Date(NaN);
     }
 
     if (isEndOfDay) {
@@ -58,7 +51,7 @@ describe("Medical Equipment Validations", () => {
   describe("Add Medical Equipment Validation", () => {
     test("should export an array with 8 validation rules", () => {
       expect(Array.isArray(addMedicalEquipmentValidation)).toBe(true);
-      expect(addMedicalEquipmentValidation).toHaveLength(8);
+      expect(addMedicalEquipmentValidation).toHaveLength(9);
     });
 
     test("should pass validation with valid data", async () => {
@@ -72,6 +65,7 @@ describe("Medical Equipment Validations", () => {
           purchasePrice: 5000,
           status: "Active",
           vendor: "Medical Supplies Inc.",
+          lastLocation: "Room 101",
         },
       };
 
@@ -202,7 +196,7 @@ describe("Medical Equipment Validations", () => {
   describe("Update Medical Equipment Validation", () => {
     test("should export an array with 8 validation rules", () => {
       expect(Array.isArray(updateMedicalEquipmentValidation)).toBe(true);
-      expect(updateMedicalEquipmentValidation).toHaveLength(8);
+      expect(updateMedicalEquipmentValidation).toHaveLength(9);
     });
 
     test("should pass validation with valid data", async () => {
@@ -211,6 +205,7 @@ describe("Medical Equipment Validations", () => {
           name: "Updated Machine Name",
           status: "Maintenance",
           purchasePrice: 6000,
+          lastLocation: "Room 102",
         },
       };
 
@@ -295,7 +290,7 @@ describe("Medical Equipment Validations", () => {
 
     test("should pass when purchase date is today", async () => {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Beginning of today
+      today.setHours(0, 0, 0, 0);
 
       const mockRequest = {
         body: {
@@ -313,11 +308,9 @@ describe("Medical Equipment Validations", () => {
       expect(result.isEmpty()).toBe(true);
     });
 
-    // Add these tests to the "Update Medical Equipment Validation" describe block
     test("should pass when purchase date is valid past date for update", async () => {
-      // A date in the past
       const pastDate = new Date();
-      pastDate.setFullYear(pastDate.getFullYear() - 1); // One year ago
+      pastDate.setFullYear(pastDate.getFullYear() - 1);
 
       const mockRequest = {
         body: {
@@ -334,7 +327,7 @@ describe("Medical Equipment Validations", () => {
 
     test("should pass when purchase date is today for update", async () => {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Beginning of today
+      today.setHours(0, 0, 0, 0);
 
       const mockRequest = {
         body: {

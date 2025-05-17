@@ -36,7 +36,8 @@ describe("MedicalEquipmentService - addMedicalEquipment", () => {
       name: "X-Ray Machine",
       brandName: "MedCorp",
       modelName: "XR-2000",
-      createdBy: "user-123", // String type as per DTO
+      createdBy: "user-123",
+      lastLocation: "Room 101",
     };
 
     const expectedResponse: AddMedicalEquipmentResponseDTO = {
@@ -45,6 +46,7 @@ describe("MedicalEquipmentService - addMedicalEquipment", () => {
       name: "X-Ray Machine",
       brandName: "MedCorp",
       modelName: "XR-2000",
+      lastLocation: "Room 101",
     };
 
     mockRepository.findByInventorisId.mockResolvedValue(null);

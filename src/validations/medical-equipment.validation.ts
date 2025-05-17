@@ -14,6 +14,8 @@ const addMedicalEquipmentValidation = [
 
   body("modelName").optional().isString().trim(),
 
+  body("lastLocation").optional().isString().trim(),
+
   body("purchaseDate")
     .optional()
     .isISO8601()
@@ -67,6 +69,8 @@ const updateMedicalEquipmentValidation = [
   body("brandName").optional().isString().trim(),
 
   body("modelName").optional().isString().trim(),
+
+  body("lastLocation").optional().isString().trim(),
 
   body("purchaseDate")
     .optional()

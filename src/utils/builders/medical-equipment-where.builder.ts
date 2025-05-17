@@ -31,7 +31,7 @@ class MedicalEquipmentWhereBuilder extends WhereClauseBuilder {
   public buildSearchFilter(search?: string): this {
     return this.buildSearchCondition(search, [
       "name",
-      "inventorisId",
+      "lastLocation",
       "brandName",
     ]);
   }
