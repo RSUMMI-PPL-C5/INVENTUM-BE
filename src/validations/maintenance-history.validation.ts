@@ -12,8 +12,16 @@ export const createMaintenanceHistoryValidation = [
   body("result")
     .notEmpty()
     .withMessage("Result is required")
-    .isIn(["Success", "Partial", "Failed"])
-    .withMessage("Result must be Success, Partial, or Failed"),
+    .isIn([
+      "Success",
+      "Partial",
+      "Failed",
+      "Success with Issues",
+      "Failed with Issues",
+    ])
+    .withMessage(
+      "Result must be Success, Partial, Failed, Success with Issues, or Failed with Issues",
+    ),
   body("maintenanceDate")
     .notEmpty()
     .withMessage("Maintenance date is required")
@@ -27,7 +35,13 @@ export const maintenanceHistoryFilterQueryValidation = [
   query("medicalEquipmentId").optional(),
   query("result")
     .optional()
-    .isIn(["Success", "Partial", "Failed"])
+    .isIn([
+      "Success",
+      "Partial",
+      "Failed",
+      "Success with Issues",
+      "Failed with Issues",
+    ])
     .withMessage("Invalid result value"),
   query("maintenanceDateStart")
     .optional()

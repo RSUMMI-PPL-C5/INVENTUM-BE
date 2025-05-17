@@ -15,8 +15,16 @@ export const createCalibrationHistoryValidation = [
   body("result")
     .notEmpty()
     .withMessage("Result is required")
-    .isIn(["Success", "Partial", "Failed"])
-    .withMessage("Result must be Success, Partial, or Failed"),
+    .isIn([
+      "Success",
+      "Partial",
+      "Failed",
+      "Success with Issues",
+      "Failed with Issues",
+    ])
+    .withMessage(
+      "Result must be Success, Partial, Failed, Success with Issues, or Failed with Issues",
+    ),
 
   body("calibrationDate")
     .notEmpty()
@@ -43,7 +51,13 @@ export const calibrationHistoryFilterQueryValidation = [
 
   query("result")
     .optional()
-    .isIn(["Success", "Partial", "Failed"])
+    .isIn([
+      "Success",
+      "Partial",
+      "Failed",
+      "Success with Issues",
+      "Failed with Issues",
+    ])
     .withMessage("Invalid result value"),
 
   query("calibrationDateStart")
