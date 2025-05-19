@@ -180,6 +180,122 @@ class ReportRepository {
     }
   }
 
+  public async getAllData(startDate: Date, endDate: Date) {
+    try {
+      const [
+        users,
+        divisions,
+        equipment,
+        spareparts,
+        partsHistory,
+        requests,
+        maintenanceHistory,
+        calibrationHistory,
+        notifications,
+        comments,
+      ] = await Promise.all([
+        this.prisma.user.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.listDivisi.findMany(),
+
+        this.prisma.medicalEquipment.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.spareparts.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.partsHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.request.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.maintenanceHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.calibrationHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.notifikasi.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.comment.findMany({
+          where: {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+      ]);
+
+      return {
+        users,
+        divisions,
+        equipment,
+        spareparts,
+        partsHistory,
+        requests,
+        maintenanceHistory,
+        calibrationHistory,
+        notifications,
+        comments,
+      };
+    } catch (error) {
+      console.error("Error in getAllData:", error);
+      throw error;
+    }
+  }
+
   // Get maintenance and calibration plans
   public async getPlanReports(
     filters?: PlanReportFilterOptions,

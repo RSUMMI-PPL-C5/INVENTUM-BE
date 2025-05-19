@@ -18,6 +18,8 @@ jest.mock("express", () => {
 jest.mock("../../../../src/controllers/report.controller", () => {
   return jest.fn().mockImplementation(() => ({
     getMonthlyRequestCounts: jest.fn(),
+    getRequestStatusReport: jest.fn(),
+    exportAllData: jest.fn(),
     getPlanReports: jest.fn(),
     getResultReports: jest.fn(),
     getSummaryReports: jest.fn(),
@@ -32,6 +34,15 @@ jest.mock("../../../../src/middleware/verifyToken", () =>
 jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
+
+
+jest.mock("../../../../src/validations/report.validation", () => ({
+  exportDataValidation: jest.fn((_req: any, _res: any, next: any) => next()),
+}));
+
+jest.mock("../../../../src/middleware/validateRequest", () => ({
+  validateRequest: jest.fn((_req: any, _res: any, next: any) => next()),
+}));
 
 // Import the route after all mocks
 import "../../../../src/routes/report.route";
@@ -57,9 +68,20 @@ describe("Report Routes", () => {
     );
   });
 
+  it("should register GET /request-status route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/request-status",
+      expect.any(Function),
+    );
+  });
+   
   it("should register GET /plans route", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith("/plans", expect.any(Function));
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/plans",
+      expect.any(Function),
+    );
   });
 
   it("should register GET /results route", () => {
@@ -70,6 +92,17 @@ describe("Report Routes", () => {
     );
   });
 
+  it("should register GET /export route with validation", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/export",
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+    );
+  });
+  
   it("should register GET /summary route", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
