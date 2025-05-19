@@ -14,12 +14,8 @@ class SparepartController {
 
   public addSparepart = async (req: Request, res: Response) => {
     try {
-      const imageUrl = req.file
-        ? `/uploads/spareparts/${req.file.filename}`
-        : null;
       const sparepartData = {
         ...req.body,
-        imageUrl,
       };
 
       const result = await this.sparepartService.addSparepart(sparepartData);
@@ -94,12 +90,8 @@ class SparepartController {
   public updateSparepart = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const imageUrl = req.file
-        ? `/uploads/spareparts/${req.file.filename}`
-        : undefined;
       const sparepartData = {
         ...req.body,
-        ...(imageUrl && { imageUrl }),
       };
 
       const result = await this.sparepartService.updateSparepart(

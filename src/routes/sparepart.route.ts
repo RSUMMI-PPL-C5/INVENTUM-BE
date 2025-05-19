@@ -1,6 +1,5 @@
 import { Router } from "express";
 import SparepartController from "../controllers/sparepart.controller";
-import { upload } from "../middleware/upload.middleware";
 import verifyToken from "../middleware/verifyToken";
 import authorizeRoles from "../middleware/authorizeRole";
 import { validateRequest } from "../middleware/validateRequest";
@@ -26,14 +25,12 @@ router.get(
 router.get("/:id", sparepartController.getSparepartById);
 router.post(
   "/",
-  upload.single("image"),
   addSparepartValidation,
   validateRequest,
   sparepartController.addSparepart,
 );
 router.put(
   "/:id",
-  upload.single("image"),
   updateSparepartValidation,
   validateRequest,
   sparepartController.updateSparepart,
