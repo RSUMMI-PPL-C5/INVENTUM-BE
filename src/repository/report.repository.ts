@@ -520,6 +520,12 @@ class ReportRepository {
 
     return where;
   }
+
+  // Get maintenance count
+  public async getMaintenanceCount(): Promise<number> {
+    const count = await this.prisma.maintenanceHistory.count();
+    return count;
+  }
 }
 
 export default ReportRepository;

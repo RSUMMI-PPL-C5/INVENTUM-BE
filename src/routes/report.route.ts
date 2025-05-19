@@ -12,6 +12,9 @@ router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
 // Monthly chart data route
 router.get("/monthly-requests", controller.getMonthlyRequestCounts);
 
+// Maintenance count route
+router.get("/maintenance-count", controller.getMaintenanceCount);
+
 // Tabular report routes
 router.get("/plans", controller.getPlanReports);
 router.get("/results", controller.getResultReports);

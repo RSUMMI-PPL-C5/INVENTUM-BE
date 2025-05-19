@@ -97,6 +97,19 @@ class ReportService {
     };
   }
 
+  // Get maintenance count
+  public async getMaintenanceCount(): Promise<{
+    success: boolean;
+    count: number;
+  }> {
+    const count = await this.reportRepository.getMaintenanceCount();
+
+    return {
+      success: true,
+      count,
+    };
+  }
+
   private ensureLast12Months(
     rawData: MonthlyDataRecord[],
   ): MonthlyDataRecord[] {

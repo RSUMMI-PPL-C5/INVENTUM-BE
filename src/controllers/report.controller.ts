@@ -208,6 +208,24 @@ export class ReportController {
       next(error);
     }
   };
+
+  public getMaintenanceCount = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const result = await this.reportService.getMaintenanceCount();
+
+      res.status(200).json({
+        success: true,
+        message: "Maintenance count retrieved successfully",
+        count: result.count,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ReportController;
