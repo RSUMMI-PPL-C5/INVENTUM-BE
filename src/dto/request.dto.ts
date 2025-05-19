@@ -48,5 +48,5 @@ export interface CreateRequestDTO {
   medicalEquipment: string;
   complaint?: string;
   createdBy: string;
-  requestType: "MAINTENANCE" | "CALIBRATION";
+  requestType: RequestType;
 }

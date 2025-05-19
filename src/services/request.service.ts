@@ -5,12 +5,18 @@ import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import { RequestFilterOptions } from "../interfaces/request.filter.interface";
+import WhatsAppService from "./whatsapp.service";
+import UserRepository from "../repository/user.repository";
 
 class RequestService implements IRequestService {
   private readonly requestRepository: RequestRepository;
+  private readonly userRepository: UserRepository;
+  private readonly whatsappService: WhatsAppService;
 
   constructor() {
     this.requestRepository = new RequestRepository();
+    this.userRepository = new UserRepository();
+    this.whatsappService = new WhatsAppService();
   }
 
   public async getRequestById(
@@ -119,6 +125,27 @@ class RequestService implements IRequestService {
       id: uuidv4(),
       ...requestData,
     });
+
+    const fasumUsers = await this.userRepository.getUsersByRole("Fasum");
+
+    const notificationPromises = fasumUsers.map(
+      async (user: { waNumber: string | null }) => {
+        if (user.waNumber) {
+          const message = `Ada permintaan baru dari pengguna.\n\nPeralatan: ${requestData.medicalEquipment}\nKeluhan: ${requestData.complaint || "Tidak ada keluhan yang dicantumkan"}\nStatus: Menunggu tindak lanjut\n\nSilakan cek sistem untuk informasi lebih lanjut.`;
+
+          try {
+            await this.whatsappService.sendMessage(user.waNumber, message);
+          } catch (error) {
+            console.error(
+              `Failed to send WhatsApp notification to ${user.waNumber}:`,
+              error,
+            );
+          }
+        }
+      },
+    );
+
+    await Promise.allSettled(notificationPromises);
 
     return { data: result };
   }
