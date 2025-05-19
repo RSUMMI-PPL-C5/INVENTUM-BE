@@ -109,11 +109,6 @@ if (STAGING && isStaging) {
   whitelist.push(STAGING);
 }
 
-// Add localhost for development
-if (NODE_ENV === "development") {
-  whitelist.push("http://localhost:3000");
-}
-
 // Explicitly add staging URL
 if (isStaging) {
   whitelist.push("https://fe.al3l.com");
