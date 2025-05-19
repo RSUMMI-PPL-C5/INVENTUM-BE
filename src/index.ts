@@ -29,6 +29,10 @@ import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
 import calibrationHistoryRoutes from "./routes/calibration-history.routes";
 import partsHistoryRoutes from "./routes/parts-history.routes";
+import metricsRoutes from "./routes/metrics.route";
+
+// Import middleware
+import { metricsMiddleware } from "./middleware/metrics.middleware";
 
 const app = express();
 
@@ -95,6 +99,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Apply metrics middleware to all routes
+app.use(metricsMiddleware);
+
 // Routes
 app.get("/", (req, res) => {
   res.send("PPL C-5 DEPLOYED!!!");
@@ -117,6 +124,7 @@ app.use("/medical-equipment", [
   partsHistoryRoutes,
 ]);
 app.use("/report", reportRoutes);
+app.use("/metrics", metricsRoutes);
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);
