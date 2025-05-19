@@ -9,7 +9,19 @@ class DivisionRepository {
     this.prisma = prisma;
   }
 
+  private validateDivisionName(name?: string | null): void {
+    if (!name || name.trim() === "") {
+      throw new Error(
+        "Division name cannot be empty or contain only whitespace",
+      );
+    }
+  }
+
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
+    if (data.divisi !== undefined) {
+      this.validateDivisionName(data.divisi);
+    }
+
     return await this.prisma.listDivisi.create({ data });
   }
 
@@ -113,6 +125,10 @@ class DivisionRepository {
     data: Prisma.ListDivisiUpdateInput,
   ): Promise<DivisionDTO> {
     try {
+      if (data.divisi !== undefined) {
+        this.validateDivisionName(data.divisi as string | null);
+      }
+
       return await this.prisma.listDivisi.update({
         where: { id },
         data,
