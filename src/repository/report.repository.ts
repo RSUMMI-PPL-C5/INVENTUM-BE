@@ -8,8 +8,10 @@ import {
   SummaryReportFilterOptions,
   RequestStatusReport,
   RequestStatusCount,
+  CountReport,
 } from "../interfaces/report.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
+import { getJakartaTime } from "../utils/date.utils";
 
 class ReportRepository {
   private readonly prisma: PrismaClient;
@@ -565,6 +567,150 @@ class ReportRepository {
     }
 
     return where;
+  }
+
+  public async getCountReport(): Promise<CountReport> {
+    try {
+      // Get current date in Jakarta timezone
+      const now = getJakartaTime();
+
+      // Current month date range
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // Previous month date range
+      const firstDayOfPrevMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1,
+      );
+      const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      // Base where clause for current month
+      const currentMonthWhere = {
+        createdOn: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth,
+        },
+      };
+
+      // Base where clause for previous month
+      const prevMonthWhere = {
+        createdOn: {
+          gte: firstDayOfPrevMonth,
+          lte: lastDayOfPrevMonth,
+        },
+      };
+
+      // Get counts for maintenance and calibration requests for current month
+      const [currentMonthMaintenanceCount, currentMonthCalibrationCount] =
+        await Promise.all([
+          this.prisma.request.count({
+            where: {
+              ...currentMonthWhere,
+              requestType: "MAINTENANCE",
+            },
+          }),
+          this.prisma.request.count({
+            where: {
+              ...currentMonthWhere,
+              requestType: "CALIBRATION",
+            },
+          }),
+        ]);
+
+      // Get counts for maintenance and calibration requests for previous month
+      const [prevMonthMaintenanceCount, prevMonthCalibrationCount] =
+        await Promise.all([
+          this.prisma.request.count({
+            where: {
+              ...prevMonthWhere,
+              requestType: "MAINTENANCE",
+            },
+          }),
+          this.prisma.request.count({
+            where: {
+              ...prevMonthWhere,
+              requestType: "CALIBRATION",
+            },
+          }),
+        ]);
+
+      // Get spare parts change counts for current and previous month
+      const [currentMonthPartsCount, prevMonthPartsCount] = await Promise.all([
+        this.prisma.partsHistory.count({
+          where: {
+            replacementDate: {
+              gte: firstDayOfMonth,
+              lte: lastDayOfMonth,
+            },
+          },
+        }),
+        this.prisma.partsHistory.count({
+          where: {
+            replacementDate: {
+              gte: firstDayOfPrevMonth,
+              lte: lastDayOfPrevMonth,
+            },
+          },
+        }),
+      ]);
+
+      // Calculate percentage changes with capping
+      const calculatePercentageChange = (
+        current: number,
+        previous: number,
+        maxPercentage: number = 999,
+      ): number => {
+        if (previous === 0) {
+          // When previous is 0, return the cap percentage if current > 0
+          return current > 0 ? maxPercentage : 0;
+        }
+
+        // Calculate normal percentage change
+        const percentageChange = ((current - previous) / previous) * 100;
+
+        // Cap the percentage at maximum value (both positive and negative)
+        if (percentageChange > maxPercentage) {
+          return maxPercentage;
+        } else if (percentageChange < -maxPercentage) {
+          return -maxPercentage;
+        }
+
+        return percentageChange;
+      };
+
+      const maintenancePercentageChange = calculatePercentageChange(
+        currentMonthMaintenanceCount,
+        prevMonthMaintenanceCount,
+        999,
+      );
+      const calibrationPercentageChange = calculatePercentageChange(
+        currentMonthCalibrationCount,
+        prevMonthCalibrationCount,
+        999,
+      );
+      const sparePartsPercentageChange = calculatePercentageChange(
+        currentMonthPartsCount,
+        prevMonthPartsCount,
+        999,
+      );
+
+      return {
+        maintenanceCount: currentMonthMaintenanceCount,
+        calibrationCount: currentMonthCalibrationCount,
+        sparePartsCount: currentMonthPartsCount,
+        maintenancePercentageChange:
+          Math.round(maintenancePercentageChange * 100) / 100,
+        calibrationPercentageChange:
+          Math.round(calibrationPercentageChange * 100) / 100,
+        sparePartsPercentageChange:
+          Math.round(sparePartsPercentageChange * 100) / 100,
+      };
+    } catch (error) {
+      console.error("Error in getCountReport:", error);
+      throw error;
+    }
   }
 }
 

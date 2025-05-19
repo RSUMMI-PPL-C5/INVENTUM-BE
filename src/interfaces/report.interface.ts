@@ -68,4 +68,7 @@ export interface CountReport {
   maintenanceCount: number;
   calibrationCount: number;
   sparePartsCount: number;
+  maintenancePercentageChange: number;
+  calibrationPercentageChange: number;
+  sparePartsPercentageChange: number;
 }

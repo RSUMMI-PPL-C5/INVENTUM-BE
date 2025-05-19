@@ -4,6 +4,7 @@ import {
   ResultReportFilterOptions,
   SummaryReportFilterOptions,
   RequestStatusReport,
+  CountReport,
 } from "../interfaces/report.interface";
 import ReportRepository from "../repository/report.repository";
 import { getJakartaTime } from "../utils/date.utils";
@@ -113,6 +114,23 @@ class ReportService {
         totalPages,
       },
     };
+  }
+
+  public async getCountReport(): Promise<{
+    success: boolean;
+    data: CountReport;
+  }> {
+    try {
+      const reportData = await this.reportRepository.getCountReport();
+
+      return {
+        success: true,
+        data: reportData,
+      };
+    } catch (error) {
+      console.error("Error getting count report:", error);
+      throw error;
+    }
   }
 
   private ensureLast12Months(

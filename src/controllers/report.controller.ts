@@ -226,6 +226,24 @@ export class ReportController {
       next(error);
     }
   };
+
+  public getCountReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const result = await this.reportService.getCountReport();
+
+      res.status(200).json({
+        success: true,
+        message: "Summary count report retrieved successfully",
+        data: result.data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ReportController;
