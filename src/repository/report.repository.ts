@@ -3,9 +3,13 @@ import prisma from "../configs/db.config";
 import {
   MonthlyDataRecord,
   MonthlyTypeCount,
+  PlanReportFilterOptions,
+  ResultReportFilterOptions,
+  SummaryReportFilterOptions,
   RequestStatusReport,
   RequestStatusCount,
 } from "../interfaces/report.interface";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 
 class ReportRepository {
   private readonly prisma: PrismaClient;
@@ -162,6 +166,405 @@ class ReportRepository {
       console.error("Error in getRequestStatusReport:", error);
       throw error;
     }
+  }
+
+  // Get maintenance and calibration plans
+  public async getPlanReports(
+    filters?: PlanReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const where = this.buildPlanReportWhereClause(filters);
+
+    const skip = pagination
+      ? (pagination.page - 1) * pagination.limit
+      : undefined;
+    const take = pagination ? pagination.limit : undefined;
+
+    const [plans, total] = await Promise.all([
+      this.prisma.request.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdOn: "desc", // Use createdOn instead of scheduledDate
+        },
+        include: {
+          user: true, // Include full user to get name
+        },
+      }),
+      this.prisma.request.count({ where }),
+    ]);
+
+    return { plans, total };
+  }
+
+  private buildPlanReportWhereClause(filters?: PlanReportFilterOptions): any {
+    const where: any = {};
+
+    if (!filters) {
+      return where;
+    }
+
+    // Search by equipment name
+    if (filters.search) {
+      where.OR = [
+        {
+          medicalEquipment: {
+            contains: filters.search,
+          },
+        },
+      ];
+    }
+
+    // Filter by request type
+    if (filters.type && filters.type !== "all") {
+      where.requestType = filters.type;
+    }
+
+    // Filter by status
+    if (filters.status && filters.status !== "all") {
+      if (filters.status === "scheduled") {
+        where.status = "SCHEDULED";
+      } else if (filters.status === "pending") {
+        where.status = "PENDING";
+      }
+    }
+
+    // Filter by date range
+    if (filters.startDate || filters.endDate) {
+      where.createdOn = {};
+      if (filters.startDate) {
+        where.createdOn.gte = new Date(filters.startDate);
+      }
+      if (filters.endDate) {
+        where.createdOn.lte = new Date(filters.endDate);
+      }
+    }
+
+    return where;
+  }
+
+  // Get maintenance, calibration, and parts replacement results
+  public async getResultReports(
+    filters?: ResultReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const { maintenanceResults, calibrationResults, partsResults, total } =
+      await this.fetchResultsData(filters, pagination);
+
+    const formattedMaintenanceResults =
+      this.normalizeMaintenanceResults(maintenanceResults);
+    const formattedCalibrationResults =
+      this.normalizeCalibrationResults(calibrationResults);
+    const formattedPartsResults = this.normalizePartsResults(partsResults);
+
+    // Combine results
+    const allResults = [
+      ...formattedMaintenanceResults,
+      ...formattedCalibrationResults,
+      ...formattedPartsResults,
+    ];
+
+    // Sort and paginate combined results
+    const sortedResults = this.sortResultsByDate(allResults);
+    const results = pagination
+      ? sortedResults.slice(0, pagination.limit)
+      : sortedResults;
+
+    return { results, total };
+  }
+
+  private sortResultsByDate(results: any[]): any[] {
+    // Extract sort operation to a separate statement
+    return [...results].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }
+
+  private async fetchResultsData(
+    filters?: ResultReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    let maintenanceResults: any[] = [];
+    let calibrationResults: any[] = [];
+    let partsResults: any[] = [];
+    let total = 0;
+
+    // Build query conditions
+    const { maintenanceWhereClause, calibrationWhereClause, partsWhereClause } =
+      this.buildResultsWhereClause(filters);
+
+    const skip = pagination
+      ? (pagination.page - 1) * pagination.limit
+      : undefined;
+    const take = pagination ? pagination.limit : undefined;
+
+    // Fetch data based on type
+    if (
+      !filters?.type ||
+      filters.type === "all" ||
+      filters.type === "MAINTENANCE"
+    ) {
+      const [maintenance, maintenanceCount] = await Promise.all([
+        this.prisma.maintenanceHistory.findMany({
+          where: maintenanceWhereClause,
+          ...(pagination ? { skip, take } : {}),
+          orderBy: { maintenanceDate: "desc" },
+          include: { medicalEquipment: true },
+        }),
+        this.prisma.maintenanceHistory.count({ where: maintenanceWhereClause }),
+      ]);
+
+      maintenanceResults = maintenance;
+      total += maintenanceCount;
+    }
+
+    if (
+      !filters?.type ||
+      filters.type === "all" ||
+      filters.type === "CALIBRATION"
+    ) {
+      const [calibration, calibrationCount] = await Promise.all([
+        this.prisma.calibrationHistory.findMany({
+          where: calibrationWhereClause,
+          ...(pagination ? { skip, take } : {}),
+          orderBy: { calibrationDate: "desc" },
+          include: { medicalEquipment: true },
+        }),
+        this.prisma.calibrationHistory.count({ where: calibrationWhereClause }),
+      ]);
+
+      calibrationResults = calibration;
+      total += calibrationCount;
+    }
+
+    if (!filters?.type || filters.type === "all" || filters.type === "PARTS") {
+      const [parts, partsCount] = await Promise.all([
+        this.prisma.partsHistory.findMany({
+          where: partsWhereClause,
+          ...(pagination ? { skip, take } : {}),
+          orderBy: { replacementDate: "desc" },
+          include: {
+            equipment: true,
+            sparepart: true,
+          },
+        }),
+        this.prisma.partsHistory.count({ where: partsWhereClause }),
+      ]);
+
+      partsResults = parts;
+      total += partsCount;
+    }
+
+    return { maintenanceResults, calibrationResults, partsResults, total };
+  }
+
+  private buildResultsWhereClause(filters?: ResultReportFilterOptions) {
+    const maintenanceWhereClause: any = {};
+    const calibrationWhereClause: any = {};
+    const partsWhereClause: any = {};
+
+    if (!filters) {
+      return {
+        maintenanceWhereClause,
+        calibrationWhereClause,
+        partsWhereClause,
+      };
+    }
+
+    // Apply search filter
+    if (filters.search) {
+      maintenanceWhereClause.medicalEquipment = {
+        name: { contains: filters.search },
+      };
+      calibrationWhereClause.medicalEquipment = {
+        name: { contains: filters.search },
+      };
+      partsWhereClause.equipment = {
+        name: { contains: filters.search },
+      };
+    }
+
+    // Apply result status filter
+    if (filters.result && filters.result !== "all") {
+      const resultStatus = this.mapResultStatus(filters.result);
+      maintenanceWhereClause.result = resultStatus;
+      calibrationWhereClause.result = resultStatus;
+      partsWhereClause.result = resultStatus;
+    }
+
+    // Apply date range filter
+    if (filters.startDate || filters.endDate) {
+      this.applyDateRangeFilter(
+        filters,
+        maintenanceWhereClause,
+        calibrationWhereClause,
+        partsWhereClause,
+      );
+    }
+
+    return { maintenanceWhereClause, calibrationWhereClause, partsWhereClause };
+  }
+
+  private mapResultStatus(result: string): string {
+    switch (result) {
+      case "success":
+        return "SUCCESS";
+      case "success-with-notes":
+        return "SUCCESS_WITH_NOTES";
+      case "failed-with-notes":
+        return "FAILED_WITH_NOTES";
+      default:
+        return "";
+    }
+  }
+
+  private applyDateRangeFilter(
+    filters: ResultReportFilterOptions,
+    maintenanceWhereClause: any,
+    calibrationWhereClause: any,
+    partsWhereClause: any,
+  ) {
+    maintenanceWhereClause.maintenanceDate = {};
+    calibrationWhereClause.calibrationDate = {};
+    partsWhereClause.replacementDate = {};
+
+    if (filters.startDate) {
+      const startDate = new Date(filters.startDate);
+      maintenanceWhereClause.maintenanceDate.gte = startDate;
+      calibrationWhereClause.calibrationDate.gte = startDate;
+      partsWhereClause.replacementDate.gte = startDate;
+    }
+
+    if (filters.endDate) {
+      const endDate = new Date(filters.endDate);
+      maintenanceWhereClause.maintenanceDate.lte = endDate;
+      calibrationWhereClause.calibrationDate.lte = endDate;
+      partsWhereClause.replacementDate.lte = endDate;
+    }
+  }
+
+  private normalizeMaintenanceResults(maintenanceResults: any[]): any[] {
+    return maintenanceResults.map((item) => ({
+      id: item.id,
+      date: item.maintenanceDate,
+      result: item.result,
+      medicalEquipmentId: item.medicalEquipmentId,
+      actionPerformed: item.actionPerformed,
+      technician: item.technician,
+      createdBy: item.createdBy,
+      createdOn: item.createdOn,
+      medicalEquipment: item.medicalEquipment,
+      maintenanceDate: item.maintenanceDate,
+      type: "MAINTENANCE",
+    }));
+  }
+
+  private normalizeCalibrationResults(calibrationResults: any[]): any[] {
+    return calibrationResults.map((item) => ({
+      id: item.id,
+      date: item.calibrationDate,
+      result: item.result,
+      medicalEquipmentId: item.medicalEquipmentId,
+      actionPerformed: item.actionPerformed,
+      technician: item.technician,
+      createdBy: item.createdBy,
+      createdOn: item.createdOn,
+      medicalEquipment: item.medicalEquipment,
+      calibrationDate: item.calibrationDate,
+      calibrationMethod: item.calibrationMethod,
+      nextCalibrationDue: item.nextCalibrationDue,
+      type: "CALIBRATION",
+    }));
+  }
+
+  private normalizePartsResults(partsResults: any[]): any[] {
+    return partsResults.map((item) => ({
+      id: item.id,
+      date: item.replacementDate,
+      result: item.result,
+      medicalEquipmentId: item.medicalEquipmentId,
+      actionPerformed: item.actionPerformed,
+      technician: item.technician,
+      createdBy: item.createdBy,
+      createdOn: item.createdOn,
+      medicalEquipment: item.equipment,
+      sparepart: item.sparepart,
+      replacementDate: item.replacementDate,
+      sparepartId: item.sparepartId,
+      type: "PARTS",
+    }));
+  }
+
+  // Get comments/responses summary
+  public async getSummaryReports(
+    filters?: SummaryReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const where = this.buildSummaryReportWhereClause(filters);
+
+    const skip = pagination
+      ? (pagination.page - 1) * pagination.limit
+      : undefined;
+    const take = pagination ? pagination.limit : undefined;
+
+    const [comments, total] = await Promise.all([
+      this.prisma.comment.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          request: true,
+          user: true,
+        },
+      }),
+      this.prisma.comment.count({ where }),
+    ]);
+
+    return { comments, total };
+  }
+
+  private buildSummaryReportWhereClause(
+    filters?: SummaryReportFilterOptions,
+  ): any {
+    const where: any = {};
+
+    if (!filters) {
+      return where;
+    }
+
+    // Search by equipment name
+    if (filters.search) {
+      where.request = {
+        medicalEquipment: {
+          contains: filters.search,
+        },
+      };
+    }
+
+    // Filter by request type
+    if (filters.type && filters.type !== "all") {
+      // Create request filter if it doesn't exist yet
+      where.request = where.request ?? {};
+      // Add requestType filter
+      where.request.requestType = filters.type;
+    }
+
+    // Filter by date range - comment uses createdAt per schema
+    if (filters.startDate || filters.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) {
+        where.createdAt.gte = new Date(filters.startDate);
+      }
+      if (filters.endDate) {
+        where.createdAt.lte = new Date(filters.endDate);
+      }
+    }
+
+    return where;
   }
 }
 
