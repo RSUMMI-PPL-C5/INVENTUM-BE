@@ -63,3 +63,9 @@ export interface ReportResponse<T> {
   data: T[];
   meta: PaginationMeta;
 }
+
+export interface CountReport {
+  maintenanceCount: number;
+  calibrationCount: number;
+  sparePartsCount: number;
+}
