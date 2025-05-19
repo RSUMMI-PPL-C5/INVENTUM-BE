@@ -76,6 +76,7 @@ describe("Report Routes", () => {
       expect.any(Function),
       expect.any(Function),
       expect.any(Function),
+      expect.any(Function),
     );
   });
 });
