@@ -283,7 +283,7 @@ class ReportRepository {
       throw error;
     }
   }
-  
+
   // Get maintenance and calibration plans
   public async getPlanReports(
     filters?: PlanReportFilterOptions,
