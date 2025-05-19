@@ -16,16 +16,14 @@ class ReportRepository {
     this.prisma = prisma;
   }
 
-  // Get all requests with their creation date and type
   public async getMonthlyRequestCounts(): Promise<MonthlyDataRecord[]> {
     const requests = await this.prisma.request.findMany({
       select: {
-        createdOn: true, // Changed from createdAt to createdOn per schema
+        createdOn: true,
         requestType: true,
       },
       where: {
         createdOn: {
-          // Changed from createdAt to createdOn per schema
           not: null,
         },
       },
@@ -34,9 +32,9 @@ class ReportRepository {
     const monthlyData: Record<string, MonthlyTypeCount> = {};
 
     requests.forEach((request) => {
-      if (!request.createdOn) return; // Changed from createdAt to createdOn
+      if (!request.createdOn) return;
 
-      const date = new Date(request.createdOn); // Changed from createdAt to createdOn
+      const date = new Date(request.createdOn);
       const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
       monthlyData[yearMonth] ??= {

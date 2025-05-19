@@ -28,7 +28,6 @@ class ReportService {
     };
   }
 
-  // Get plan reports (maintenance and calibration plans)
   public async getPlanReports(
     filters?: PlanReportFilterOptions,
     pagination?: PaginationOptions,
@@ -51,7 +50,6 @@ class ReportService {
     };
   }
 
-  // Get result reports (maintenance, calibration, and parts replacement results)
   public async getResultReports(
     filters?: ResultReportFilterOptions,
     pagination?: PaginationOptions,
@@ -74,7 +72,6 @@ class ReportService {
     };
   }
 
-  // Get summary reports (comments/responses)
   public async getSummaryReports(
     filters?: SummaryReportFilterOptions,
     pagination?: PaginationOptions,
@@ -97,7 +94,6 @@ class ReportService {
     };
   }
 
-  // Get maintenance count
   public async getMaintenanceCount(): Promise<{
     success: boolean;
     count: number;
@@ -122,7 +118,6 @@ class ReportService {
     const currentDate = getJakartaTime();
     const monthsData: Record<string, MonthlyDataRecord> = {};
 
-    // Inisialisasi data untuk 12 bulan terakhir dengan nol
     for (let i = 0; i < 12; i++) {
       const date = new Date(currentDate);
       date.setMonth(date.getMonth() - i);
