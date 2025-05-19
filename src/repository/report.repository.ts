@@ -579,7 +579,9 @@ class ReportRepository {
     return where;
   }
 
-  public async getCountReport(): Promise<CountReport> {
+  public async getCountReport(
+    maxPercentage: number = 999,
+  ): Promise<CountReport> {
     try {
       // Get current date in Jakarta timezone
       const now = getJakartaTime();
@@ -612,36 +614,36 @@ class ReportRepository {
         },
       };
 
-      // Get counts for maintenance and calibration requests for current month
+      // Get counts for maintenance and calibration history for current month
       const [currentMonthMaintenanceCount, currentMonthCalibrationCount] =
         await Promise.all([
-          this.prisma.request.count({
+          this.prisma.maintenanceHistory.count({
             where: {
               ...currentMonthWhere,
-              requestType: "MAINTENANCE",
+              result: "SUCCESS",
             },
           }),
-          this.prisma.request.count({
+          this.prisma.calibrationHistory.count({
             where: {
               ...currentMonthWhere,
-              requestType: "CALIBRATION",
+              result: "SUCCESS",
             },
           }),
         ]);
 
-      // Get counts for maintenance and calibration requests for previous month
+      // Get counts for maintenance and calibration history for previous month
       const [prevMonthMaintenanceCount, prevMonthCalibrationCount] =
         await Promise.all([
-          this.prisma.request.count({
+          this.prisma.maintenanceHistory.count({
             where: {
               ...prevMonthWhere,
-              requestType: "MAINTENANCE",
+              result: "SUCCESS",
             },
           }),
-          this.prisma.request.count({
+          this.prisma.calibrationHistory.count({
             where: {
               ...prevMonthWhere,
-              requestType: "CALIBRATION",
+              result: "SUCCESS",
             },
           }),
         ]);
@@ -654,6 +656,7 @@ class ReportRepository {
               gte: firstDayOfMonth,
               lte: lastDayOfMonth,
             },
+            result: "SUCCESS",
           },
         }),
         this.prisma.partsHistory.count({
@@ -662,6 +665,7 @@ class ReportRepository {
               gte: firstDayOfPrevMonth,
               lte: lastDayOfPrevMonth,
             },
+            result: "SUCCESS",
           },
         }),
       ]);
@@ -677,33 +681,32 @@ class ReportRepository {
           return current > 0 ? maxPercentage : 0;
         }
 
+        if (current === 0) {
+          // When current is 0 and previous is non-zero, return -100% (maximum possible decrease)
+          return -100;
+        }
+
         // Calculate normal percentage change
         const percentageChange = ((current - previous) / previous) * 100;
 
         // Cap the percentage at maximum value (both positive and negative)
         if (percentageChange > maxPercentage) {
           return maxPercentage;
-        } else if (percentageChange < -maxPercentage) {
-          return -maxPercentage;
         }
-
         return percentageChange;
       };
 
       const maintenancePercentageChange = calculatePercentageChange(
         currentMonthMaintenanceCount,
         prevMonthMaintenanceCount,
-        999,
       );
       const calibrationPercentageChange = calculatePercentageChange(
         currentMonthCalibrationCount,
         prevMonthCalibrationCount,
-        999,
       );
       const sparePartsPercentageChange = calculatePercentageChange(
         currentMonthPartsCount,
         prevMonthPartsCount,
-        999,
       );
 
       return {

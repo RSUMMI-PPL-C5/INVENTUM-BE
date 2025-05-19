@@ -5,7 +5,10 @@ import { getJakartaTime } from "../../../../src/utils/date.utils";
 // Mock the entire PrismaClient
 jest.mock("@prisma/client", () => ({
   PrismaClient: jest.fn().mockImplementation(() => ({
-    request: {
+    maintenanceHistory: {
+      count: jest.fn(),
+    },
+    calibrationHistory: {
       count: jest.fn(),
     },
     partsHistory: {
@@ -14,7 +17,10 @@ jest.mock("@prisma/client", () => ({
   })),
 }));
 
-jest.mock("../../../../src/utils/date.utils");
+// Mock the date utility
+jest.mock("../../../../src/utils/date.utils", () => ({
+  getJakartaTime: jest.fn(),
+}));
 
 describe("ReportRepository", () => {
   let reportRepository: ReportRepository;
@@ -45,25 +51,29 @@ describe("ReportRepository", () => {
       const mockPrevMonthCalibrationCount = 80;
       const mockPrevMonthPartsCount = 32;
 
-      // Mock Prisma responses for request counts
-      // FIXED: Use createdOn instead of createdAt
-      (mockPrisma.request.count as jest.Mock).mockImplementation((args) => {
-        const month = args.where.createdOn.gte.getMonth();
-        if (args.where.requestType === "MAINTENANCE") {
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthMaintenanceCount
               : mockPrevMonthMaintenanceCount,
           );
-        } else if (args.where.requestType === "CALIBRATION") {
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthCalibrationCount
               : mockPrevMonthCalibrationCount,
           );
-        }
-        return Promise.resolve(0);
-      });
+        },
+      );
 
       // Mock Prisma responses for parts history counts
       (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
@@ -106,13 +116,37 @@ describe("ReportRepository", () => {
       });
 
       // Verify that the correct number of calls were made
-      expect(mockPrisma.request.count).toHaveBeenCalledTimes(4); // 2 for MAINTENANCE, 2 for CALIBRATION
+      expect(mockPrisma.maintenanceHistory.count).toHaveBeenCalledTimes(2); // current and previous month
+      expect(mockPrisma.calibrationHistory.count).toHaveBeenCalledTimes(2); // current and previous month
       expect(mockPrisma.partsHistory.count).toHaveBeenCalledTimes(2); // current and previous month
+
+      // Verify that result filter is applied correctly
+      expect(mockPrisma.maintenanceHistory.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            result: "SUCCESS",
+          }),
+        }),
+      );
+      expect(mockPrisma.calibrationHistory.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            result: "SUCCESS",
+          }),
+        }),
+      );
+      expect(mockPrisma.partsHistory.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            result: "SUCCESS",
+          }),
+        }),
+      );
     });
 
     it("should handle errors gracefully", async () => {
       // Mock Prisma error
-      (mockPrisma.request.count as jest.Mock).mockRejectedValue(
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockRejectedValue(
         new Error("Database error"),
       );
 
@@ -124,7 +158,8 @@ describe("ReportRepository", () => {
 
     it("should return zero counts and percentage changes when no data exists", async () => {
       // Mock Prisma responses with zero counts
-      (mockPrisma.request.count as jest.Mock).mockResolvedValue(0);
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockResolvedValue(0);
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockResolvedValue(0);
       (mockPrisma.partsHistory.count as jest.Mock).mockResolvedValue(0);
 
       // Execute
@@ -142,7 +177,7 @@ describe("ReportRepository", () => {
     });
 
     it("should handle capped percentage increase when previous month had zero counts", async () => {
-      // Mock data - UPDATED TEST NAME AND EXPECTATIONS
+      // Mock data
       const mockCurrentMonthMaintenanceCount = 10;
       const mockCurrentMonthCalibrationCount = 5;
       const mockCurrentMonthPartsCount = 8;
@@ -150,25 +185,29 @@ describe("ReportRepository", () => {
       const mockPrevMonthCalibrationCount = 0;
       const mockPrevMonthPartsCount = 0;
 
-      // Mock Prisma responses for request counts
-      // FIXED: Use createdOn instead of createdAt
-      (mockPrisma.request.count as jest.Mock).mockImplementation((args) => {
-        const month = args.where.createdOn.gte.getMonth();
-        if (args.where.requestType === "MAINTENANCE") {
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthMaintenanceCount
               : mockPrevMonthMaintenanceCount,
           );
-        } else if (args.where.requestType === "CALIBRATION") {
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthCalibrationCount
               : mockPrevMonthCalibrationCount,
           );
-        }
-        return Promise.resolve(0);
-      });
+        },
+      );
 
       // Mock Prisma responses for parts history counts
       (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
@@ -183,7 +222,7 @@ describe("ReportRepository", () => {
       // Execute
       const result = await reportRepository.getCountReport();
 
-      // Assert - UPDATED: Expect 999% instead of 100%
+      // Assert
       expect(result).toEqual({
         maintenanceCount: mockCurrentMonthMaintenanceCount,
         calibrationCount: mockCurrentMonthCalibrationCount,
@@ -194,7 +233,6 @@ describe("ReportRepository", () => {
       });
     });
 
-    // NEW TEST: Test percentage capping for extreme increases
     it("should cap percentage at 999% for extreme increases", async () => {
       // Mock data - extreme increase scenario
       const mockCurrentMonthMaintenanceCount = 1000;
@@ -204,24 +242,29 @@ describe("ReportRepository", () => {
       const mockPrevMonthCalibrationCount = 1; // Would be 49,900% increase
       const mockPrevMonthPartsCount = 1; // Would be 199,900% increase
 
-      // Mock Prisma responses for request counts
-      (mockPrisma.request.count as jest.Mock).mockImplementation((args) => {
-        const month = args.where.createdOn.gte.getMonth();
-        if (args.where.requestType === "MAINTENANCE") {
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthMaintenanceCount
               : mockPrevMonthMaintenanceCount,
           );
-        } else if (args.where.requestType === "CALIBRATION") {
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthCalibrationCount
               : mockPrevMonthCalibrationCount,
           );
-        }
-        return Promise.resolve(0);
-      });
+        },
+      );
 
       // Mock Prisma responses for parts history counts
       (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
@@ -236,7 +279,7 @@ describe("ReportRepository", () => {
       // Execute
       const result = await reportRepository.getCountReport();
 
-      // Assert - All should be capped at 999%
+      // Assert
       expect(result).toEqual({
         maintenanceCount: mockCurrentMonthMaintenanceCount,
         calibrationCount: mockCurrentMonthCalibrationCount,
@@ -247,34 +290,38 @@ describe("ReportRepository", () => {
       });
     });
 
-    // NEW TEST: Test normal percentage calculations (within cap)
-    it("should calculate normal percentages when within cap limits", async () => {
-      // Mock data - normal changes
-      const mockCurrentMonthMaintenanceCount = 120;
-      const mockCurrentMonthCalibrationCount = 60;
-      const mockCurrentMonthPartsCount = 45;
-      const mockPrevMonthMaintenanceCount = 100; // 20% increase
-      const mockPrevMonthCalibrationCount = 80; // 25% decrease
-      const mockPrevMonthPartsCount = 30; // 50% increase
+    it("should cap percentage decrease at -100%", async () => {
+      // Mock data - extreme decrease scenario
+      const mockCurrentMonthMaintenanceCount = 0;
+      const mockCurrentMonthCalibrationCount = 0;
+      const mockCurrentMonthPartsCount = 0;
+      const mockPrevMonthMaintenanceCount = 1000; // Would be -100% decrease
+      const mockPrevMonthCalibrationCount = 1000; // Would be -100% decrease
+      const mockPrevMonthPartsCount = 1000; // Would be -100% decrease
 
-      // Mock Prisma responses for request counts
-      (mockPrisma.request.count as jest.Mock).mockImplementation((args) => {
-        const month = args.where.createdOn.gte.getMonth();
-        if (args.where.requestType === "MAINTENANCE") {
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthMaintenanceCount
               : mockPrevMonthMaintenanceCount,
           );
-        } else if (args.where.requestType === "CALIBRATION") {
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
           return Promise.resolve(
             month === 2
               ? mockCurrentMonthCalibrationCount
               : mockPrevMonthCalibrationCount,
           );
-        }
-        return Promise.resolve(0);
-      });
+        },
+      );
 
       // Mock Prisma responses for parts history counts
       (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
@@ -289,14 +336,184 @@ describe("ReportRepository", () => {
       // Execute
       const result = await reportRepository.getCountReport();
 
-      // Assert - Normal percentage calculations
+      // Assert
       expect(result).toEqual({
         maintenanceCount: mockCurrentMonthMaintenanceCount,
         calibrationCount: mockCurrentMonthCalibrationCount,
         sparePartsCount: mockCurrentMonthPartsCount,
-        maintenancePercentageChange: 20, // (120-100)/100 * 100 = 20%
-        calibrationPercentageChange: -25, // (60-80)/80 * 100 = -25%
-        sparePartsPercentageChange: 50, // (45-30)/30 * 100 = 50%
+        maintenancePercentageChange: -100,
+        calibrationPercentageChange: -100,
+        sparePartsPercentageChange: -100,
+      });
+    });
+
+    it("should cap percentage decrease at -100% for partial decreases", async () => {
+      // Mock data - partial decrease scenario
+      const mockCurrentMonthMaintenanceCount = 50;
+      const mockCurrentMonthCalibrationCount = 25;
+      const mockCurrentMonthPartsCount = 75;
+      const mockPrevMonthMaintenanceCount = 100; // Would be -50% decrease
+      const mockPrevMonthCalibrationCount = 100; // Would be -75% decrease
+      const mockPrevMonthPartsCount = 100; // Would be -25% decrease
+
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthMaintenanceCount
+              : mockPrevMonthMaintenanceCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthCalibrationCount
+              : mockPrevMonthCalibrationCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for parts history counts
+      (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.replacementDate.gte.getMonth();
+          return Promise.resolve(
+            month === 2 ? mockCurrentMonthPartsCount : mockPrevMonthPartsCount,
+          );
+        },
+      );
+
+      // Execute
+      const result = await reportRepository.getCountReport();
+
+      // Assert
+      expect(result).toEqual({
+        maintenanceCount: mockCurrentMonthMaintenanceCount,
+        calibrationCount: mockCurrentMonthCalibrationCount,
+        sparePartsCount: mockCurrentMonthPartsCount,
+        maintenancePercentageChange: -50,
+        calibrationPercentageChange: -75,
+        sparePartsPercentageChange: -25,
+      });
+    });
+
+    it("should cap percentage at -999% when decrease is more than 999%", async () => {
+      // Mock data - decrease more than 999%
+      const mockCurrentMonthMaintenanceCount = 1;
+      const mockCurrentMonthCalibrationCount = 1;
+      const mockCurrentMonthPartsCount = 1;
+      const mockPrevMonthMaintenanceCount = 1000000;
+      const mockPrevMonthCalibrationCount = 1000000;
+      const mockPrevMonthPartsCount = 1000000;
+
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthMaintenanceCount
+              : mockPrevMonthMaintenanceCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthCalibrationCount
+              : mockPrevMonthCalibrationCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for parts history counts
+      (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.replacementDate.gte.getMonth();
+          return Promise.resolve(
+            month === 2 ? mockCurrentMonthPartsCount : mockPrevMonthPartsCount,
+          );
+        },
+      );
+
+      // Execute
+      const result = await reportRepository.getCountReport();
+
+      // Assert
+      expect(result).toEqual({
+        maintenanceCount: mockCurrentMonthMaintenanceCount,
+        calibrationCount: mockCurrentMonthCalibrationCount,
+        sparePartsCount: mockCurrentMonthPartsCount,
+        maintenancePercentageChange: -100,
+        calibrationPercentageChange: -100,
+        sparePartsPercentageChange: -100,
+      });
+    });
+
+    it("should respect custom maxPercentage value", async () => {
+      // Mock data - extreme increase scenario
+      const mockCurrentMonthMaintenanceCount = 1000;
+      const mockCurrentMonthCalibrationCount = 1000;
+      const mockCurrentMonthPartsCount = 1000;
+      const mockPrevMonthMaintenanceCount = 1; // Would be 99,900% increase
+      const mockPrevMonthCalibrationCount = 1; // Would be 99,900% increase
+      const mockPrevMonthPartsCount = 1; // Would be 99,900% increase
+
+      // Mock Prisma responses for maintenance history counts
+      (mockPrisma.maintenanceHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthMaintenanceCount
+              : mockPrevMonthMaintenanceCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for calibration history counts
+      (mockPrisma.calibrationHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.createdOn.gte.getMonth();
+          return Promise.resolve(
+            month === 2
+              ? mockCurrentMonthCalibrationCount
+              : mockPrevMonthCalibrationCount,
+          );
+        },
+      );
+
+      // Mock Prisma responses for parts history counts
+      (mockPrisma.partsHistory.count as jest.Mock).mockImplementation(
+        (args) => {
+          const month = args.where.replacementDate.gte.getMonth();
+          return Promise.resolve(
+            month === 2 ? mockCurrentMonthPartsCount : mockPrevMonthPartsCount,
+          );
+        },
+      );
+
+      // Execute with custom maxPercentage
+      const result = await reportRepository.getCountReport(500);
+
+      expect(result).toEqual({
+        maintenanceCount: mockCurrentMonthMaintenanceCount,
+        calibrationCount: mockCurrentMonthCalibrationCount,
+        sparePartsCount: mockCurrentMonthPartsCount,
+        maintenancePercentageChange: 999,
+        calibrationPercentageChange: 999,
+        sparePartsPercentageChange: 999,
       });
     });
   });
