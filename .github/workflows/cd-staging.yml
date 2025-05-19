@@ -19,7 +19,7 @@ jobs:
         working-directory: /home/noov/inventum/staging
         run: |
           # Source the .env file to get environment variables
-          source .env.staging
+          source .env
           
           # Start DB if not running
           if ! docker ps | grep -q inventum-mysql-staging; then
