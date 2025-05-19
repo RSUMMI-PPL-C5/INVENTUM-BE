@@ -583,14 +583,11 @@ class ReportRepository {
     maxPercentage: number = 999,
   ): Promise<CountReport> {
     try {
-      // Get current date in Jakarta timezone
       const now = getJakartaTime();
 
-      // Current month date range
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Previous month date range
       const firstDayOfPrevMonth = new Date(
         now.getFullYear(),
         now.getMonth() - 1,
@@ -598,7 +595,6 @@ class ReportRepository {
       );
       const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Base where clause for current month
       const currentMonthWhere = {
         createdOn: {
           gte: firstDayOfMonth,
@@ -606,7 +602,6 @@ class ReportRepository {
         },
       };
 
-      // Base where clause for previous month
       const prevMonthWhere = {
         createdOn: {
           gte: firstDayOfPrevMonth,

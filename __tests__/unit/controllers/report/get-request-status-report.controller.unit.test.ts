@@ -41,19 +41,19 @@ describe("ReportController - getRequestStatusReport", () => {
       // Arrange
       const mockReportData = {
         MAINTENANCE: [
-          { status: "Success", count: 50, percentage: 50 },
-          { status: "Partial", count: 30, percentage: 30 },
-          { status: "Failed", count: 20, percentage: 20 },
+          { status: "completed", count: 50, percentage: 50 },
+          { status: "on progress", count: 30, percentage: 30 },
+          { status: "pending", count: 20, percentage: 20 },
         ],
         CALIBRATION: [
-          { status: "Success", count: 40, percentage: 40 },
-          { status: "Partial", count: 40, percentage: 40 },
-          { status: "Failed", count: 20, percentage: 20 },
+          { status: "completed", count: 40, percentage: 40 },
+          { status: "on progress", count: 40, percentage: 40 },
+          { status: "pending", count: 20, percentage: 20 },
         ],
         total: {
-          success: 90,
-          warning: 70,
-          failed: 40,
+          completed: 90,
+          on_progress: 70,
+          pending: 40,
           total: 200,
         },
       };
