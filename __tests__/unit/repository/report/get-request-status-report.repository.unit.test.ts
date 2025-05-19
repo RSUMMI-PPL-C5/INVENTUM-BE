@@ -30,13 +30,13 @@ describe("ReportRepository - getRequestStatusReport", () => {
     it("should return correct status report with percentages", async () => {
       // Arrange
       const mockRequests = [
-        { status: "Success", requestType: "MAINTENANCE" },
-        { status: "Success", requestType: "MAINTENANCE" },
-        { status: "Partial", requestType: "MAINTENANCE" },
-        { status: "Failed", requestType: "MAINTENANCE" },
-        { status: "Success", requestType: "CALIBRATION" },
-        { status: "Partial", requestType: "CALIBRATION" },
-        { status: "Failed", requestType: "CALIBRATION" },
+        { status: "COMPLETED", requestType: "MAINTENANCE" },
+        { status: "COMPLETED", requestType: "MAINTENANCE" },
+        { status: "ON_PROGRESS", requestType: "MAINTENANCE" },
+        { status: "PENDING", requestType: "MAINTENANCE" },
+        { status: "COMPLETED", requestType: "CALIBRATION" },
+        { status: "ON_PROGRESS", requestType: "CALIBRATION" },
+        { status: "PENDING", requestType: "CALIBRATION" },
         // Add an unknown status to test normalization
         { status: "Unknown", requestType: "CALIBRATION" },
       ];
@@ -48,28 +48,28 @@ describe("ReportRepository - getRequestStatusReport", () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.MAINTENANCE).toHaveLength(3); // Success, Partial, Failed
-      expect(result.CALIBRATION).toHaveLength(3); // Success, Partial, Failed
+      expect(result.MAINTENANCE).toHaveLength(3); // completed, on progress, pending
+      expect(result.CALIBRATION).toHaveLength(3); // completed, on progress, pending
 
       // Check MAINTENANCE data
-      const maintenanceSuccess = result.MAINTENANCE.find(
-        (item) => item.status === "Success",
+      const maintenanceCompleted = result.MAINTENANCE.find(
+        (item) => item.status === "completed",
       );
-      expect(maintenanceSuccess).toBeDefined();
-      expect(maintenanceSuccess!.count).toBe(2);
-      expect(maintenanceSuccess!.percentage).toBe(50); // 2 out of 4
+      expect(maintenanceCompleted).toBeDefined();
+      expect(maintenanceCompleted!.count).toBe(2);
+      expect(maintenanceCompleted!.percentage).toBe(50); // 2 out of 4
 
-      // Check normalization of unknown status
-      const calibrationPartial = result.CALIBRATION.find(
-        (item) => item.status === "Partial",
+      // Check normalization of unknown status (should be mapped to "on progress")
+      const calibrationOnProgress = result.CALIBRATION.find(
+        (item) => item.status === "on progress",
       );
-      expect(calibrationPartial).toBeDefined();
-      expect(calibrationPartial!.count).toBe(2); // 1 regular + 1 normalized from Unknown
+      expect(calibrationOnProgress).toBeDefined();
+      expect(calibrationOnProgress!.count).toBe(2); // 1 regular + 1 normalized from Unknown
 
-      // Check totals
-      expect(result.total.success).toBe(3); // 2 MAINTENANCE + 1 CALIBRATION
-      expect(result.total.warning).toBe(3); // 1 MAINTENANCE + 2 CALIBRATION
-      expect(result.total.failed).toBe(2); // 1 MAINTENANCE + 1 CALIBRATION
+      // Check totals - using new property names
+      expect(result.total.completed).toBe(3); // 2 MAINTENANCE + 1 CALIBRATION
+      expect(result.total.on_progress).toBe(3); // 1 MAINTENANCE + 2 CALIBRATION
+      expect(result.total.pending).toBe(2); // 1 MAINTENANCE + 1 CALIBRATION
       expect(result.total.total).toBe(8);
     });
   });
@@ -88,10 +88,10 @@ describe("ReportRepository - getRequestStatusReport", () => {
       expect(result.MAINTENANCE).toHaveLength(3); // Still has the status categories
       expect(result.CALIBRATION).toHaveLength(3);
 
-      // All counts should be zero
-      expect(result.total.success).toBe(0);
-      expect(result.total.warning).toBe(0);
-      expect(result.total.failed).toBe(0);
+      // All counts should be zero - using new property names
+      expect(result.total.completed).toBe(0);
+      expect(result.total.on_progress).toBe(0);
+      expect(result.total.pending).toBe(0);
       expect(result.total.total).toBe(0);
     });
 
