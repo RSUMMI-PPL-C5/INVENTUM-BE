@@ -4,6 +4,7 @@ import verifyToken from "../middleware/verifyToken";
 import authorizeRoles from "../middleware/authorizeRole";
 import { validateRequest } from "../middleware/validateRequest";
 import { exportDataValidation } from "../validations/report.validation";
+import { generalLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 const controller = new ReportController();
@@ -16,6 +17,7 @@ router.get("/monthly-requests", controller.getMonthlyRequestCounts);
 router.get("/request-status", controller.getRequestStatusReport);
 router.get(
   "/export",
+  generalLimiter,
   exportDataValidation,
   validateRequest,
   controller.exportAllData,
