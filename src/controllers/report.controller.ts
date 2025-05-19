@@ -208,6 +208,24 @@ export class ReportController {
       next(error);
     }
   };
+
+  public getRequestStatusReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const result = await this.reportService.getRequestStatusReport();
+
+      res.status(200).json({
+        success: true,
+        message: "Request status report retrieved successfully",
+        data: result.data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ReportController;
