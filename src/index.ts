@@ -109,11 +109,6 @@ if (STAGING && isStaging) {
   whitelist.push(STAGING);
 }
 
-// Explicitly add staging URL
-if (isStaging) {
-  whitelist.push("https://fe.al3l.com");
-}
-
 const corsOptions: cors.CorsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.includes(origin)) {
