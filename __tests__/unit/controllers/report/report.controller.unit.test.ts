@@ -498,6 +498,50 @@ describe("ReportController", () => {
     });
   });
 
+  describe("getMaintenanceCount", () => {
+    it("should return maintenance count with success message", async () => {
+      // Arrange
+      mockReportService.getMaintenanceCount = jest.fn().mockResolvedValue({
+        success: true,
+        count: 42,
+      });
+
+      // Act
+      await controller.getMaintenanceCount(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext,
+      );
+
+      // Assert
+      expect(mockReportService.getMaintenanceCount).toHaveBeenCalled();
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Maintenance count retrieved successfully",
+        count: 42,
+      });
+    });
+
+    it("should handle errors", async () => {
+      // Arrange
+      const mockError = new Error("Failed to get maintenance count");
+      mockReportService.getMaintenanceCount = jest
+        .fn()
+        .mockRejectedValue(mockError);
+
+      // Act
+      await controller.getMaintenanceCount(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext,
+      );
+
+      // Assert
+      expect(mockNext).toHaveBeenCalledWith(mockError);
+    });
+  });
+
   // Add tests to cover lines 74-75, 260-277 in report.controller.ts
   describe("specific edge cases", () => {
     it("should handle all validation cases for parameter validation", async () => {

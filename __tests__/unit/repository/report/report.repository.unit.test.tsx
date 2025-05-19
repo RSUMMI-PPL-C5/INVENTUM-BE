@@ -824,3 +824,34 @@ describe("ReportRepository - edge cases coverage", () => {
     );
   });
 });
+
+// Add new test suite for getMaintenanceCount
+describe("ReportRepository - getMaintenanceCount", () => {
+  let reportRepository: ReportRepository;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    reportRepository = new ReportRepository();
+    (prisma.maintenanceHistory.count as jest.Mock).mockResolvedValue(42);
+  });
+
+  it("should return the count of maintenance records", async () => {
+    // Act
+    const result = await reportRepository.getMaintenanceCount();
+
+    // Assert
+    expect(prisma.maintenanceHistory.count).toHaveBeenCalled();
+    expect(result).toBe(42);
+  });
+
+  it("should handle database errors", async () => {
+    // Arrange
+    const error = new Error("Database connection failed");
+    (prisma.maintenanceHistory.count as jest.Mock).mockRejectedValue(error);
+
+    // Act & Assert
+    await expect(reportRepository.getMaintenanceCount()).rejects.toThrow(
+      "Database connection failed",
+    );
+  });
+});

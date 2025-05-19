@@ -21,6 +21,7 @@ jest.mock("../../../../src/controllers/report.controller", () => {
     getPlanReports: jest.fn(),
     getResultReports: jest.fn(),
     getSummaryReports: jest.fn(),
+    getMaintenanceCount: jest.fn(), // Add this new mock method
   }));
 });
 
@@ -74,6 +75,14 @@ describe("Report Routes", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
       "/summary",
+      expect.any(Function),
+    );
+  });
+
+  it("should register GET /maintenance-count route", () => {
+    const mockRouter = (Router as jest.Mock).mock.results[0].value;
+    expect(mockRouter.get).toHaveBeenCalledWith(
+      "/maintenance-count",
       expect.any(Function),
     );
   });

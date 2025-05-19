@@ -8,6 +8,7 @@ jest.mock("../../../../src/repository/report.repository", () => {
     getPlanReports: jest.fn(),
     getResultReports: jest.fn(),
     getSummaryReports: jest.fn(),
+    getMaintenanceCount: jest.fn(), // Add this new mock method
   }));
 });
 
@@ -210,6 +211,34 @@ describe("ReportService", () => {
       expect(result.meta.page).toBe(1);
       expect(result.meta.limit).toBe(2);
       expect(result.meta.totalPages).toBe(1);
+    });
+  });
+
+  describe("getMaintenanceCount", () => {
+    it("should return maintenance count", async () => {
+      // Arrange
+      reportRepository.getMaintenanceCount.mockResolvedValue(42);
+
+      // Act
+      const result = await reportService.getMaintenanceCount();
+
+      // Assert
+      expect(reportRepository.getMaintenanceCount).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        count: 42,
+      });
+    });
+
+    it("should handle errors", async () => {
+      // Arrange
+      const mockError = new Error("Failed to get maintenance count");
+      reportRepository.getMaintenanceCount.mockRejectedValue(mockError);
+
+      // Act & Assert
+      await expect(reportService.getMaintenanceCount()).rejects.toThrow(
+        mockError,
+      );
     });
   });
 
