@@ -30,7 +30,7 @@ jobs:
           # Build the backend image
           docker build \
             --no-cache \
-            -f Dockerfile.backend \
+            -f Dockerfile\
             -t inventum-backend:staging \
             .
           
