@@ -127,7 +127,7 @@ model MaintenanceHistory {
   maintenanceDate    DateTime
   createdBy          String
   createdOn          DateTime         @default(now())
-  medicalEquipmegnt   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
+  medicalEquipment   MedicalEquipment @relation(fields: [medicalEquipmentId], references: [id])
 
   @@index([medicalEquipmentId])
 }
