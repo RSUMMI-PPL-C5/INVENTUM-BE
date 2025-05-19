@@ -36,7 +36,12 @@ import { metricsMiddleware } from "./middleware/metrics.middleware";
 
 const app = express();
 
-// Basic security settings
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production";
+const isStaging = NODE_ENV === "staging";
+
+console.log(`Environment: ${NODE_ENV}`);
+
 app.disable("x-powered-by");
 app.use(
   helmet({
@@ -72,28 +77,37 @@ app.use((req, res, next) => {
   );
   next();
 });
-app.use(helmet.xssFilter());
-app.use(helmet.noSniff());
-app.use(helmet.ieNoOpen());
-app.use(helmet.frameguard({ action: "deny" }));
-app.use(helmet.hsts());
 
-// CORS configuration
-const whitelist = process.env.PROD_CLIENT_URL
-  ? [process.env.PROD_CLIENT_URL]
-  : [];
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || whitelist.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"), false);
-      }
-    },
-    credentials: true,
-  }),
-);
+app.use(helmet.xssFilter()); // Filter XSS
+app.use(helmet.noSniff()); // Mencegah MIME sniffing
+app.use(helmet.ieNoOpen()); // Mencegah IE dari menjalankan unduhan dalam konteks situs
+app.use(helmet.frameguard({ action: "deny" })); // Mencegah clickjacking
+app.use(helmet.hsts()); // HTTP Strict Transport Security
+
+const whitelist: string[] = [];
+
+const PROD = process.env.PROD_CLIENT_URL;
+if (PROD) {
+  whitelist.push(PROD);
+}
+
+const STAGING = process.env.STAGING_CLIENT_URL;
+if (STAGING && isStaging) {
+  whitelist.push(STAGING);
+}
+
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Request parsers
 app.use(express.json());
