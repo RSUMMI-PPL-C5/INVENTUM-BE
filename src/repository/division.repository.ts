@@ -9,7 +9,19 @@ class DivisionRepository {
     this.prisma = prisma;
   }
 
+  private validateDivisionName(name?: string | null): void {
+    if (!name || name.trim() === "") {
+      throw new Error(
+        "Division name cannot be empty or contain only whitespace",
+      );
+    }
+  }
+
   public async addDivision(data: Partial<DivisionDTO>): Promise<DivisionDTO> {
+    if (data.divisi !== undefined) {
+      this.validateDivisionName(data.divisi);
+    }
+
     return await this.prisma.listDivisi.create({ data });
   }
 
@@ -17,18 +29,10 @@ class DivisionRepository {
     return await this.prisma.listDivisi.findUnique({ where: { id } });
   }
 
-  /**
-   * Get all divisions without hierarchy
-   */
   public async getAllDivisions(): Promise<DivisionDTO[]> {
     return await this.prisma.listDivisi.findMany();
   }
 
-  /**
-   * Get hierarchical division structure (root divisions with their children)
-   * This formats the data for tree display in the frontend
-   * Uses a bottom-up approach to build the hierarchy
-   */
   public async getDivisionsHierarchy(): Promise<DivisionWithChildrenDTO[]> {
     // Ambil semua divisions dari database dalam satu query
     const allDivisions = await this.prisma.listDivisi.findMany({
@@ -65,9 +69,6 @@ class DivisionRepository {
     return rootDivisions;
   }
 
-  /**
-   * Get a specific division with its children
-   */
   public async getDivisionWithChildren(
     id: number,
   ): Promise<DivisionWithChildrenDTO | null> {
@@ -79,18 +80,12 @@ class DivisionRepository {
     });
   }
 
-  /**
-   * Get divisions based on filter criteria
-   */
   public async getFilteredDivisions(
     whereClause: Prisma.ListDivisiWhereInput,
   ): Promise<DivisionDTO[]> {
     return await this.prisma.listDivisi.findMany({ where: whereClause });
   }
 
-  /**
-   * Get divisions with user count
-   */
   public async getDivisionsWithUserCount(): Promise<
     Array<DivisionDTO & { userCount: number }>
   > {
@@ -113,6 +108,10 @@ class DivisionRepository {
     data: Prisma.ListDivisiUpdateInput,
   ): Promise<DivisionDTO> {
     try {
+      if (data.divisi !== undefined) {
+        this.validateDivisionName(data.divisi as string | null);
+      }
+
       return await this.prisma.listDivisi.update({
         where: { id },
         data,
