@@ -19,7 +19,7 @@ export const loginLimiter = rateLimit({
 // Limiter umum (jika perlu untuk API lain)
 export const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 menit
-  limit: 40, // 40 request per IP dalam 1 menit
+  max: 30, // 30 request per IP dalam 1 menit
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: {
