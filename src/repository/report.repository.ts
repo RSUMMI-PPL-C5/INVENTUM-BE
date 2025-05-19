@@ -72,22 +72,21 @@ class ReportRepository {
           },
         })) || [];
 
-      // Status categories
-      const successStatus = "Success";
-      const partialStatus = "Partial";
-      const failedStatus = "Failed";
+      const completedStatus = "completed";
+      const onProgressStatus = "on progress";
+      const pendingStatus = "pending";
 
       // Initialize counters for each request type and status
       const maintenanceStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       const calibrationStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       let maintenanceTotal = 0;
@@ -96,15 +95,26 @@ class ReportRepository {
       // Process each request
       for (const request of requests) {
         // Normalize the status
-        let normalizedStatus = request.status;
+        let normalizedStatus: string;
 
-        // If it's not one of our three categories, default to "Partial"
+        // Map status by checking uppercase values
         if (
-          ![successStatus, partialStatus, failedStatus].includes(
-            normalizedStatus,
-          )
+          request.status.toUpperCase() === "COMPLETED" ||
+          request.status.toUpperCase() === "SUCCESS"
         ) {
-          normalizedStatus = partialStatus;
+          normalizedStatus = completedStatus;
+        } else if (
+          request.status.toUpperCase() === "ON_PROGRESS" ||
+          request.status.toUpperCase() === "ONGOING"
+        ) {
+          normalizedStatus = onProgressStatus;
+        } else if (
+          request.status.toUpperCase() === "PENDING" ||
+          request.status.toUpperCase() === "SCHEDULED"
+        ) {
+          normalizedStatus = pendingStatus;
+        } else {
+          normalizedStatus = onProgressStatus; // Default case
         }
 
         if (request.requestType === "MAINTENANCE") {
@@ -143,24 +153,24 @@ class ReportRepository {
       }));
 
       // Calculate total values
-      const totalSuccess =
-        maintenanceStatusCounts[successStatus] +
-        calibrationStatusCounts[successStatus];
-      const totalPartial =
-        maintenanceStatusCounts[partialStatus] +
-        calibrationStatusCounts[partialStatus];
-      const totalFailed =
-        maintenanceStatusCounts[failedStatus] +
-        calibrationStatusCounts[failedStatus];
+      const totalCompleted =
+        maintenanceStatusCounts[completedStatus] +
+        calibrationStatusCounts[completedStatus];
+      const totalOnProgress =
+        maintenanceStatusCounts[onProgressStatus] +
+        calibrationStatusCounts[onProgressStatus];
+      const totalPending =
+        maintenanceStatusCounts[pendingStatus] +
+        calibrationStatusCounts[pendingStatus];
       const totalCount = maintenanceTotal + calibrationTotal;
 
       return {
         MAINTENANCE: maintenanceStatuses,
         CALIBRATION: calibrationStatuses,
         total: {
-          success: totalSuccess,
-          warning: totalPartial, // Mapping Partial to warning in the total
-          failed: totalFailed,
+          completed: totalCompleted,
+          on_progress: totalOnProgress,
+          pending: totalPending,
           total: totalCount,
         },
       };
@@ -685,16 +695,15 @@ class ReportRepository {
     return where;
   }
 
-  public async getCountReport(): Promise<CountReport> {
+  public async getCountReport(
+    maxPercentage: number = 999,
+  ): Promise<CountReport> {
     try {
-      // Get current date in Jakarta timezone
       const now = getJakartaTime();
 
-      // Current month date range
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Previous month date range
       const firstDayOfPrevMonth = new Date(
         now.getFullYear(),
         now.getMonth() - 1,
@@ -702,7 +711,6 @@ class ReportRepository {
       );
       const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Base where clause for current month
       const currentMonthWhere = {
         createdOn: {
           gte: firstDayOfMonth,
@@ -710,7 +718,6 @@ class ReportRepository {
         },
       };
 
-      // Base where clause for previous month
       const prevMonthWhere = {
         createdOn: {
           gte: firstDayOfPrevMonth,
@@ -718,36 +725,36 @@ class ReportRepository {
         },
       };
 
-      // Get counts for maintenance and calibration requests for current month
+      // Get counts for maintenance and calibration history for current month
       const [currentMonthMaintenanceCount, currentMonthCalibrationCount] =
         await Promise.all([
-          this.prisma.request.count({
+          this.prisma.maintenanceHistory.count({
             where: {
               ...currentMonthWhere,
-              requestType: "MAINTENANCE",
+              result: "SUCCESS",
             },
           }),
-          this.prisma.request.count({
+          this.prisma.calibrationHistory.count({
             where: {
               ...currentMonthWhere,
-              requestType: "CALIBRATION",
+              result: "SUCCESS",
             },
           }),
         ]);
 
-      // Get counts for maintenance and calibration requests for previous month
+      // Get counts for maintenance and calibration history for previous month
       const [prevMonthMaintenanceCount, prevMonthCalibrationCount] =
         await Promise.all([
-          this.prisma.request.count({
+          this.prisma.maintenanceHistory.count({
             where: {
               ...prevMonthWhere,
-              requestType: "MAINTENANCE",
+              result: "SUCCESS",
             },
           }),
-          this.prisma.request.count({
+          this.prisma.calibrationHistory.count({
             where: {
               ...prevMonthWhere,
-              requestType: "CALIBRATION",
+              result: "SUCCESS",
             },
           }),
         ]);
@@ -760,6 +767,7 @@ class ReportRepository {
               gte: firstDayOfMonth,
               lte: lastDayOfMonth,
             },
+            result: "SUCCESS",
           },
         }),
         this.prisma.partsHistory.count({
@@ -768,6 +776,7 @@ class ReportRepository {
               gte: firstDayOfPrevMonth,
               lte: lastDayOfPrevMonth,
             },
+            result: "SUCCESS",
           },
         }),
       ]);
@@ -783,33 +792,32 @@ class ReportRepository {
           return current > 0 ? maxPercentage : 0;
         }
 
+        if (current === 0) {
+          // When current is 0 and previous is non-zero, return -100% (maximum possible decrease)
+          return -100;
+        }
+
         // Calculate normal percentage change
         const percentageChange = ((current - previous) / previous) * 100;
 
         // Cap the percentage at maximum value (both positive and negative)
         if (percentageChange > maxPercentage) {
           return maxPercentage;
-        } else if (percentageChange < -maxPercentage) {
-          return -maxPercentage;
         }
-
         return percentageChange;
       };
 
       const maintenancePercentageChange = calculatePercentageChange(
         currentMonthMaintenanceCount,
         prevMonthMaintenanceCount,
-        999,
       );
       const calibrationPercentageChange = calculatePercentageChange(
         currentMonthCalibrationCount,
         prevMonthCalibrationCount,
-        999,
       );
       const sparePartsPercentageChange = calculatePercentageChange(
         currentMonthPartsCount,
         prevMonthPartsCount,
-        999,
       );
 
       return {
