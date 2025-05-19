@@ -1,4 +1,7 @@
-import { MonthlyDataRecord } from "../interfaces/report.interface";
+import {
+  MonthlyDataRecord,
+  RequestStatusReport,
+} from "../interfaces/report.interface";
 import ReportRepository from "../repository/report.repository";
 import { getJakartaTime } from "../utils/date.utils";
 
@@ -20,6 +23,23 @@ class ReportService {
       success: true,
       data: result,
     };
+  }
+
+  public async getRequestStatusReport(): Promise<{
+    success: boolean;
+    data: RequestStatusReport;
+  }> {
+    try {
+      const reportData = await this.reportRepository.getRequestStatusReport();
+
+      return {
+        success: true,
+        data: reportData,
+      };
+    } catch (error) {
+      console.error("Error getting request status report:", error);
+      throw error;
+    }
   }
 
   private ensureLast12Months(
