@@ -8,8 +8,10 @@ import {
   SummaryReportFilterOptions,
   RequestStatusReport,
   RequestStatusCount,
+  CountReport,
 } from "../interfaces/report.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
+import { getJakartaTime } from "../utils/date.utils";
 
 class ReportRepository {
   private readonly prisma: PrismaClient;
@@ -70,22 +72,21 @@ class ReportRepository {
           },
         })) || [];
 
-      // Status categories
-      const successStatus = "Success";
-      const partialStatus = "Partial";
-      const failedStatus = "Failed";
+      const completedStatus = "completed";
+      const onProgressStatus = "on progress";
+      const pendingStatus = "pending";
 
       // Initialize counters for each request type and status
       const maintenanceStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       const calibrationStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       let maintenanceTotal = 0;
@@ -94,15 +95,26 @@ class ReportRepository {
       // Process each request
       for (const request of requests) {
         // Normalize the status
-        let normalizedStatus = request.status;
+        let normalizedStatus: string;
 
-        // If it's not one of our three categories, default to "Partial"
+        // Map status by checking uppercase values
         if (
-          ![successStatus, partialStatus, failedStatus].includes(
-            normalizedStatus,
-          )
+          request.status.toUpperCase() === "COMPLETED" ||
+          request.status.toUpperCase() === "SUCCESS"
         ) {
-          normalizedStatus = partialStatus;
+          normalizedStatus = completedStatus;
+        } else if (
+          request.status.toUpperCase() === "ON_PROGRESS" ||
+          request.status.toUpperCase() === "ONGOING"
+        ) {
+          normalizedStatus = onProgressStatus;
+        } else if (
+          request.status.toUpperCase() === "PENDING" ||
+          request.status.toUpperCase() === "SCHEDULED"
+        ) {
+          normalizedStatus = pendingStatus;
+        } else {
+          normalizedStatus = onProgressStatus; // Default case
         }
 
         if (request.requestType === "MAINTENANCE") {
@@ -141,24 +153,24 @@ class ReportRepository {
       }));
 
       // Calculate total values
-      const totalSuccess =
-        maintenanceStatusCounts[successStatus] +
-        calibrationStatusCounts[successStatus];
-      const totalPartial =
-        maintenanceStatusCounts[partialStatus] +
-        calibrationStatusCounts[partialStatus];
-      const totalFailed =
-        maintenanceStatusCounts[failedStatus] +
-        calibrationStatusCounts[failedStatus];
+      const totalCompleted =
+        maintenanceStatusCounts[completedStatus] +
+        calibrationStatusCounts[completedStatus];
+      const totalOnProgress =
+        maintenanceStatusCounts[onProgressStatus] +
+        calibrationStatusCounts[onProgressStatus];
+      const totalPending =
+        maintenanceStatusCounts[pendingStatus] +
+        calibrationStatusCounts[pendingStatus];
       const totalCount = maintenanceTotal + calibrationTotal;
 
       return {
         MAINTENANCE: maintenanceStatuses,
         CALIBRATION: calibrationStatuses,
         total: {
-          success: totalSuccess,
-          warning: totalPartial, // Mapping Partial to warning in the total
-          failed: totalFailed,
+          completed: totalCompleted,
+          on_progress: totalOnProgress,
+          pending: totalPending,
           total: totalCount,
         },
       };
@@ -565,6 +577,148 @@ class ReportRepository {
     }
 
     return where;
+  }
+
+  public async getCountReport(
+    maxPercentage: number = 999,
+  ): Promise<CountReport> {
+    try {
+      const now = getJakartaTime();
+
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const firstDayOfPrevMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1,
+      );
+      const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      const currentMonthWhere = {
+        createdOn: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth,
+        },
+      };
+
+      const prevMonthWhere = {
+        createdOn: {
+          gte: firstDayOfPrevMonth,
+          lte: lastDayOfPrevMonth,
+        },
+      };
+
+      // Get counts for maintenance and calibration history for current month
+      const [currentMonthMaintenanceCount, currentMonthCalibrationCount] =
+        await Promise.all([
+          this.prisma.maintenanceHistory.count({
+            where: {
+              ...currentMonthWhere,
+              result: "SUCCESS",
+            },
+          }),
+          this.prisma.calibrationHistory.count({
+            where: {
+              ...currentMonthWhere,
+              result: "SUCCESS",
+            },
+          }),
+        ]);
+
+      // Get counts for maintenance and calibration history for previous month
+      const [prevMonthMaintenanceCount, prevMonthCalibrationCount] =
+        await Promise.all([
+          this.prisma.maintenanceHistory.count({
+            where: {
+              ...prevMonthWhere,
+              result: "SUCCESS",
+            },
+          }),
+          this.prisma.calibrationHistory.count({
+            where: {
+              ...prevMonthWhere,
+              result: "SUCCESS",
+            },
+          }),
+        ]);
+
+      // Get spare parts change counts for current and previous month
+      const [currentMonthPartsCount, prevMonthPartsCount] = await Promise.all([
+        this.prisma.partsHistory.count({
+          where: {
+            replacementDate: {
+              gte: firstDayOfMonth,
+              lte: lastDayOfMonth,
+            },
+            result: "SUCCESS",
+          },
+        }),
+        this.prisma.partsHistory.count({
+          where: {
+            replacementDate: {
+              gte: firstDayOfPrevMonth,
+              lte: lastDayOfPrevMonth,
+            },
+            result: "SUCCESS",
+          },
+        }),
+      ]);
+
+      // Calculate percentage changes with capping
+      const calculatePercentageChange = (
+        current: number,
+        previous: number,
+        maxPercentage: number = 999,
+      ): number => {
+        if (previous === 0) {
+          // When previous is 0, return the cap percentage if current > 0
+          return current > 0 ? maxPercentage : 0;
+        }
+
+        if (current === 0) {
+          // When current is 0 and previous is non-zero, return -100% (maximum possible decrease)
+          return -100;
+        }
+
+        // Calculate normal percentage change
+        const percentageChange = ((current - previous) / previous) * 100;
+
+        // Cap the percentage at maximum value (both positive and negative)
+        if (percentageChange > maxPercentage) {
+          return maxPercentage;
+        }
+        return percentageChange;
+      };
+
+      const maintenancePercentageChange = calculatePercentageChange(
+        currentMonthMaintenanceCount,
+        prevMonthMaintenanceCount,
+      );
+      const calibrationPercentageChange = calculatePercentageChange(
+        currentMonthCalibrationCount,
+        prevMonthCalibrationCount,
+      );
+      const sparePartsPercentageChange = calculatePercentageChange(
+        currentMonthPartsCount,
+        prevMonthPartsCount,
+      );
+
+      return {
+        maintenanceCount: currentMonthMaintenanceCount,
+        calibrationCount: currentMonthCalibrationCount,
+        sparePartsCount: currentMonthPartsCount,
+        maintenancePercentageChange:
+          Math.round(maintenancePercentageChange * 100) / 100,
+        calibrationPercentageChange:
+          Math.round(calibrationPercentageChange * 100) / 100,
+        sparePartsPercentageChange:
+          Math.round(sparePartsPercentageChange * 100) / 100,
+      };
+    } catch (error) {
+      console.error("Error in getCountReport:", error);
+      throw error;
+    }
   }
 }
 
