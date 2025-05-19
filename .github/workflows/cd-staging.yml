@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - chore/Deployment
+      - health
 jobs:
   deploy:
     runs-on: self-hosted
