@@ -235,14 +235,6 @@ export class ReportController {
     try {
       const { startDate, endDate } = req.query;
 
-      if (!startDate || !endDate) {
-        res.status(400).json({
-          success: false,
-          message: "Start date and end date are required",
-        });
-        return;
-      }
-
       const buffer = await this.reportService.exportAllData(
         new Date(startDate as string),
         new Date(endDate as string),
@@ -258,6 +250,24 @@ export class ReportController {
       );
 
       res.status(200).send(buffer);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getCountReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const result = await this.reportService.getCountReport();
+
+      res.status(200).json({
+        success: true,
+        message: "Summary count report retrieved successfully",
+        data: result.data,
+      });
     } catch (error) {
       next(error);
     }

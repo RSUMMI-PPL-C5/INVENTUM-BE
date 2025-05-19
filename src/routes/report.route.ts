@@ -15,6 +15,13 @@ router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
 // Monthly chart data route
 router.get("/monthly-requests", controller.getMonthlyRequestCounts);
 router.get("/request-status", controller.getRequestStatusReport);
+router.get("/summary-count", controller.getCountReport);
+
+// Tabular report routes
+router.get("/plans", controller.getPlanReports);
+router.get("/results", controller.getResultReports);
+router.get("/summary", controller.getSummaryReports);
+
 router.get(
   "/export",
   generalLimiter,
@@ -22,10 +29,5 @@ router.get(
   validateRequest,
   controller.exportAllData,
 );
-
-// Tabular report routes
-router.get("/plans", controller.getPlanReports);
-router.get("/results", controller.getResultReports);
-router.get("/summary", controller.getSummaryReports);
 
 export default router;
