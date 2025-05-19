@@ -1,9 +1,19 @@
-.vscode
+# Dependencies
+node_modules/
+
+# Environment variables
 .env
-node_modules
-coverage
 
-.env*
+# Build output
+dist/
+build/
 
-# build
-dist
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads
+uploads/

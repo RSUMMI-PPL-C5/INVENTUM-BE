@@ -3,6 +3,7 @@ import SparepartService from "../services/sparepart.service";
 import { SparepartDTO } from "../dto/sparepart.dto";
 import { SparepartFilterOptions } from "../interfaces/spareparts.filter.interface";
 import { PaginationOptions } from "../interfaces/pagination.interface";
+import AppError from "../utils/appError";
 
 class SparepartController {
   private readonly sparepartService: SparepartService;
@@ -11,27 +12,24 @@ class SparepartController {
     this.sparepartService = new SparepartService();
   }
 
-  public addSparepart = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  public addSparepart = async (req: Request, res: Response) => {
     try {
-      const sparepartData: SparepartDTO = {
+      const imageUrl = req.file
+        ? `/uploads/spareparts/${req.file.filename}`
+        : null;
+      const sparepartData = {
         ...req.body,
-        createdBy: (req.user as any).userId,
+        imageUrl,
       };
-      if (req.file) {
-        sparepartData.imageUrl = `/uploads/spareparts/${req.file.filename}`;
+
+      const result = await this.sparepartService.addSparepart(sparepartData);
+      res.status(201).json(result);
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
       }
-      const newSparepart =
-        await this.sparepartService.addSparepart(sparepartData);
-      res.status(201).json({
-        status: "success",
-        data: newSparepart,
-      });
-    } catch (error) {
-      next(error);
     }
   };
 
@@ -93,37 +91,28 @@ class SparepartController {
     }
   };
 
-  public updateSparepart = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  public updateSparepart = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const imageUrl = req.file
+        ? `/uploads/spareparts/${req.file.filename}`
+        : undefined;
       const sparepartData = {
         ...req.body,
-        modifiedBy: (req.user as any).userId,
+        ...(imageUrl && { imageUrl }),
       };
-      if (req.file) {
-        sparepartData.imageUrl = `/uploads/spareparts/${req.file.filename}`;
-      }
-      const updatedSparepart = await this.sparepartService.updateSparepart(
+
+      const result = await this.sparepartService.updateSparepart(
         id,
         sparepartData,
       );
-      if (!updatedSparepart) {
-        res.status(404).json({
-          status: "error",
-          message: "Sparepart not found",
-        });
-        return;
+      res.json(result);
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
       }
-      res.status(200).json({
-        status: "success",
-        data: updatedSparepart,
-      });
-    } catch (error) {
-      next(error);
     }
   };
 
