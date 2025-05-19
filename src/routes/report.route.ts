@@ -12,7 +12,7 @@ const controller = new ReportController();
 // Middleware
 router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
 
-// Routes
+// Monthly chart data route
 router.get("/monthly-requests", controller.getMonthlyRequestCounts);
 router.get("/request-status", controller.getRequestStatusReport);
 router.get(
@@ -22,5 +22,10 @@ router.get(
   validateRequest,
   controller.exportAllData,
 );
+
+// Tabular report routes
+router.get("/plans", controller.getPlanReports);
+router.get("/results", controller.getResultReports);
+router.get("/summary", controller.getSummaryReports);
 
 export default router;

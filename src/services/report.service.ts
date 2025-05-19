@@ -1,10 +1,14 @@
 import {
   MonthlyDataRecord,
+  PlanReportFilterOptions,
+  ResultReportFilterOptions,
+  SummaryReportFilterOptions,
   RequestStatusReport,
 } from "../interfaces/report.interface";
 import ReportRepository from "../repository/report.repository";
 import { getJakartaTime } from "../utils/date.utils";
 import ExcelJS from "exceljs";
+import { PaginationOptions } from "../interfaces/pagination.interface";
 
 class ReportService {
   private readonly reportRepository: ReportRepository;
@@ -263,6 +267,75 @@ class ReportService {
     });
   }
 
+  // Get plan reports (maintenance and calibration plans)
+  public async getPlanReports(
+    filters?: PlanReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const { plans, total } = await this.reportRepository.getPlanReports(
+      filters,
+      pagination,
+    );
+
+    const totalPages = pagination ? Math.ceil(total / pagination.limit) : 1;
+
+    return {
+      data: plans,
+      meta: {
+        total,
+        page: pagination?.page ?? 1,
+        limit: pagination?.limit ?? plans.length,
+        totalPages,
+      },
+    };
+  }
+
+  // Get result reports (maintenance, calibration, and parts replacement results)
+  public async getResultReports(
+    filters?: ResultReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const { results, total } = await this.reportRepository.getResultReports(
+      filters,
+      pagination,
+    );
+
+    const totalPages = pagination ? Math.ceil(total / pagination.limit) : 1;
+
+    return {
+      data: results,
+      meta: {
+        total,
+        page: pagination?.page ?? 1,
+        limit: pagination?.limit ?? results.length,
+        totalPages,
+      },
+    };
+  }
+
+  // Get summary reports (comments/responses)
+  public async getSummaryReports(
+    filters?: SummaryReportFilterOptions,
+    pagination?: PaginationOptions,
+  ) {
+    const { comments, total } = await this.reportRepository.getSummaryReports(
+      filters,
+      pagination,
+    );
+
+    const totalPages = pagination ? Math.ceil(total / pagination.limit) : 1;
+
+    return {
+      data: comments,
+      meta: {
+        total,
+        page: pagination?.page ?? 1,
+        limit: pagination?.limit ?? comments.length,
+        totalPages,
+      },
+    };
+  }
+
   private ensureLast12Months(
     rawData: MonthlyDataRecord[],
   ): MonthlyDataRecord[] {
@@ -289,12 +362,23 @@ class ReportService {
     }
 
     // Update data dengan nilai dari data asli
-    rawData.forEach((item) => {
+    for (const item of rawData) {
       if (monthsData[item.month]) {
-        monthsData[item.month].MAINTENANCE = item.MAINTENANCE ?? 0;
-        monthsData[item.month].CALIBRATION = item.CALIBRATION ?? 0;
+        // Handle maintenance count - explicitly handle null/undefined cases
+        if (item.MAINTENANCE !== null && item.MAINTENANCE !== undefined) {
+          monthsData[item.month].MAINTENANCE = item.MAINTENANCE;
+        } else {
+          monthsData[item.month].MAINTENANCE = 0;
+        }
+
+        // Handle calibration count - explicitly handle null/undefined cases
+        if (item.CALIBRATION !== null && item.CALIBRATION !== undefined) {
+          monthsData[item.month].CALIBRATION = item.CALIBRATION;
+        } else {
+          monthsData[item.month].CALIBRATION = 0;
+        }
       }
-    });
+    }
 
     // Convert kembali ke array dan diurutkan berdasarkan bulan (newest first)
     return Object.values(monthsData).sort((a, b) =>
