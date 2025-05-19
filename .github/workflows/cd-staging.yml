@@ -11,38 +11,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       
-      - name: Build and Deploy Frontend
+      - name: Build Docker image
+        run: |
+          docker build -t inventum-backend:staging .
+      
+      - name: Run database migrations
         working-directory: /home/noov/inventum/staging
         run: |
-          # Load environment variables
+          # Source the .env file to get environment variables
           source .env
           
-          # Create .env.local in the frontend source directory
-          cat > /home/noov/actions-runner/_work/INVENTUM-FE/INVENTUM-FE/.env.local << EOF
-          NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-          NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}
-          NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
-          NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}
-          EOF
+          # Start DB if not running
+          if ! docker ps | grep -q inventum-mysql-staging; then
+            docker compose -f docker-compose.staging.yml up -d db
+            echo "Waiting for MySQL to initialize..."
+            sleep 15
+          fi
           
-          # Verify the .env.local file
-          echo "Created .env.local with:"
-          cat /home/noov/actions-runner/_work/INVENTUM-FE/INVENTUM-FE/.env.local
+          # Run regular migrations
+          docker run --rm \
+            --network inventum-network \
+            -e DATABASE_URL="$DATABASE_URL" \
+            inventum-backend:staging \
+            npx prisma migrate deploy
+      
+      - name: Deploy backend
+        working-directory: /home/noov/inventum/staging
+        run: |
+          # Stop and remove only the backend container if it exists
+          docker compose -f docker-compose.staging.yml stop backend || true
+          docker compose -f docker-compose.staging.yml rm -f backend || true
           
-          # Build the Docker image (Next.js will automatically read .env.local)
-          docker build --no-cache -t inventum-frontend:staging /home/noov/actions-runner/_work/INVENTUM-FE/INVENTUM-FE/
-          
-          # Stop and redeploy frontend
-          docker compose -f docker-compose.staging.yml stop frontend || true
-          docker compose -f docker-compose.staging.yml rm -f frontend || true
-          docker compose -f docker-compose.staging.yml up -d frontend
-          
-          # Clean up the .env.local file
-          rm -f /home/noov/actions-runner/_work/INVENTUM-FE/INVENTUM-FE/.env.local
-          
-          # Wait and verify
-          sleep 10
-          echo "Deployment verification:"
-          docker exec inventum-frontend-staging printenv | grep NEXT_PUBLIC
-          
-          echo "Frontend deployment completed successfully"
+          # Start the backend container
+          docker compose -f docker-compose.staging.yml up -d backend
+      
+      - name: Deployment Info
+        run: |
+          echo "Deployment completed successfully"
