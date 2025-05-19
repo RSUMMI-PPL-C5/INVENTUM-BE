@@ -62,6 +62,47 @@ describe("DivisionRepository - ADD", () => {
     );
   });
 
+  // New tests for name validation
+  it("should throw an error when adding a division with only whitespace in name", async () => {
+    const addData: Partial<DivisionDTO> = {
+      divisi: "    ", // Only whitespace
+      parentId: 1,
+    };
+
+    await expect(divisionRepository.addDivision(addData)).rejects.toThrow(
+      "Division name cannot be empty or contain only whitespace",
+    );
+
+    // Verify that the create method was never called
+    expect(mockPrisma.create).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error when adding a division with empty string name", async () => {
+    const addData: Partial<DivisionDTO> = {
+      divisi: "",
+      parentId: 1,
+    };
+
+    await expect(divisionRepository.addDivision(addData)).rejects.toThrow(
+      "Division name cannot be empty or contain only whitespace",
+    );
+
+    expect(mockPrisma.create).not.toHaveBeenCalled();
+  });
+
+  it("should throw an error when adding a division with null name", async () => {
+    const addData: Partial<DivisionDTO> = {
+      divisi: null,
+      parentId: 1,
+    };
+
+    await expect(divisionRepository.addDivision(addData)).rejects.toThrow(
+      "Division name cannot be empty or contain only whitespace",
+    );
+
+    expect(mockPrisma.create).not.toHaveBeenCalled();
+  });
+
   it("should get divisi by id", async () => {
     const mockNewDivision: DivisionDTO = {
       id: 2,
