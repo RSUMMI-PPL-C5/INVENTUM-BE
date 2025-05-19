@@ -1,9 +1,11 @@
 name: Backend Staging CD
+
 on:
   push:
     branches:
       - chore/Deployment
       - health
+
 jobs:
   deploy:
     runs-on: self-hosted
@@ -11,40 +13,79 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       
-      - name: Build Docker image
+      - name: Load Backend Environment Variables
         run: |
-          docker build -t inventum-backend:staging .
+          # Source the backend environment file
+          if [ -f "/home/noov/inventum/staging/BE/.env" ]; then
+            echo "Loading backend environment variables..."
+            source /home/noov/inventum/staging/BE/.env
+            echo " Backend environment variables loaded"
+          else
+            echo " Backend environment file not found!"
+            exit 1
+          fi
       
-      - name: Run database migrations
+      - name: Build Backend Docker Image
+        run: |
+          # Build the backend image
+          docker build \
+            --no-cache \
+            -f Dockerfile.backend \
+            -t inventum-backend:staging \
+            .
+          
+          echo " Backend Docker image built successfully"
+      
+      - name: Run Database Migrations
         working-directory: /home/noov/inventum/staging
         run: |
-          # Source the .env file to get environment variables
-          source .env
+          # Source the backend environment file for migrations
+          source BE/.env
           
-          # Start DB if not running
+          # Start database if not running
           if ! docker ps | grep -q inventum-mysql-staging; then
             docker compose -f docker-compose.staging.yml up -d db
             echo "Waiting for MySQL to initialize..."
-            sleep 15
+            sleep 20
           fi
           
-          # Run regular migrations
+          # Run migrations using the new backend image
           docker run --rm \
             --network inventum-network \
-            -e DATABASE_URL="$DATABASE_URL" \
+            --env-file BE/.env \
             inventum-backend:staging \
             npx prisma migrate deploy
+          
+          echo " Database migrations completed"
       
-      - name: Deploy backend
+      - name: Deploy Backend
         working-directory: /home/noov/inventum/staging
         run: |
-          # Stop and remove only the backend container if it exists
+          # Stop and remove existing backend container
           docker compose -f docker-compose.staging.yml stop backend || true
           docker compose -f docker-compose.staging.yml rm -f backend || true
           
-          # Start the backend container
+          # Start the new backend container
           docker compose -f docker-compose.staging.yml up -d backend
+          
+          echo " Backend container deployed"
       
-      - name: Deployment Info
+      - name: Verify Deployment
         run: |
-          echo "Deployment completed successfully"
+          # Wait for container to start
+          sleep 15
+          
+          # Check container status
+          docker ps | grep backend
+          
+          # Test backend accessibility
+          echo "Testing backend accessibility:"
+          curl -I http://localhost:8000/ || echo "Backend starting up..."
+          
+          # Test external access
+          echo "Testing external access:"
+          curl -I https://be.al3l.com/ || echo "External access not ready yet"
+          
+          # Check backend logs for any errors
+          echo "Backend logs (last 10 lines):"
+          docker logs inventum-backend-staging --tail 10
