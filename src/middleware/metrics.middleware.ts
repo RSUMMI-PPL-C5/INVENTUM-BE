@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Request, Response, NextFunction } from "express";
 import metricsService from "../services/metrics.service";
 

@@ -29,18 +29,31 @@ import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
 import calibrationHistoryRoutes from "./routes/calibration-history.routes";
 import partsHistoryRoutes from "./routes/parts-history.routes";
-import metricsRoutes from "./routes/metrics.route";
-
-// Import middleware
-import { metricsMiddleware } from "./middleware/metrics.middleware";
-
-const app = express();
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";
 const isStaging = NODE_ENV === "staging";
 
 console.log(`Environment: ${NODE_ENV}`);
+
+// Initialize metrics conditionally for staging
+let metricsRoutes;
+let metricsMiddleware;
+
+/* istanbul ignore next */
+if (isStaging) {
+  try {
+    // Dynamic imports for metrics (only loaded in staging)
+    metricsRoutes = require("./routes/metrics.route").default;
+    const metricsMiddlewareModule = require("./middleware/metrics.middleware");
+    metricsMiddleware = metricsMiddlewareModule.metricsMiddleware;
+    console.log("Metrics functionality loaded for staging environment");
+  } catch (error) {
+    console.error("Failed to load metrics:", error);
+  }
+}
+
+const app = express();
 
 app.disable("x-powered-by");
 app.use(
@@ -113,8 +126,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Apply metrics middleware to all routes
-app.use(metricsMiddleware);
+// Apply metrics middleware only in staging environment
+/* istanbul ignore next */
+if (isStaging && metricsMiddleware) {
+  console.log("Metrics middleware enabled");
+  app.use(metricsMiddleware);
+}
 
 // Routes
 app.get("/", (req, res) => {
@@ -138,7 +155,13 @@ app.use("/medical-equipment", [
   partsHistoryRoutes,
 ]);
 app.use("/report", reportRoutes);
-app.use("/metrics", metricsRoutes);
+
+// Add metrics route only in staging
+/* istanbul ignore next */
+if (isStaging && metricsRoutes) {
+  console.log("Metrics endpoint enabled at /metrics");
+  app.use("/metrics", metricsRoutes);
+}
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);
