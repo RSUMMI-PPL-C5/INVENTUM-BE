@@ -63,16 +63,16 @@ class NotificationService implements INotificationService {
       requestId: notification.requestId ?? undefined,
     };
   }
-
   public async createRequestNotification(
     requestId: string,
     userId: string,
     requestType: "MAINTENANCE" | "CALIBRATION",
   ) {
+    // Gunakan pesan yang sama untuk semua pengguna
     const message =
       requestType === "CALIBRATION"
-        ? `New calibration request has been created`
-        : `New maintenance request has been created`;
+        ? `Permintaan kalibrasi baru telah dibuat dan perlu ditindaklanjuti`
+        : `Permintaan pemeliharaan baru telah dibuat dan perlu ditindaklanjuti`;
 
     return this.createNotification({
       userId,

@@ -6,13 +6,19 @@ import verifyToken from "../middleware/verifyToken";
 const router = Router();
 const notificationController = new NotificationController();
 
-// Middleware
-router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
+router.use(verifyToken);
 
-// Get all notifications
-router.get("/", notificationController.getAllNotifications);
-
-// Get notification by ID
-router.get("/:id", notificationController.getNotificationById);
+router.get("/my", notificationController.getMyNotifications);
+router.patch("/:id/read", notificationController.markAsRead);
+router.get(
+  "/",
+  authorizeRoles("Admin", "Fasum"),
+  notificationController.getAllNotifications,
+);
+router.get(
+  "/:id",
+  authorizeRoles("Admin", "Fasum"),
+  notificationController.getNotificationById,
+);
 
 export default router;

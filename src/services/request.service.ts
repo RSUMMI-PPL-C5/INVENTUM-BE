@@ -129,14 +129,13 @@ class RequestService implements IRequestService {
       ...requestData,
     });
 
-    // WhatsApp Notifications to Fasum users
     const fasumUsers = await this.userRepository.getUsersByRole("Fasum");
 
-    const notificationPromises = fasumUsers.map(
-      async (user: { waNumber: string | null }) => {
+    const whatsappPromises = fasumUsers.map(
+      async (user: { id: string; waNumber: string | null }) => {
         if (user.waNumber) {
           const message = `Ada permintaan baru dari pengguna.\n\nPeralatan: ${requestData.medicalEquipment}\nKeluhan: ${
-            requestData.complaint || "Tidak ada keluhan yang dicantumkan"
+            requestData.complaint ?? "Tidak ada keluhan yang dicantumkan"
           }\nStatus: Menunggu tindak lanjut\n\nSilakan cek sistem untuk informasi lebih lanjut.`;
 
           try {
@@ -151,9 +150,7 @@ class RequestService implements IRequestService {
       },
     );
 
-    await Promise.allSettled(notificationPromises);
-
-    // Traditional Notification (fallback/logged)
+    await Promise.allSettled(whatsappPromises);
     try {
       await this.notificationService.createRequestNotification(
         result.id,
@@ -161,7 +158,7 @@ class RequestService implements IRequestService {
         requestData.requestType,
       );
     } catch (notificationError) {
-      console.error("Failed to create notification:", notificationError);
+      console.error("Failed to create notifications:", notificationError);
     }
 
     return { data: result };
