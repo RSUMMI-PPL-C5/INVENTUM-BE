@@ -50,7 +50,7 @@ describe("MedicalEquipmentWhereBuilder", () => {
       expect(result.OR).toBeDefined();
       expect(result.OR).toHaveLength(3);
       expect(result.OR[0].name).toEqual({ contains: search });
-      expect(result.OR[1].inventorisId).toEqual({ contains: search });
+      expect(result.OR[1].lastLocation).toEqual({ contains: search });
       expect(result.OR[2].brandName).toEqual({ contains: search });
     });
   });
