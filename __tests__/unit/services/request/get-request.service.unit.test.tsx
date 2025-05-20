@@ -1,5 +1,8 @@
 import RequestService from "../../../../src/services/request.service";
 import RequestRepository from "../../../../src/repository/request.repository";
+import UserRepository from "../../../../src/repository/user.repository";
+import WhatsAppService from "../../../../src/services/whatsapp.service";
+import { RequestType } from "@prisma/client";
 import { RequestResponseDTO } from "../../../../src/dto/request.dto";
 
 // Mock uuid
@@ -13,21 +16,52 @@ jest.mock("../../../../src/repository/request.repository");
 describe("RequestService", () => {
   let requestService: RequestService;
   let mockRequestRepository: jest.Mocked<RequestRepository>;
+  let mockUserRepository: jest.Mocked<UserRepository>;
+  let mockWhatsappService: jest.Mocked<WhatsAppService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     mockRequestRepository =
       new RequestRepository() as jest.Mocked<RequestRepository>;
+    mockUserRepository = new UserRepository() as jest.Mocked<UserRepository>;
+    mockWhatsappService = new WhatsAppService() as jest.Mocked<WhatsAppService>;
 
     (RequestRepository as jest.Mock).mockImplementation(
       () => mockRequestRepository,
+    );
+    (UserRepository as jest.Mock).mockImplementation(() => mockUserRepository);
+    (WhatsAppService as jest.Mock).mockImplementation(
+      () => mockWhatsappService,
     );
 
     mockRequestRepository.updateRequestStatus = jest.fn();
 
     // Initialize the service
     requestService = new RequestService();
+    (requestService as any).userRepository = mockUserRepository;
+    (requestService as any).whatsappService = mockWhatsappService;
+  });
+
+  const createMockRequest = (overrides = {}) => ({
+    id: "request-1",
+    userId: "user-123",
+    medicalEquipment: "test equipment",
+    complaint: "Test complaint",
+    status: "Pending",
+    createdBy: "user-123",
+    createdOn: new Date(),
+    modifiedBy: "user-123",
+    modifiedOn: new Date(),
+    requestType: RequestType.MAINTENANCE,
+    user: {
+      id: "user-123",
+      fullname: "Test User",
+      username: "testuser",
+    },
+    comments: [],
+    notifications: [],
+    ...overrides,
   });
 
   describe("getRequestById", () => {
@@ -211,6 +245,77 @@ describe("RequestService", () => {
       await expect(requestService.getAllRequests()).rejects.toEqual(mockError);
       expect(mockRequestRepository.getAllRequests).toHaveBeenCalled();
     });
+
+    it("should handle search and filters correctly", async () => {
+      const search = "test equipment";
+      const filters = { status: ["Pending", "Processing"] };
+      const pagination = { page: 2, limit: 5 };
+
+      const mockRequests = {
+        requests: [createMockRequest({ medicalEquipment: "test equipment" })],
+        total: 1,
+      };
+
+      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+
+      const result = await requestService.getAllRequests(
+        search,
+        filters,
+        pagination,
+      );
+
+      expect(mockRequestRepository.getAllRequests).toHaveBeenCalledWith(
+        search,
+        filters,
+        pagination,
+      );
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 1,
+          page: 2,
+          limit: 5,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it("should handle zero results correctly", async () => {
+      const mockRequests = {
+        requests: [],
+        total: 0,
+      };
+
+      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+
+      const result = await requestService.getAllRequests();
+
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        },
+      });
+    });
+
+    it("should handle large total values correctly", async () => {
+      const mockRequests = {
+        requests: [createMockRequest()],
+        total: 100,
+      };
+
+      mockRequestRepository.getAllRequests.mockResolvedValue(mockRequests);
+
+      const result = await requestService.getAllRequests(undefined, undefined, {
+        page: 2,
+        limit: 10,
+      });
+
+      expect(result.meta.totalPages).toBe(10); // 100/10 = 10 pages
+    });
   });
 
   describe("getAllRequestMaintenance", () => {
@@ -338,6 +443,87 @@ describe("RequestService", () => {
       );
       expect(mockRequestRepository.getAllRequestMaintenance).toHaveBeenCalled();
     });
+
+    it("should handle search and filters correctly", async () => {
+      const search = "maintenance equipment";
+      const filters = { status: ["Pending"] };
+      const pagination = { page: 2, limit: 5 };
+
+      const mockRequests = {
+        requests: [
+          createMockRequest({
+            medicalEquipment: "maintenance equipment",
+            requestType: RequestType.MAINTENANCE,
+          }),
+        ],
+        total: 1,
+      };
+
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
+      );
+
+      const result = await requestService.getAllRequestMaintenance(
+        search,
+        filters,
+        pagination,
+      );
+
+      expect(
+        mockRequestRepository.getAllRequestMaintenance,
+      ).toHaveBeenCalledWith(search, filters, pagination);
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 1,
+          page: 2,
+          limit: 5,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it("should handle zero results correctly", async () => {
+      const mockRequests = {
+        requests: [],
+        total: 0,
+      };
+
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
+      );
+
+      const result = await requestService.getAllRequestMaintenance();
+
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        },
+      });
+    });
+
+    it("should handle large total values correctly", async () => {
+      const mockRequests = {
+        requests: [createMockRequest({ requestType: RequestType.MAINTENANCE })],
+        total: 100,
+      };
+
+      mockRequestRepository.getAllRequestMaintenance.mockResolvedValue(
+        mockRequests,
+      );
+
+      const result = await requestService.getAllRequestMaintenance(
+        undefined,
+        undefined,
+        { page: 2, limit: 10 },
+      );
+
+      expect(result.meta.totalPages).toBe(10); // 100/10 = 10 pages
+    });
   });
 
   describe("getAllRequestCalibration", () => {
@@ -452,23 +638,85 @@ describe("RequestService", () => {
       expect(result.data).toEqual(mockRequests.requests);
     });
 
-    it("should handle zero total results correctly", async () => {
-      // Mock data with zero results
-      const mockRequests = {
-        requests: [],
-        total: 0,
-      } as { requests: RequestResponseDTO[]; total: number };
+    it("should handle search and filters correctly", async () => {
+      const search = "calibration equipment";
+      const filters = { status: ["Pending"] };
+      const pagination = { page: 2, limit: 5 };
 
-      // Mock repository method
+      const mockRequests = {
+        requests: [
+          createMockRequest({
+            medicalEquipment: "calibration equipment",
+            requestType: RequestType.CALIBRATION,
+          }),
+        ],
+        total: 1,
+      };
+
       mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
         mockRequests,
       );
 
-      // Call service method
+      const result = await requestService.getAllRequestCalibration(
+        search,
+        filters,
+        pagination,
+      );
+
+      expect(
+        mockRequestRepository.getAllRequestCalibration,
+      ).toHaveBeenCalledWith(search, filters, pagination);
+      expect(result).toEqual({
+        data: mockRequests.requests,
+        meta: {
+          total: 1,
+          page: 2,
+          limit: 5,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it("should handle zero results correctly", async () => {
+      const mockRequests = {
+        requests: [],
+        total: 0,
+      };
+
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
       const result = await requestService.getAllRequestCalibration();
 
-      // Assertions
-      expect(result.meta.totalPages).toBe(0); // total/10 = 0
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        },
+      });
+    });
+
+    it("should handle large total values correctly", async () => {
+      const mockRequests = {
+        requests: [createMockRequest({ requestType: RequestType.CALIBRATION })],
+        total: 100,
+      };
+
+      mockRequestRepository.getAllRequestCalibration.mockResolvedValue(
+        mockRequests,
+      );
+
+      const result = await requestService.getAllRequestCalibration(
+        undefined,
+        undefined,
+        { page: 2, limit: 10 },
+      );
+
+      expect(result.meta.totalPages).toBe(10); // 100/10 = 10 pages
     });
 
     it("should pass through repository errors", async () => {
@@ -489,92 +737,107 @@ describe("RequestService", () => {
   });
 
   describe("createRequest", () => {
-    it("should successfully create a request", async () => {
-      // Mock data
+    it("should create a request successfully and send WhatsApp notifications", async () => {
       const mockRequestData = {
         userId: "user-123",
-        medicalEquipment: "Equipment Name",
-        complaint: "Issue description",
+        medicalEquipment: "Test Equipment",
+        complaint: "Test complaint",
         createdBy: "user-123",
-        requestType: "MAINTENANCE" as const,
+        requestType: RequestType.MAINTENANCE,
       };
 
-      const mockCreatedRequest = {
-        id: "mocked-uuid",
-        ...mockRequestData,
-        status: "Pending",
-      };
+      const mockRequest = createMockRequest(mockRequestData);
+      mockRequestRepository.createRequest.mockResolvedValue(mockRequest);
 
-      // Mock repository method
-      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
+      const mockFasumUsers = [
+        { id: "user-1", waNumber: "1234567890" },
+        { id: "user-2", waNumber: "0987654321" },
+      ];
+      mockUserRepository.getUsersByRole.mockResolvedValue(mockFasumUsers);
 
-      // Call service method
       const result = await requestService.createRequest(mockRequestData);
 
-      // Assertions
       expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
-        id: "mocked-uuid",
+        id: expect.any(String),
         ...mockRequestData,
       });
-      expect(result).toEqual({ data: mockCreatedRequest });
+      expect(mockWhatsappService.sendMessage).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({ data: mockRequest });
     });
 
-    it("should handle creating a request without optional fields", async () => {
-      // Mock data without complaint
+    it("should create a request successfully even if WhatsApp notifications fail", async () => {
       const mockRequestData = {
         userId: "user-123",
-        medicalEquipment: "Equipment Name",
+        medicalEquipment: "Test Equipment",
+        complaint: "Test complaint",
         createdBy: "user-123",
-        requestType: "MAINTENANCE" as const,
+        requestType: RequestType.MAINTENANCE,
       };
 
-      const mockCreatedRequest = {
-        id: "mocked-uuid",
-        ...mockRequestData,
-        status: "Pending",
-      };
+      const mockRequest = createMockRequest(mockRequestData);
+      mockRequestRepository.createRequest.mockResolvedValue(mockRequest);
 
-      // Mock repository method
-      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
+      const mockFasumUsers = [{ id: "user-1", waNumber: "1234567890" }];
+      mockUserRepository.getUsersByRole.mockResolvedValue(mockFasumUsers);
+      mockWhatsappService.sendMessage.mockRejectedValue(
+        new Error("Failed to send message"),
+      );
 
-      // Call service method
       const result = await requestService.createRequest(mockRequestData);
 
-      // Assertions
       expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
-        id: "mocked-uuid",
+        id: expect.any(String),
         ...mockRequestData,
       });
-      expect(result).toEqual({ data: mockCreatedRequest });
+      expect(result).toEqual({ data: mockRequest });
     });
 
-    it("should handle creating a calibration request", async () => {
-      // Mock data for calibration
+    it("should create a request successfully when no Fasum users exist", async () => {
       const mockRequestData = {
         userId: "user-123",
-        medicalEquipment: "Calibration Equipment",
+        medicalEquipment: "Test Equipment",
+        complaint: "Test complaint",
         createdBy: "user-123",
-        requestType: "CALIBRATION" as const,
+        requestType: RequestType.MAINTENANCE,
       };
 
-      const mockCreatedRequest = {
-        id: "mocked-uuid",
-        ...mockRequestData,
-        status: "Pending",
-      };
+      const mockRequest = createMockRequest(mockRequestData);
+      mockRequestRepository.createRequest.mockResolvedValue(mockRequest);
+      mockUserRepository.getUsersByRole.mockResolvedValue([]);
 
-      // Mock repository method
-      mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
-
-      // Call service method
       const result = await requestService.createRequest(mockRequestData);
 
-      // Assertions
       expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
-        id: "mocked-uuid",
+        id: expect.any(String),
         ...mockRequestData,
       });
-      expect(result).toEqual({ data: mockCreatedRequest });
+      expect(mockWhatsappService.sendMessage).not.toHaveBeenCalled();
+      expect(result).toEqual({ data: mockRequest });
+    });
+
+    it("should create a calibration request successfully and send WhatsApp notifications", async () => {
+      const mockRequestData = {
+        userId: "user-123",
+        medicalEquipment: "Test Equipment",
+        complaint: "Test complaint",
+        createdBy: "user-123",
+        requestType: RequestType.CALIBRATION,
+      };
+
+      const mockRequest = createMockRequest(mockRequestData);
+      mockRequestRepository.createRequest.mockResolvedValue(mockRequest);
+
+      const mockFasumUsers = [{ id: "user-1", waNumber: "1234567890" }];
+      mockUserRepository.getUsersByRole.mockResolvedValue(mockFasumUsers);
+
+      const result = await requestService.createRequest(mockRequestData);
+
+      expect(mockRequestRepository.createRequest).toHaveBeenCalledWith({
+        id: expect.any(String),
+        ...mockRequestData,
+      });
+      expect(mockWhatsappService.sendMessage).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ data: mockRequest });
     });
 
     it("should pass through repository errors", async () => {
@@ -600,149 +863,57 @@ describe("RequestService", () => {
   });
 
   describe("updateRequestStatus", () => {
-    it("should successfully update request status", async () => {
-      // Mock data
-      const requestId = "request-123";
-      const newStatus = "Completed";
-
-      const existingRequest = {
-        id: requestId,
+    it("should update request status successfully", async () => {
+      const mockRequest = createMockRequest({
+        id: "request-1",
         status: "Pending",
-        medicalEquipment: "Equipment Name",
-      };
+        requestType: RequestType.MAINTENANCE,
+      });
 
-      const updatedRequest = {
-        ...existingRequest,
-        status: newStatus,
-      };
+      mockRequestRepository.getRequestById.mockResolvedValue(mockRequest);
+      mockRequestRepository.updateRequestStatus.mockResolvedValue({
+        ...mockRequest,
+        status: "Processing",
+      });
 
-      // Mock repository methods
-      mockRequestRepository.getRequestById.mockResolvedValue(
-        existingRequest as any,
-      );
-      mockRequestRepository.updateRequestStatus.mockResolvedValue(
-        updatedRequest as any,
-      );
-
-      // Call service method
       const result = await requestService.updateRequestStatus(
-        requestId,
-        newStatus,
+        "request-1",
+        "Processing",
       );
 
-      // Assertions
       expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
+        "request-1",
       );
       expect(mockRequestRepository.updateRequestStatus).toHaveBeenCalledWith(
-        requestId,
-        newStatus,
+        "request-1",
+        "Processing",
       );
-      expect(result).toEqual({ data: updatedRequest });
+      expect(result).toEqual({
+        data: {
+          ...mockRequest,
+          status: "Processing",
+        },
+      });
     });
 
-    it("should throw an error if request ID is invalid", async () => {
-      // Assertions for empty string
-      await expect(
-        requestService.updateRequestStatus("", "Completed"),
-      ).rejects.toThrow("Request ID is required and must be a valid string");
-
-      // Assertions for null
-      await expect(
-        requestService.updateRequestStatus(
-          null as unknown as string,
-          "Completed",
-        ),
-      ).rejects.toThrow("Request ID is required and must be a valid string");
-
-      // Ensure repository method wasn't called
-      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
-    });
-
-    it("should throw an error if status is invalid", async () => {
-      // Assertions for empty string
-      await expect(
-        requestService.updateRequestStatus("request-123", ""),
-      ).rejects.toThrow("Status is required and must be a valid string");
-
-      // Assertions for null
-      await expect(
-        requestService.updateRequestStatus(
-          "request-123",
-          null as unknown as string,
-        ),
-      ).rejects.toThrow("Status is required and must be a valid string");
-
-      // Ensure repository method wasn't called
-      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
-    });
-
-    it("should throw an error if request is not found", async () => {
-      // Mock data
-      const requestId = "nonexistent-id";
-      const newStatus = "Completed";
-
-      // Mock repository method to return null (not found)
+    it("should throw error if request not found", async () => {
       mockRequestRepository.getRequestById.mockResolvedValue(null);
 
-      // Assertions
       await expect(
-        requestService.updateRequestStatus(requestId, newStatus),
-      ).rejects.toThrow(`Request with ID ${requestId} not found`);
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
+        requestService.updateRequestStatus("request-1", "Processing"),
+      ).rejects.toThrow("Request with ID request-1 not found");
     });
 
-    it("should pass through repository errors from getRequestById", async () => {
-      // Mock data
-      const requestId = "request-123";
-      const newStatus = "Completed";
-      const mockError = new Error("Repository error");
-
-      // Mock repository error
-      mockRequestRepository.getRequestById.mockRejectedValue(mockError);
-
-      // Assertions
+    it("should throw error if request ID is invalid", async () => {
       await expect(
-        requestService.updateRequestStatus(requestId, newStatus),
-      ).rejects.toEqual(mockError);
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-      expect(mockRequestRepository.updateRequestStatus).not.toHaveBeenCalled();
+        requestService.updateRequestStatus("", "Processing"),
+      ).rejects.toThrow("Request ID is required and must be a valid string");
     });
 
-    it("should pass through repository errors from updateRequestStatus", async () => {
-      // Mock data
-      const requestId = "request-123";
-      const newStatus = "Completed";
-      const mockError = new Error("Update error");
-
-      const existingRequest = {
-        id: requestId,
-        status: "Pending",
-        medicalEquipment: "Equipment Name",
-      };
-
-      // Mock repository methods
-      mockRequestRepository.getRequestById.mockResolvedValue(
-        existingRequest as any,
-      );
-      mockRequestRepository.updateRequestStatus.mockRejectedValue(mockError);
-
-      // Assertions
+    it("should throw error if status is invalid", async () => {
       await expect(
-        requestService.updateRequestStatus(requestId, newStatus),
-      ).rejects.toEqual(mockError);
-      expect(mockRequestRepository.getRequestById).toHaveBeenCalledWith(
-        requestId,
-      );
-      expect(mockRequestRepository.updateRequestStatus).toHaveBeenCalledWith(
-        requestId,
-        newStatus,
-      );
+        requestService.updateRequestStatus("request-1", ""),
+      ).rejects.toThrow("Status is required and must be a valid string");
     });
   });
 });

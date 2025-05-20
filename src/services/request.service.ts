@@ -5,14 +5,20 @@ import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import { RequestFilterOptions } from "../interfaces/request.filter.interface";
+import WhatsAppService from "./whatsapp.service";
 import NotificationService from "./notification.service";
+import UserRepository from "../repository/user.repository";
 
 class RequestService implements IRequestService {
   private readonly requestRepository: RequestRepository;
+  private readonly userRepository: UserRepository;
+  private readonly whatsappService: WhatsAppService;
   private readonly notificationService: NotificationService;
 
   constructor() {
     this.requestRepository = new RequestRepository();
+    this.userRepository = new UserRepository();
+    this.whatsappService = new WhatsAppService();
     this.notificationService = new NotificationService();
   }
 
@@ -123,6 +129,31 @@ class RequestService implements IRequestService {
       ...requestData,
     });
 
+    // WhatsApp Notifications to Fasum users
+    const fasumUsers = await this.userRepository.getUsersByRole("Fasum");
+
+    const notificationPromises = fasumUsers.map(
+      async (user: { waNumber: string | null }) => {
+        if (user.waNumber) {
+          const message = `Ada permintaan baru dari pengguna.\n\nPeralatan: ${requestData.medicalEquipment}\nKeluhan: ${
+            requestData.complaint || "Tidak ada keluhan yang dicantumkan"
+          }\nStatus: Menunggu tindak lanjut\n\nSilakan cek sistem untuk informasi lebih lanjut.`;
+
+          try {
+            await this.whatsappService.sendMessage(user.waNumber, message);
+          } catch (error) {
+            console.error(
+              `Failed to send WhatsApp notification to ${user.waNumber}:`,
+              error,
+            );
+          }
+        }
+      },
+    );
+
+    await Promise.allSettled(notificationPromises);
+
+    // Traditional Notification (fallback/logged)
     try {
       await this.notificationService.createRequestNotification(
         result.id,
@@ -130,9 +161,9 @@ class RequestService implements IRequestService {
         requestData.requestType,
       );
     } catch (notificationError) {
-      // Log error but don't fail the request if notification creation fails
       console.error("Failed to create notification:", notificationError);
     }
+
     return { data: result };
   }
 
@@ -151,7 +182,6 @@ class RequestService implements IRequestService {
       throw new AppError("Status is required and must be a valid string", 400);
     }
 
-    // Check if request exists
     const existingRequest = await this.requestRepository.getRequestById(id);
     if (!existingRequest) {
       throw new AppError(`Request with ID ${id} not found`, 404);
