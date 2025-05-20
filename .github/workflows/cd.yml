@@ -24,6 +24,8 @@ jobs:
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
             --build-arg PROD_CLIENT_URL=${{ secrets.PROD_CLIENT_URL }} \
+            --build-arg WHATSAPP_API_URL=${{ secrets.WHATSAPP_API_URL }} \
+            --build-arg WHATSAPP_API_KEY=${{ secrets.WHATSAPP_API_KEY }} \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest .
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
 

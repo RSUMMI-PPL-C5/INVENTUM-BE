@@ -147,6 +147,19 @@ class UserRepository {
       },
     });
   }
+
+  public async getUsersByRole(
+    role: string,
+  ): Promise<Array<{ waNumber: string | null }>> {
+    return await this.prisma.user.findMany({
+      where: {
+        role: role,
+      },
+      select: {
+        waNumber: true,
+      },
+    });
+  }
 }
 
 export default UserRepository;
