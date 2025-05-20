@@ -35,7 +35,6 @@ jest.mock("../../../../src/middleware/authorizeRole", () =>
   jest.fn(() => (_req: any, _res: any, next: any) => next()),
 );
 
-
 jest.mock("../../../../src/validations/report.validation", () => ({
   exportDataValidation: jest.fn((_req: any, _res: any, next: any) => next()),
 }));
@@ -75,13 +74,10 @@ describe("Report Routes", () => {
       expect.any(Function),
     );
   });
-   
+
   it("should register GET /plans route", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
-    expect(mockRouter.get).toHaveBeenCalledWith(
-      "/plans",
-      expect.any(Function),
-    );
+    expect(mockRouter.get).toHaveBeenCalledWith("/plans", expect.any(Function));
   });
 
   it("should register GET /results route", () => {
@@ -102,7 +98,7 @@ describe("Report Routes", () => {
       expect.any(Function),
     );
   });
-  
+
   it("should register GET /summary route", () => {
     const mockRouter = (Router as jest.Mock).mock.results[0].value;
     expect(mockRouter.get).toHaveBeenCalledWith(
