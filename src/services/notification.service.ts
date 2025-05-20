@@ -25,9 +25,8 @@ class NotificationService implements INotificationService {
       await this.notificationRepository.createNotification(createData);
     return {
       ...notification,
-      userId: notification.userId === null ? undefined : notification.userId,
-      requestId:
-        notification.requestId === null ? undefined : notification.requestId,
+      userId: notification.userId ?? undefined,
+      requestId: notification.requestId ?? undefined,
     };
   }
 
@@ -36,10 +35,9 @@ class NotificationService implements INotificationService {
       await this.notificationRepository.getAllNotifications();
     return notifications.map((notification) => ({
       ...notification,
-      userId: notification.userId === null ? undefined : notification.userId,
-      requestId:
-        notification.requestId === null ? undefined : notification.requestId,
-      request: notification.request === null ? undefined : notification.request,
+      userId: notification.userId ?? undefined,
+      requestId: notification.requestId ?? undefined,
+      request: notification.request ?? undefined,
     }));
   }
 
@@ -50,10 +48,9 @@ class NotificationService implements INotificationService {
       await this.notificationRepository.getNotificationsByUserId(userId);
     return notifications.map((notification) => ({
       ...notification,
-      userId: notification.userId === null ? undefined : notification.userId,
-      requestId:
-        notification.requestId === null ? undefined : notification.requestId,
-      request: notification.request === null ? undefined : notification.request,
+      userId: notification.userId ?? undefined,
+      requestId: notification.requestId ?? undefined,
+      request: notification.request ?? undefined,
     }));
   }
 
@@ -62,9 +59,8 @@ class NotificationService implements INotificationService {
       await this.notificationRepository.markAsRead(notificationId);
     return {
       ...notification,
-      userId: notification.userId === null ? undefined : notification.userId,
-      requestId:
-        notification.requestId === null ? undefined : notification.requestId,
+      userId: notification.userId ?? undefined,
+      requestId: notification.requestId ?? undefined,
     };
   }
 
@@ -95,10 +91,9 @@ class NotificationService implements INotificationService {
 
     return {
       ...notification,
-      userId: notification.userId === null ? undefined : notification.userId,
-      requestId:
-        notification.requestId === null ? undefined : notification.requestId,
-      request: notification.request === null ? undefined : notification.request,
+      userId: notification.userId ?? undefined,
+      requestId: notification.requestId ?? undefined,
+      request: notification.request ?? undefined,
     };
   }
 }
