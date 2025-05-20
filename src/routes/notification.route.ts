@@ -7,7 +7,7 @@ const router = Router();
 const notificationController = new NotificationController();
 
 // Middleware
-router.use(verifyToken, authorizeRoles("Fasum"));
+router.use(verifyToken, authorizeRoles("Admin", "Fasum"));
 
 // Get all notifications
 router.get("/", notificationController.getAllNotifications);
