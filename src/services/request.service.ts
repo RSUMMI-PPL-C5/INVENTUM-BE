@@ -127,7 +127,7 @@ class RequestService implements IRequestService {
       await this.notificationService.createRequestNotification(
         result.id,
         requestData.userId,
-        requestData.requestType as "MAINTENANCE" | "CALIBRATION",
+        requestData.requestType,
       );
     } catch (notificationError) {
       // Log error but don't fail the request if notification creation fails

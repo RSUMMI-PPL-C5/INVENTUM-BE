@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { CreateNotificationDto } from "../dto/notification.dto";
 
 class NotificationRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
   constructor() {
     this.prisma = new PrismaClient();
