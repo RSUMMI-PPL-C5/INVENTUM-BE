@@ -71,7 +71,7 @@ describe("RequestRepository", () => {
 
       const expectedResponse = {
         ...requestData,
-        status: "Pending",
+        status: "pending",
         createdOn: mockDate,
         modifiedOn: mockDate,
         user: mockUserData,
@@ -86,7 +86,7 @@ describe("RequestRepository", () => {
       expect(mockDb.request.create).toHaveBeenCalledWith({
         data: {
           ...requestData,
-          status: "Pending",
+          status: "pending",
           createdOn: mockDate,
           modifiedOn: mockDate,
         },
@@ -113,7 +113,7 @@ describe("RequestRepository", () => {
 
       const expectedResponse = {
         ...requestData,
-        status: "Pending",
+        status: "pending",
         createdOn: mockDate,
         modifiedOn: mockDate,
         user: mockUserData,
@@ -128,7 +128,7 @@ describe("RequestRepository", () => {
       expect(mockDb.request.create).toHaveBeenCalledWith({
         data: {
           ...requestData,
-          status: "Pending",
+          status: "pending",
           createdOn: mockDate,
           modifiedOn: mockDate,
         },
@@ -136,7 +136,7 @@ describe("RequestRepository", () => {
       expect(result).toEqual(expectedResponse);
     });
 
-    it("should set status to 'Pending' even if another status is provided", async () => {
+    it("should set status to 'pending' even if another status is provided", async () => {
       // Arrange
       const requestData = {
         id: "REQ123",
@@ -150,7 +150,7 @@ describe("RequestRepository", () => {
 
       const expectedResponse = {
         ...requestData,
-        status: "Pending",
+        status: "pending",
         createdOn: mockDate,
         modifiedOn: mockDate,
       };
@@ -164,7 +164,7 @@ describe("RequestRepository", () => {
       expect(mockDb.request.create).toHaveBeenCalledWith({
         data: {
           ...requestData,
-          status: "Pending",
+          status: "pending",
           createdOn: mockDate,
           modifiedOn: mockDate,
         },
@@ -208,7 +208,7 @@ describe("RequestRepository", () => {
 
       const expectedResponse = {
         ...requestData,
-        status: "Pending",
+        status: "pending",
         createdOn: mockDate,
         modifiedOn: mockDate,
       };
@@ -222,7 +222,7 @@ describe("RequestRepository", () => {
       expect(mockDb.request.create).toHaveBeenCalledWith({
         data: {
           ...requestData,
-          status: "Pending",
+          status: "pending",
           createdOn: mockDate,
           modifiedOn: mockDate,
         },

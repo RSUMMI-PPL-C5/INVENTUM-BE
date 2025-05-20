@@ -72,22 +72,21 @@ class ReportRepository {
           },
         })) || [];
 
-      // Status categories
-      const successStatus = "Success";
-      const partialStatus = "Partial";
-      const failedStatus = "Failed";
+      const completedStatus = "completed";
+      const onProgressStatus = "on progress";
+      const pendingStatus = "pending";
 
       // Initialize counters for each request type and status
       const maintenanceStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       const calibrationStatusCounts: Record<string, number> = {
-        [successStatus]: 0,
-        [partialStatus]: 0,
-        [failedStatus]: 0,
+        [completedStatus]: 0,
+        [onProgressStatus]: 0,
+        [pendingStatus]: 0,
       };
 
       let maintenanceTotal = 0;
@@ -96,15 +95,26 @@ class ReportRepository {
       // Process each request
       for (const request of requests) {
         // Normalize the status
-        let normalizedStatus = request.status;
+        let normalizedStatus: string;
 
-        // If it's not one of our three categories, default to "Partial"
+        // Map status by checking uppercase values
         if (
-          ![successStatus, partialStatus, failedStatus].includes(
-            normalizedStatus,
-          )
+          request.status.toUpperCase() === "COMPLETED" ||
+          request.status.toUpperCase() === "SUCCESS"
         ) {
-          normalizedStatus = partialStatus;
+          normalizedStatus = completedStatus;
+        } else if (
+          request.status.toUpperCase() === "ON_PROGRESS" ||
+          request.status.toUpperCase() === "ONGOING"
+        ) {
+          normalizedStatus = onProgressStatus;
+        } else if (
+          request.status.toUpperCase() === "PENDING" ||
+          request.status.toUpperCase() === "SCHEDULED"
+        ) {
+          normalizedStatus = pendingStatus;
+        } else {
+          normalizedStatus = onProgressStatus; // Default case
         }
 
         if (request.requestType === "MAINTENANCE") {
@@ -143,29 +153,145 @@ class ReportRepository {
       }));
 
       // Calculate total values
-      const totalSuccess =
-        maintenanceStatusCounts[successStatus] +
-        calibrationStatusCounts[successStatus];
-      const totalPartial =
-        maintenanceStatusCounts[partialStatus] +
-        calibrationStatusCounts[partialStatus];
-      const totalFailed =
-        maintenanceStatusCounts[failedStatus] +
-        calibrationStatusCounts[failedStatus];
+      const totalCompleted =
+        maintenanceStatusCounts[completedStatus] +
+        calibrationStatusCounts[completedStatus];
+      const totalOnProgress =
+        maintenanceStatusCounts[onProgressStatus] +
+        calibrationStatusCounts[onProgressStatus];
+      const totalPending =
+        maintenanceStatusCounts[pendingStatus] +
+        calibrationStatusCounts[pendingStatus];
       const totalCount = maintenanceTotal + calibrationTotal;
 
       return {
         MAINTENANCE: maintenanceStatuses,
         CALIBRATION: calibrationStatuses,
         total: {
-          success: totalSuccess,
-          warning: totalPartial, // Mapping Partial to warning in the total
-          failed: totalFailed,
+          completed: totalCompleted,
+          on_progress: totalOnProgress,
+          pending: totalPending,
           total: totalCount,
         },
       };
     } catch (error) {
       console.error("Error in getRequestStatusReport:", error);
+      throw error;
+    }
+  }
+
+  public async getAllData(startDate: Date, endDate: Date) {
+    try {
+      const [
+        users,
+        divisions,
+        equipment,
+        spareparts,
+        partsHistory,
+        requests,
+        maintenanceHistory,
+        calibrationHistory,
+        notifications,
+        comments,
+      ] = await Promise.all([
+        this.prisma.user.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.listDivisi.findMany(),
+
+        this.prisma.medicalEquipment.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.spareparts.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.partsHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.request.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.maintenanceHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.calibrationHistory.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.notifikasi.findMany({
+          where: {
+            createdOn: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+
+        this.prisma.comment.findMany({
+          where: {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        }),
+      ]);
+
+      return {
+        users,
+        divisions,
+        equipment,
+        spareparts,
+        partsHistory,
+        requests,
+        maintenanceHistory,
+        calibrationHistory,
+        notifications,
+        comments,
+      };
+    } catch (error) {
+      console.error("Error in getAllData:", error);
       throw error;
     }
   }
@@ -573,14 +699,11 @@ class ReportRepository {
     maxPercentage: number = 999,
   ): Promise<CountReport> {
     try {
-      // Get current date in Jakarta timezone
       const now = getJakartaTime();
 
-      // Current month date range
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      // Previous month date range
       const firstDayOfPrevMonth = new Date(
         now.getFullYear(),
         now.getMonth() - 1,
@@ -588,7 +711,6 @@ class ReportRepository {
       );
       const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Base where clause for current month
       const currentMonthWhere = {
         createdOn: {
           gte: firstDayOfMonth,
@@ -596,7 +718,6 @@ class ReportRepository {
         },
       };
 
-      // Base where clause for previous month
       const prevMonthWhere = {
         createdOn: {
           gte: firstDayOfPrevMonth,

@@ -19,9 +19,9 @@ export interface RequestStatusReport {
   MAINTENANCE: RequestStatusCount[];
   CALIBRATION: RequestStatusCount[];
   total: {
-    success: number;
-    warning: number;
-    failed: number;
+    completed: number;
+    on_progress: number;
+    pending: number;
     total: number;
   };
 }

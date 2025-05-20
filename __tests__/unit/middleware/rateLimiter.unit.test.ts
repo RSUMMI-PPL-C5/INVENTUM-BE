@@ -98,7 +98,7 @@ describe("Rate Limiter Middleware", () => {
       expect(generalLimiter).toBeDefined();
       const options = (generalLimiter as any).options;
       expect(options.windowMs).toBe(60 * 1000);
-      expect(options.limit).toBe(40);
+      expect(options.max).toBe(30);
       expect(options.standardHeaders).toBe("draft-7");
       expect(options.legacyHeaders).toBe(false);
       expect(options.message).toEqual({

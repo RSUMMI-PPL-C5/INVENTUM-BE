@@ -2,6 +2,9 @@ import { Router } from "express";
 import ReportController from "../controllers/report.controller";
 import verifyToken from "../middleware/verifyToken";
 import authorizeRoles from "../middleware/authorizeRole";
+import { validateRequest } from "../middleware/validateRequest";
+import { exportDataValidation } from "../validations/report.validation";
+import { generalLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 const controller = new ReportController();
@@ -18,5 +21,13 @@ router.get("/summary-count", controller.getCountReport);
 router.get("/plans", controller.getPlanReports);
 router.get("/results", controller.getResultReports);
 router.get("/summary", controller.getSummaryReports);
+
+router.get(
+  "/export",
+  generalLimiter,
+  exportDataValidation,
+  validateRequest,
+  controller.exportAllData,
+);
 
 export default router;
