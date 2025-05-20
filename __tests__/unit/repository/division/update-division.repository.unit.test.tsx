@@ -44,6 +44,38 @@ describe("DivisionRepository - UPDATE", () => {
       expect(result).toEqual(updatedDivision);
     });
 
+    // New tests for name validation
+    it("should throw an error when updating a division with only whitespace in name", async () => {
+      await expect(
+        divisionRepository.updateDivision(1, { divisi: "    " }),
+      ).rejects.toThrow(
+        "Division name cannot be empty or contain only whitespace",
+      );
+
+      // Verify that the update method was never called
+      expect(prisma.listDivisi.update).not.toHaveBeenCalled();
+    });
+
+    it("should throw an error when updating a division with empty string name", async () => {
+      await expect(
+        divisionRepository.updateDivision(1, { divisi: "" }),
+      ).rejects.toThrow(
+        "Division name cannot be empty or contain only whitespace",
+      );
+
+      expect(prisma.listDivisi.update).not.toHaveBeenCalled();
+    });
+
+    it("should throw an error when updating a division with null name", async () => {
+      await expect(
+        divisionRepository.updateDivision(1, { divisi: null }),
+      ).rejects.toThrow(
+        "Division name cannot be empty or contain only whitespace",
+      );
+
+      expect(prisma.listDivisi.update).not.toHaveBeenCalled();
+    });
+
     it("should throw a 404 error if the division is not found (P2025)", async () => {
       // Create a mock Prisma error with P2025 code
       const prismaError = new Prisma.PrismaClientKnownRequestError(

@@ -183,7 +183,7 @@ class RequestRepository {
     return await this.prisma.request.create({
       data: {
         ...requestData,
-        status: "Pending", // Default status
+        status: "pending", // Default status
         createdOn: jakartaTime,
         modifiedOn: jakartaTime,
       },
