@@ -1,4 +1,5 @@
 const Sentry = require("@sentry/node");
+const { Severity } = require("@sentry/node"); // Add this line to import Severity
 const { nodeProfilingIntegration } = require("@sentry/profiling-node");
 require("dotenv/config");
 
@@ -28,4 +29,5 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = { setupSentry, errorHandler, Sentry };
+// Add Severity to the exports
+module.exports = { setupSentry, errorHandler, Sentry, Severity };

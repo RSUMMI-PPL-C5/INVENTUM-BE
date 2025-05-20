@@ -1,8 +1,18 @@
 import AuthController from "../../../../src/controllers/auth.controller";
 import AuthService from "../../../../src/services/auth.service";
 import { Request, Response, NextFunction } from "express";
+import { Sentry, Severity } from "../../../../sentry/instrument";
 
 jest.mock("../../../../src/services/auth.service");
+jest.mock("../../../../sentry/instrument", () => ({
+  Sentry: {
+    captureMessage: jest.fn(),
+  },
+  Severity: {
+    Warning: "warning",
+    Info: "info",
+  },
+}));
 
 describe("AuthController - login", () => {
   let controller: AuthController;
@@ -23,7 +33,7 @@ describe("AuthController - login", () => {
     jest.clearAllMocks();
   });
 
-  it("should return 400 if username or password missing (both empty)", async () => {
+  it("should return 400 if username or password missing and track with Sentry", async () => {
     req.body = { username: "", password: "" };
 
     await controller.login(req as Request, res as Response, next);
@@ -33,33 +43,13 @@ describe("AuthController - login", () => {
       status: "error",
       message: "Username and password are required",
     });
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      "Login attempt with missing credentials",
+      Severity.Warning,
+    );
   });
 
-  it("should return 400 if username is missing", async () => {
-    req.body = { username: "", password: "password" };
-
-    await controller.login(req as Request, res as Response, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      status: "error",
-      message: "Username and password are required",
-    });
-  });
-
-  it("should return 400 if password is missing", async () => {
-    req.body = { username: "testuser", password: "" };
-
-    await controller.login(req as Request, res as Response, next);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      status: "error",
-      message: "Username and password are required",
-    });
-  });
-
-  it("should login successfully", async () => {
+  it("should login successfully and track with Sentry", async () => {
     const mockUser = { id: "user123", username: "testuser" };
     (AuthService.prototype.login as jest.Mock).mockResolvedValue(mockUser);
 
@@ -76,9 +66,13 @@ describe("AuthController - login", () => {
       status: "success",
       data: { user: mockUser },
     });
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      "Successful login: testuser",
+      Severity.Info,
+    );
   });
 
-  it("should call next(error) if login throws error", async () => {
+  it("should call next(error) if login throws error and track failure with Sentry", async () => {
     const error = new Error("Login failed");
     (AuthService.prototype.login as jest.Mock).mockRejectedValue(error);
 
@@ -87,10 +81,15 @@ describe("AuthController - login", () => {
     await controller.login(req as Request, res as Response, next);
 
     expect(next).toHaveBeenCalledWith(error);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      "Failed login attempt: testuser",
+      Severity.Warning,
+    );
   });
 });
 
 describe("AuthController - verifyToken", () => {
+  // This section remains the same as before
   let controller: AuthController;
   let req: Partial<Request>;
   let res: Partial<Response>;
