@@ -3,8 +3,7 @@ name: Backend Staging CD
 on:
   push:
     branches:
-      - chore/Deployment
-      - health
+      - staging
 
 jobs:
   deploy:
