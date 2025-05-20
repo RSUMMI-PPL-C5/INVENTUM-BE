@@ -7,10 +7,6 @@ class WhatsAppService {
   constructor() {
     this.apiUrl = process.env.WHATSAPP_API_URL || "";
     this.apiKey = process.env.WHATSAPP_API_KEY || "";
-
-    if (!this.apiUrl || !this.apiKey) {
-      throw new Error("WhatsApp API configuration is missing");
-    }
   }
 
   public async sendMessage(
@@ -18,7 +14,9 @@ class WhatsAppService {
     message: string,
   ): Promise<void> {
     try {
-      // Format phone number to ensure it's in the correct format (e.g., 628xxxxxxxxxx)
+      if (!this.apiUrl || !this.apiKey) {
+        return;
+      }
 
       const response = await fetch(this.apiUrl, {
         method: "POST",
