@@ -5,12 +5,15 @@ import { IRequestService } from "./interface/request.service.interface";
 import AppError from "../utils/appError";
 import { PaginationOptions } from "../interfaces/pagination.interface";
 import { RequestFilterOptions } from "../interfaces/request.filter.interface";
+import NotificationService from "./notification.service";
 
 class RequestService implements IRequestService {
   private readonly requestRepository: RequestRepository;
+  private readonly notificationService: NotificationService;
 
   constructor() {
     this.requestRepository = new RequestRepository();
+    this.notificationService = new NotificationService();
   }
 
   public async getRequestById(
@@ -120,6 +123,16 @@ class RequestService implements IRequestService {
       ...requestData,
     });
 
+    try {
+      await this.notificationService.createRequestNotification(
+        result.id,
+        requestData.userId,
+        requestData.requestType,
+      );
+    } catch (notificationError) {
+      // Log error but don't fail the request if notification creation fails
+      console.error("Failed to create notification:", notificationError);
+    }
     return { data: result };
   }
 

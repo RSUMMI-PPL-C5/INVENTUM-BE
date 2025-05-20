@@ -29,6 +29,7 @@ import medicalequipmentRoutes from "./routes/medical-equipment.route";
 import maintenanceHistoryRoutes from "./routes/maintenance-history.route";
 import calibrationHistoryRoutes from "./routes/calibration-history.routes";
 import partsHistoryRoutes from "./routes/parts-history.routes";
+// import notificationRoutes from "./routes/notification.route";
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";
@@ -155,6 +156,7 @@ app.use("/medical-equipment", [
   partsHistoryRoutes,
 ]);
 app.use("/report", reportRoutes);
+// app.use("/notification", notificationRoutes);
 
 // Add metrics route only in staging
 /* istanbul ignore next */
