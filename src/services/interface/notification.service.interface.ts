@@ -15,5 +15,6 @@ export interface INotificationService {
     requestId: string,
     userId: string,
     requestType: "MAINTENANCE" | "CALIBRATION",
+    isRequestor?: boolean,
   ): Promise<NotificationDto>;
 }

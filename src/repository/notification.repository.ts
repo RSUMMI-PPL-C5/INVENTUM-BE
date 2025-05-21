@@ -1,11 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import prisma from "../configs/db.config";
 import { CreateNotificationDto } from "../dto/notification.dto";
 
 class NotificationRepository {
   private readonly prisma: PrismaClient;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = prisma;
   }
 
   public async createNotification(data: CreateNotificationDto) {
@@ -36,25 +37,50 @@ class NotificationRepository {
       },
     });
   }
-
   public async getNotificationsByUserId(userId: string) {
-    return this.prisma.notifikasi.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdOn: "desc",
-      },
-      include: {
-        request: {
-          select: {
-            medicalEquipment: true,
-            status: true,
-            requestType: true,
+    // Untuk pengguna biasa, tampilkan hanya notifikasi yang userId-nya adalah pengguna tersebut
+    // Untuk admin dan fasum, tampilkan semua notifikasi
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role === "Admin" || user?.role === "Fasum") {
+      // Admin dan Fasum melihat semua notifikasi
+      return this.prisma.notifikasi.findMany({
+        orderBy: {
+          createdOn: "desc",
+        },
+        include: {
+          request: {
+            select: {
+              medicalEquipment: true,
+              status: true,
+              requestType: true,
+            },
           },
         },
-      },
-    });
+      });
+    } else {
+      // Pengguna biasa hanya melihat notifikasi mereka sendiri
+      return this.prisma.notifikasi.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          createdOn: "desc",
+        },
+        include: {
+          request: {
+            select: {
+              medicalEquipment: true,
+              status: true,
+              requestType: true,
+            },
+          },
+        },
+      });
+    }
   }
 
   public async markAsRead(id: string) {

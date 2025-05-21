@@ -162,12 +162,18 @@ describe("Calibration History Validations", () => {
       const resultError = errors.find((e) => getErrorField(e) === "result");
       expect(resultError).toBeDefined();
       expect(getErrorMessage(resultError)).toBe(
-        "Result must be Success, Partial, or Failed",
+        "Result must be Success, Partial, Failed, Success with Issues, or Failed with Issues",
       );
     });
 
     test("should validate all possible valid result values", async () => {
-      const validResults = ["Success", "Partial", "Failed"];
+      const validResults = [
+        "Success",
+        "Partial",
+        "Failed",
+        "Success with Issues",
+        "Failed with Issues",
+      ];
       for (const resultValue of validResults) {
         const mockRequest = {
           params: { equipmentId: "equip-123" },
@@ -401,7 +407,13 @@ describe("Calibration History Validations", () => {
     });
 
     test("should validate all possible valid result values", async () => {
-      const validResults = ["Success", "Partial", "Failed"];
+      const validResults = [
+        "Success",
+        "Partial",
+        "Failed",
+        "Success with Issues",
+        "Failed with Issues",
+      ];
       for (const resultValue of validResults) {
         const mockRequest = { query: { result: resultValue } };
         const result = await runValidation(
