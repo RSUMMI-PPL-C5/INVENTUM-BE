@@ -35,9 +35,9 @@ describe("RequestService", () => {
 
   describe("createRequest", () => {
     const mockFasumUsers = [
-      { waNumber: "08123456789" },
-      { waNumber: "08198765432" },
-      { waNumber: null }, // User without WhatsApp number
+      { id: "user-id-1", waNumber: "08123456789" },
+      { id: "user-id-2", waNumber: "08198765432" },
+      { id: "user-id-3", waNumber: null }, // User without WhatsApp number
     ];
 
     it("should create a maintenance request successfully and send WhatsApp notifications", async () => {
@@ -213,8 +213,8 @@ describe("RequestService", () => {
 
       mockRequestRepository.createRequest.mockResolvedValue(mockCreatedRequest);
       mockUserRepository.getUsersByRole.mockResolvedValue([
-        { waNumber: null },
-        { waNumber: null },
+        { id: "user-id-1", waNumber: null },
+        { id: "user-id-2", waNumber: null },
       ]);
 
       const result = await requestService.createRequest(mockRequestData);

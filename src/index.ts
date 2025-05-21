@@ -31,9 +31,31 @@ import calibrationHistoryRoutes from "./routes/calibration-history.routes";
 import partsHistoryRoutes from "./routes/parts-history.routes";
 import notificationRoutes from "./routes/notification.route";
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+const isProduction = NODE_ENV === "production";
+const isStaging = NODE_ENV === "staging";
+
+console.log(`Environment: ${NODE_ENV}`);
+
+// Initialize metrics conditionally for staging
+let metricsRoutes;
+let metricsMiddleware;
+
+/* istanbul ignore next */
+if (isStaging) {
+  try {
+    // Dynamic imports for metrics (only loaded in staging)
+    metricsRoutes = require("./routes/metrics.route").default;
+    const metricsMiddlewareModule = require("./middleware/metrics.middleware");
+    metricsMiddleware = metricsMiddlewareModule.metricsMiddleware;
+    console.log("Metrics functionality loaded for staging environment");
+  } catch (error) {
+    console.error("Failed to load metrics:", error);
+  }
+}
+
 const app = express();
 
-// Basic security settings
 app.disable("x-powered-by");
 app.use(
   helmet({
@@ -69,32 +91,48 @@ app.use((req, res, next) => {
   );
   next();
 });
-app.use(helmet.xssFilter());
-app.use(helmet.noSniff());
-app.use(helmet.ieNoOpen());
-app.use(helmet.frameguard({ action: "deny" }));
-app.use(helmet.hsts());
 
-// CORS configuration
-const whitelist = process.env.PROD_CLIENT_URL
-  ? [process.env.PROD_CLIENT_URL]
-  : [];
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || whitelist.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"), false);
-      }
-    },
-    credentials: true,
-  }),
-);
+app.use(helmet.xssFilter()); // Filter XSS
+app.use(helmet.noSniff()); // Mencegah MIME sniffing
+app.use(helmet.ieNoOpen()); // Mencegah IE dari menjalankan unduhan dalam konteks situs
+app.use(helmet.frameguard({ action: "deny" })); // Mencegah clickjacking
+app.use(helmet.hsts()); // HTTP Strict Transport Security
+
+const whitelist: string[] = [];
+
+const PROD = process.env.PROD_CLIENT_URL;
+if (PROD) {
+  whitelist.push(PROD);
+}
+
+const STAGING = process.env.STAGING_CLIENT_URL;
+if (STAGING && isStaging) {
+  whitelist.push(STAGING);
+}
+
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Request parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply metrics middleware only in staging environment
+/* istanbul ignore next */
+if (isStaging && metricsMiddleware) {
+  console.log("Metrics middleware enabled");
+  app.use(metricsMiddleware);
+}
 
 // Routes
 app.get("/", (req, res) => {
@@ -119,6 +157,13 @@ app.use("/medical-equipment", [
 ]);
 app.use("/report", reportRoutes);
 app.use("/notification", notificationRoutes);
+
+// Add metrics route only in staging
+/* istanbul ignore next */
+if (isStaging && metricsRoutes) {
+  console.log("Metrics endpoint enabled at /metrics");
+  app.use("/metrics", metricsRoutes);
+}
 
 // Error handling
 Sentry.setupExpressErrorHandler(app);
