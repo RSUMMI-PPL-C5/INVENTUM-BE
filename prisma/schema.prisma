@@ -76,6 +76,7 @@ model Spareparts {
   modifiedOn      DateTime              @default(now())
   deletedBy       String?
   deletedOn       DateTime?
+  imgUrl          String?
   equipment       PartsHistory[]
 }
 
