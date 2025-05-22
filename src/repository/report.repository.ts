@@ -731,13 +731,11 @@ class ReportRepository {
           this.prisma.maintenanceHistory.count({
             where: {
               ...currentMonthWhere,
-              result: "SUCCESS",
             },
           }),
           this.prisma.calibrationHistory.count({
             where: {
               ...currentMonthWhere,
-              result: "SUCCESS",
             },
           }),
         ]);
@@ -748,7 +746,6 @@ class ReportRepository {
           this.prisma.maintenanceHistory.count({
             where: {
               ...prevMonthWhere,
-              result: "SUCCESS",
             },
           }),
           this.prisma.calibrationHistory.count({
