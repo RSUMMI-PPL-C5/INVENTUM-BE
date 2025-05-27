@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
+import { createVerifier } from "fast-jwt";
 
 declare module "express" {
   interface Request {
@@ -7,29 +8,32 @@ declare module "express" {
   }
 }
 
-const verifyToken = (req: Request, res: Response, next: NextFunction): void => {
+const secretKey = process.env.JWT_SECRET_KEY ?? "";
+const verifyToken = createVerifier({ key: secretKey });
+
+export default (req: Request, res: Response, next: NextFunction): void => {
   try {
     const token = req.header("Authorization")?.split(" ")[1];
-
     if (!token) {
-      res.status(401).json({ message: "Access Denied. No token provided." });
+      res.status(401).json({ message: "Access Denied" });
       return;
     }
 
-    const secretKey = process.env.JWT_SECRET_KEY;
-
-    if (!secretKey) {
-      res.status(500).json({ message: "JWT_SECRET_KEY is not set" });
-      return;
-    }
-
-    const decoded = jwt.verify(token, secretKey) as JwtPayload;
-    req.user = decoded;
+    req.user = verifyToken(token);
     next();
   } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: "Invalid token." });
+    console.error("Token verification error:", error);
+
+    if (error instanceof Error) {
+      if (error.name === "TokenExpiredError") {
+        res.status(401).json({ message: "Token expired" });
+      } else if (error.message.includes("signature")) {
+        res.status(401).json({ message: "Invalid token signature" });
+      } else {
+        res.status(401).json({ message: `Invalid token: ${error.message}` });
+      }
+    } else {
+      res.status(400).json({ message: "Authentication failed" });
+    }
   }
 };
-
-export default verifyToken;
