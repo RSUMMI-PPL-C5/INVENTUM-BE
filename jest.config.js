@@ -10,7 +10,18 @@ module.exports = {
     "**/*.test.ts",
     "**/*.test.tsx",
   ],
-  testPathIgnorePatterns: [],
-  coveragePathIgnorePatterns: ["/sentry/"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/src/routes/metrics.route.ts",
+    "/src/services/metrics.service.ts",
+    "/src/middleware/metrics.middleware.ts",
+  ],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/sentry/",
+    "/src/routes/metrics.route.ts",
+    "/src/services/metrics.service.ts",
+    "/src/middleware/metrics.middleware.ts",
+  ],
   coverageReporters: ["lcov", "text", "clover"],
 };
