@@ -31,6 +31,9 @@ import calibrationHistoryRoutes from "./routes/calibration-history.routes";
 import partsHistoryRoutes from "./routes/parts-history.routes";
 import notificationRoutes from "./routes/notification.route";
 
+// Import API Generation
+import expressOasGenerator from "express-oas-generator";
+
 const app = express();
 
 // Basic security settings
@@ -95,6 +98,8 @@ app.use(
 // Request parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+expressOasGenerator.init(app as any, {});
 
 // Routes
 app.get("/", (req, res) => {
